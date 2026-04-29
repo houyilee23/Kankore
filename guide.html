@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a1d23">
+<title>艦これ 任務追蹤</title>
+<style>
+:root {
+  --bg: #1a1d23;
+  --panel: #252932;
+  --panel-2: #2e3340;
+  --border: #3a3f4d;
+  --text: #e6e8eb;
+  --text-dim: #9aa0ab;
+  --accent: #5ea0ef;
+  --done: #3a7d44;
+  --done-dim: #2a5a32;
+  --avail: #5ea0ef;
+  --upcoming: #c89b3c;
+  --note: #c89b3c;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Microsoft JhengHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.4;
+  padding-bottom: env(safe-area-inset-bottom);
+  -webkit-tap-highlight-color: transparent;
+}
+header {
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: calc(10px + env(safe-area-inset-top)) 14px 8px;
+  z-index: 10;
+}
+h1 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+}
+h1 .progress {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-weight: normal;
+}
+.view-switch {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.view-switch button {
+  flex: 1;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.view-switch button.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.controls input[type="search"] {
+  flex: 1;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 16px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  -webkit-appearance: none;
+}
+.controls select {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 14px;
+  padding: 9px 8px;
+  border-radius: 8px;
+}
+.tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  margin: 4px -14px 0;
+  padding: 2px 14px;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.tab.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+main {
+  padding: 8px 14px 80px;
+}
+.bucket {
+  margin-bottom: 18px;
+}
+.bucket-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 4px 8px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+.bucket-header .count {
+  background: var(--panel-2);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+.bucket-header.done { color: var(--done); }
+.bucket-header.avail { color: var(--avail); }
+.bucket-header.upcoming { color: var(--upcoming); }
+.bucket-empty {
+  color: var(--text-dim);
+  font-size: 13px;
+  padding: 10px 12px;
+  background: var(--panel);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  text-align: center;
+}
+.task {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+.task.done { border-left-color: var(--done); opacity: 0.85; }
+.task.avail { border-left-color: var(--avail); }
+.task.upcoming { border-left-color: var(--upcoming); opacity: 0.9; }
+.task.note {
+  background: transparent;
+  border: 1px dashed var(--border);
+  opacity: 0.7;
+}
+.task.note .task-name { color: var(--note); font-style: italic; }
+.task.note .check, .task.note .toggle { display: none; }
+.task-row {
+  display: flex;
+  align-items: stretch;
+  min-height: 46px;
+}
+.check {
+  width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.check input {
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  accent-color: var(--done);
+}
+.task-body {
+  flex: 1;
+  padding: 8px 4px 8px 0;
+  min-width: 0;
+}
+.task-name {
+  font-size: 14px;
+  word-break: break-word;
+  line-height: 1.3;
+}
+.task-name .id {
+  color: var(--text-dim);
+  font-size: 10px;
+  margin-right: 5px;
+  font-family: ui-monospace, monospace;
+}
+.task-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+  font-size: 11px;
+}
+.tag {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--panel-2);
+  color: var(--text-dim);
+  font-size: 10px;
+}
+.tag.cat { color: var(--text-dim); }
+.tag.reward { color: var(--upcoming); border: 1px solid var(--upcoming); background: transparent; }
+.tag.recurrence { color: #d76e8a; border: 1px solid #6e3a4a; background: transparent; }
+.info-block {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 13px;
+  color: var(--text);
+  word-break: break-word;
+  white-space: pre-line;
+  line-height: 1.5;
+}
+.field.wiki-info.unlock label { color: #d76e8a; }
+.field.wiki-info.content label { color: var(--avail); }
+.field.wiki-info.reward_text label { color: var(--upcoming); }
+.field.wiki-info.info-flow label { color: var(--text-dim); }
+.field.wiki-info.info-flow .info-block {
+  font-size: 12px;
+  opacity: 0.85;
+}
+.tag.prereq { color: var(--text-dim); }
+.tag.prereq.notdone { color: var(--upcoming); }
+.toggle {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 16px;
+  width: 36px;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+}
+.task.expanded .toggle { transform: rotate(180deg); }
+.details {
+  display: none;
+  padding: 6px 12px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--panel-2);
+  font-size: 13px;
+}
+.task.expanded .details { display: block; }
+.field { margin-top: 8px; }
+.field label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 3px;
+}
+.field textarea {
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px;
+  font-size: 13px;
+  font-family: inherit;
+  min-height: 50px;
+  resize: vertical;
+  -webkit-appearance: none;
+}
+.field .relbox {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.field .reltag {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.field .reltag.done { color: var(--done); border-color: var(--done-dim); }
+.field .reltag .x {
+  cursor: pointer;
+  opacity: 0.6;
+  font-weight: bold;
+  padding: 0 2px;
+}
+.field .reltag .x:hover { opacity: 1; color: #ff6868; }
+.field .reltag.linkable { cursor: pointer; }
+.field .reltag.linkable:hover { background: var(--panel); }
+.empty {
+  text-align: center;
+  color: var(--text-dim);
+  padding: 32px 16px;
+  font-size: 14px;
+}
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 6px 14px calc(6px + env(safe-area-inset-bottom));
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 6px;
+  z-index: 10;
+}
+.bottom-bar button {
+  flex: 1;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 9px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+dialog {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  max-width: 92vw;
+  width: 380px;
+  padding: 16px;
+}
+dialog::backdrop { background: rgba(0,0,0,0.6); }
+dialog h2 { margin: 0 0 12px; font-size: 16px; }
+dialog textarea, dialog input {
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 13px;
+  -webkit-appearance: none;
+}
+dialog textarea {
+  height: 200px;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+}
+dialog .actions { margin-top: 12px; display: flex; gap: 8px; justify-content: flex-end; }
+dialog button {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+dialog button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.add-prereq-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.add-prereq-list .pick {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 13px;
+}
+.add-prereq-list .pick:hover { background: var(--panel-2); }
+.add-prereq-list .pick:last-child { border-bottom: none; }
+mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>
+    <span>艦これ 任務追蹤</span>
+    <span class="progress" id="progress">0 / 0</span>
+  </h1>
+  <div class="view-switch">
+    <button id="vw-focus" class="active">進度焦點</button>
+    <button id="vw-all">全部清單</button>
+  </div>
+  <div class="controls" id="all-controls" style="display:none">
+    <input type="search" id="search" placeholder="搜尋任務名稱或備註...">
+    <select id="filter">
+      <option value="all">全部</option>
+      <option value="todo">未完成</option>
+      <option value="done">已完成</option>
+    </select>
+  </div>
+  <div class="tabs" id="tabs" style="display:none"></div>
+</header>
+
+<main id="list"></main>
+
+<div class="bottom-bar">
+  <button id="btn-export">匯出備份</button>
+  <button id="btn-import">匯入備份</button>
+  <button id="btn-reset">全部重置</button>
+</div>
+
+<dialog id="dlg">
+  <h2 id="dlg-title">備份資料</h2>
+  <div id="dlg-body"></div>
+  <div class="actions">
+    <button id="dlg-cancel">取消</button>
+    <button id="dlg-ok" class="primary">確定</button>
+  </div>
+</dialog>
+
+<script>
+const TASKS = [{"id":"t001","name":"スタート","cat":"主線/支線","kind":"task","prev":[],"next":["t005"]},{"id":"t002","name":"※未分類","cat":"未分類","kind":"note"},{"id":"t003","name":"※D　Littorio入手任務群","cat":"D: Littorio 入手","kind":"note"},{"id":"t004","name":"※E　Z1入手任務群","cat":"E: Z1 入手","kind":"note"},{"id":"t005","name":"はじめての「建造」！","cat":"主線/支線","kind":"task","prev":["t001"],"next":["t010"],"info":["1隻以上建造","進水不要、建造開始した時点でクリア"],"content":"「工廠」で鋼材などの資材を使って、新しい艦を「建造」せよ！","unlock":"初期任務","reward_text":"開発資材x1 高速建造x2"},{"id":"t006","name":"南西諸島海域クリア後？","cat":"未分類","kind":"note"},{"id":"t007","name":"「第五航空戦隊」を再編成せよ！","cat":"未分類","kind":"task","prev":["t057","t058","t080"],"next":["t016","t092","t094"],"info":["「翔鶴」「瑞鶴」「朧」「秋雲」"],"content":"「翔鶴」「瑞鶴」と、随伴駆逐艦「朧」「秋雲」を基幹とした新第五航空戦隊を再編成せよ！","unlock":"『「第五航空戦隊」を編成せよ！』達成後 ※「空母機動部隊」西へ！の達成も必要？","reward_text":"開発資材x5 戦略P:800"},{"id":"t008","name":"中部西海域潜水艦哨戒を実施せよ！","cat":"主線/支線","kind":"task","prev":["t079"],"next":["t013","t092","t094"],"rewards":["潜水艦53cm艦首魚雷(8門)"],"info":["中部西遠征｢中部西海域潜水艦哨戒｣2","潜水艦53cm艦首魚雷(8門)"],"content":"「中部西海域潜水艦哨戒」を反復実施し、哨戒と潜水艦隊練度向上に努めよ！（2回成功で達成）","unlock":"潜水艦隊「第六艦隊」を編成せよ！","reward_text":"潜水艦53cm艦首魚雷(8門)"},{"id":"t009","name":"中規模潜水艦隊を編成せよ！","cat":"主線/支線","kind":"task","prev":["t047"],"next":["t014","t077","t079"],"info":["｢潜水｣3"],"content":"伊号潜水艦3隻からなる潜水艦隊を編成せよ！","unlock":"『「第四戦隊」を編成せよ！』達成後","reward_text":"給糧艦「伊良湖」x1 戦略P300"},{"id":"t010","name":"はじめての「編成」！","cat":"主線/支線","kind":"task","prev":["t005"],"next":["t015","t027"],"info":["2隻以上編成","砲撃演習の開放"]},{"id":"t011","name":"「北号作戦」を実施せよ！","cat":"未分類","kind":"task","prev":[],"next":[],"rewards":["瑞雲(六三四空)"],"info":["南西遠征｢北号作戦｣","瑞雲(六三四空)"],"content":"航空戦艦2隻を投入する強行資源輸送作戦「北号作戦」を実施せよ ※南西諸島海域の4つ目の遠征が「北号作戦」","unlock":"南西諸島海域クリア後？","reward_text":"瑞雲(六三四空) 戦略P:500"},{"id":"t012","name":"瑞雲(六三四空)","cat":"主線/支線","kind":"reward"},{"id":"t013","name":"潜水艦派遣による技術入手を強化せよ！","cat":"D: Littorio 入手","kind":"task","prev":["t008"],"next":["t016"],"info":["西南遠征｢潜水艦派遣作戦｣6","瑞雲(六三四空)"],"content":"潜水艦派遣作戦を継続して成功させ、他国製技術の導入に努めよ！（西南海域の遠征\"潜水艦派遣作戦\"6回で達成）","unlock":"中部西海域潜水艦哨戒を実施せよ！、潜水艦派遣による海外艦との接触作戦 達成後","reward_text":"瑞雲(六三四空) 戦略P150"},{"id":"t014","name":"第一次潜水艦派遣作戦","cat":"E: Z1 入手","kind":"task","prev":["t009"],"next":["t018"],"info":["西南遠征｢潜水艦派遣作戦｣"],"content":"第一次潜水艦派遣作戦を実施、これを成功させよ！ ※西南海域の遠征、潜水艦派遣作戦(潜水艦4隻以上、13日)","unlock":"『中規模潜水艦隊を編成せよ！』達成後","reward_text":"応急修理要員x1 戦略P150"},{"id":"t015","name":"はじめての「演習」！","cat":"主線/支線","kind":"task","prev":["t010"],"next":["t019"],"info":["艦隊行動演習の実施","砲撃演習の開放"],"content":"第三艦隊1","unlock":"『はじめての「編成」！』達成後","reward_text":"はじめての「演習」！「艦隊行動演習」を実施せよ！ / 開発資材x1 砲戦演習の開放"},{"id":"t016","name":"潜水艦派遣作戦による海外艦救援！","cat":"D: Littorio 入手","kind":"task","prev":["t007","t013"],"next":[],"rewards":["Littorio"],"info":["西方 遠征「海外艦との接触｣4","Littorio","多くの長期間遠征を経る。Z1と共通性高く、同時並行推奨"],"content":"有力な潜水艦隊派遣による海外艦との接触、同救援を継続的に実施せよ！（西方海域の遠征\"海外艦との接触\"を丁4回で達成）","unlock":"「第五航空戦隊」を再編成せよ！ 潜水艦派遣による技術入手を強化せよ！達成後","reward_text":"高速戦艦「Littorio」 戦略P200"},{"id":"t017","name":"Littorio","cat":"D: Littorio 入手","kind":"reward"},{"id":"t018","name":"第２次潜水艦派遣作戦","cat":"E: Z1 入手","kind":"task","prev":["t014"],"next":["t020"],"info":["西南遠征｢潜水艦派遣作戦｣"],"content":"第２次潜水艦派遣作戦を成功させよ！ ※西南海域の遠征、潜水艦派遣作戦(潜水艦4隻以上、13日)","unlock":"「第１次潜水艦派遣作戦」達成後","reward_text":"開発資材x3 Ju87C改"},{"id":"t019","name":"「砲撃演習」を実施せよ！","cat":"主線/支線","kind":"task","prev":["t015"],"next":["t021","t022"],"info":["砲撃演習の実施","雷撃演習の開放"]},{"id":"t020","name":"潜水艦派遣作戦による技術入手の継続！","cat":"E: Z1 入手","kind":"task","prev":["t018"],"next":["t023"],"info":["西南遠征｢潜水艦派遣作戦｣2"],"content":"第３次及び第４次潜水艦派遣作戦を成功させ、他国製技術の導入に努めよ！（潜水艦派遣作戦を2回成功で達成）","unlock":"「第２次潜水艦派遣作戦」達成後","reward_text":"改修資材x4 Ju87C改"},{"id":"t021","name":"「砲撃演習」を継続実施せよ！","cat":"主線/支線","kind":"task","prev":["t019"],"next":["t025","t049"],"info":["砲撃演習の実施2回"],"content":"第五艦隊1","unlock":"『「砲撃演習」を実施せよ！』達成後","reward_text":"艦隊戦の練度を向上させるため、「砲戦演習」を継続して実施せよ！ ※砲撃演習を2回実施で達成確認。 / 12.7cm連装砲B型改二"},{"id":"t022","name":"「艦娘」出撃！","cat":"主線/支線","kind":"task","prev":["t019"],"next":["t026"],"info":["出撃"],"content":"第三艦隊3","unlock":"『「砲戦演習」を実施せよ！』達成後","reward_text":"艦隊を出撃させ、敵艦隊と交戦せよ！ ※D敗北でも可。 / 開発資材x1"},{"id":"t023","name":"潜水艦派遣による海外艦との接触作戦","cat":"E: Z1 入手","kind":"task","prev":["t020"],"next":[],"rewards":["Z1"],"info":["西方遠征｢海外艦との接触｣","Z1","最後は西方、それ以外は西南遠征。どれも期間が長いので失敗注意"],"content":"有力な潜水艦による海外艦との接触作戦を成功させよ！","unlock":"潜水艦派遣作戦による技術入手の継続！達成後","reward_text":"駆逐艦「Z1」 戦略P200"},{"id":"t024","name":"Z1","cat":"E: Z1 入手","kind":"reward"},{"id":"t025","name":"「演習」を実施し、夜戦練度を高めよ！","cat":"主線/支線","kind":"task","prev":["t021"],"next":["t028"],"info":["艦隊行動演習2回、雷撃演習2回","対潜戦演習の開放"],"content":"「艦隊行動演習」及び「雷撃戦演習」を継続して実施せよ！ ※艦隊行動演習を2回、雷撃戦演習を2回実施で達成確認。","unlock":"『「砲撃演習」を継続実施せよ！』達成後","reward_text":"熟練見張員 対潜戦演習の開放"},{"id":"t026","name":"鎮守府正面海域を護れ！","cat":"主線/支線","kind":"task","prev":["t022"],"next":["t029"],"info":["鎮守府1"],"content":"第三艦隊4","unlock":"『「艦娘」出撃！』達成後","reward_text":"鎮守府正面海域に艦隊を出撃させ、敵艦の跳梁を阻止せよ！ ※鎮守府正面海域の「敵主力艦隊」(1-1-Cマス)にB勝利以上で達成。 / 高速修復剤x2"},{"id":"t027","name":"「駆逐隊」を編成せよ！","cat":"主線/支線","kind":"task","prev":["t010"],"next":["t030"],"info":["｢駆逐艦｣4"],"content":"第二艦隊2","unlock":"『はじめての編成！』達成後","reward_text":"駆逐艦4隻以上で構成される「駆逐隊」を編成せよ！ ※駆逐艦以外を含む5隻以上の編成でも可。 / 高速建造x1"},{"id":"t028","name":"「対潜戦演習」を実施せよ！","cat":"主線/支線","kind":"task","prev":["t025"],"next":["t031","t032"],"info":["対潜演習実施","航空戦演習の開放"],"content":"明石向け・演習","unlock":"『艦隊の夜戦練度向上に努めよ！』達成後","reward_text":"艦隊の対潜戦練度を向上させるため、「対潜戦演習」を実施せよ！ / 九四式爆雷投射機 航空戦演習の開放"},{"id":"t029","name":"鎮守府海域沖を警備せよ！","cat":"主線/支線","kind":"task","prev":["t026"],"next":["t033"],"info":["鎮守府2出撃のみでも可"],"content":"第三艦隊5","unlock":"『鎮守府正面海域を護れ！』達成後","reward_text":"鎮守府海域沖に艦隊を出撃させ、同方面の警備を強化せよ！ ※鎮守府海域沖(1-2)に出撃1回で達成。勝敗問わず。 / 輸送船x1 家具箱(小)x1"},{"id":"t030","name":"「水雷戦隊」を編成せよ！","cat":"主線/支線","kind":"task","prev":["t027"],"next":["t034","t035"],"info":["旗艦｢軽巡｣他「駆逐」2以上"],"content":"第二艦隊3","unlock":"『「駆逐隊」を編成せよ！』達成後","reward_text":"軽巡洋艦を旗艦とし、数隻の駆逐艦で構成される「水雷戦隊」を編成せよ！ ※旗艦軽巡、他駆逐2隻で達成。 / 開発資材x1 戦略P100"},{"id":"t031","name":"トラック泊地周辺の対潜哨戒を実施せよ！","cat":"主線/支線","kind":"task","prev":["t028"],"next":["t036"],"info":["南方泊地1","鳳翔","鳳翔は瑞雲12型(六三四空)任務の途中で必要になる"],"content":"明石2？","unlock":"「対潜演習」を実施せよ、マンスリー「南方連絡海域正面の制海権を確保せよ！」達成後","reward_text":"艦隊を南方泊地に進出させ、トラック泊地対潜哨戒を実施せよ！ / 軽空母「鳳翔」"},{"id":"t032","name":"「航空戦演習」を実施せよ！","cat":"主線/支線","kind":"task","prev":["t028"],"next":[],"info":["航空戦演習実施","総合演習の開放","零式艦戦21型(熟練)"],"content":"艦隊の航空戦練度を向上させるため、「航空戦演習」を実施せよ！","unlock":"「対潜戦演習」を実施せよ！達成後","reward_text":"零式艦戦21型(熟練) 総合演習の開放"},{"id":"t033","name":"接近する「敵前衛艦隊」を迎撃せよ！","cat":"主線/支線","kind":"task","prev":["t029"],"next":["t037","t038"],"info":["鎮守府2"],"content":"第三艦隊6","unlock":"『鎮守府海域沖を警備せよ！』達成後","reward_text":"鎮守府沖に接近する「敵前衛艦隊」を捕捉、これを撃破せよ！ ※1-2-DマスでS勝利で達成。 / 駆逐艦「深雪」 九四式爆雷投射機"},{"id":"t034","name":"軽巡2隻を擁する隊を編成せよ！","cat":"主線/支線","kind":"task","prev":["t030"],"next":["t039"],"info":["｢軽巡｣2"],"content":"第三艦隊8","unlock":"『「水雷戦隊」を編成せよ！』達成後","reward_text":"軽巡洋艦2隻を擁する高速艦隊を編成せよ！ ※軽巡2隻のみの編成でも可。第1艦隊以外も可。 / 開発資材x2"},{"id":"t035","name":"大規模艦隊を編成せよ！","cat":"D: Littorio 入手","kind":"task","prev":["t030"],"next":["t040"],"info":["6隻編成","第2艦隊開放"],"content":"第二艦隊4","unlock":"『「水雷戦隊」を編成せよ！』達成後","reward_text":"全6隻で構成される主力艦隊を編成せよ！ / 第2艦隊の開放"},{"id":"t036","name":"トラック泊地周辺警備を実施せよ！","cat":"主線/支線","kind":"task","prev":["t031"],"next":[],"info":["南方泊地2","明石"],"content":"明石3？","unlock":"『トラック泊地周辺の対潜哨戒を実施せよ！』及び『「川内」型軽巡姉妹の全3艦を編成せよ達成後』","reward_text":"南方トラック泊地は前線の要だ。トラック泊地周辺警備を実施して、工作艦の前線投入を準備せよ！ / 工作艦「明石」"},{"id":"t037","name":"近海諸島防衛線を支援せよ！","cat":"主線/支線","kind":"task","prev":["t033"],"next":["t043"],"info":["鎮守府4"],"content":"第四艦隊1","unlock":"『接近する「敵前衛艦隊」を迎撃せよ！』達成後","reward_text":"※近海諸島防衛線(鎮守府海域-4) / 重巡洋艦「衣笠」 輸送船x1"},{"id":"t038","name":"「水雷戦隊」出撃せよ！","cat":"主線/支線","kind":"task","prev":["t033"],"next":["t041"],"info":["旗艦「軽巡」他「駆逐」出撃"],"content":"第三艦隊7","unlock":"『接近する「敵前衛艦隊」を迎撃せよ！』達成後","reward_text":"軽巡洋艦1隻を旗艦とし、複数の駆逐艦からなる水雷戦隊で出撃せよ！ / 開発資材x2 戦略P100"},{"id":"t039","name":"「重巡戦隊」を編成せよ！","cat":"主線/支線","kind":"task","prev":["t034"],"next":["t041"],"info":["｢重巡｣2"],"content":"第三艦隊9","unlock":"『軽巡2隻を擁する隊を編成せよ！』達成後","reward_text":"重巡洋艦2隻を擁する重巡艦隊を編成せよ！ ※重巡2隻のみの編成でも可。第1艦隊以外も可。 / 高速建造x1 開発資材x1"},{"id":"t040","name":"「水上機母艦」を配備せよ！","cat":"D: Littorio 入手","kind":"task","prev":["t035"],"next":["t042"],"info":["｢水母｣"],"content":"多数の水上偵察機を運用する「水上機母艦」を艦隊に配備せよ！","unlock":"『大規模艦隊を編成せよ！』達成後","reward_text":"開発資材x1 戦略P100"},{"id":"t041","name":"「重巡洋艦」出撃せよ！","cat":"主線/支線","kind":"task","prev":["t038","t039"],"next":["t043"],"info":["旗艦｢重巡｣出撃","第3艦隊開放"],"content":"第三艦隊10","unlock":"『「重巡戦隊」を編成せよ！』及び『「水雷戦隊」出撃せよ！』達成後","reward_text":"重巡洋艦を旗艦とした艦隊を編成、これを出撃させよ！ / 第3艦隊の開放 戦略P150"},{"id":"t042","name":"「第六駆逐隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","prev":["t040"],"next":["t044","t045"],"info":["「暁」「響」「雷」「電」"],"content":"「暁」「響」「雷」「電」4隻による第六駆逐隊を編成せよ！","unlock":"『「水上機母艦」を配備せよ！』達成後","reward_text":"応急修理要員x1 戦略P200"},{"id":"t043","name":"南方連絡海域正面の制海権を確保せよ！","cat":"主線/支線","kind":"task","prev":["t037","t041"],"next":["t046"],"info":["南方連絡1"],"content":"第四艦隊2","unlock":"『近海諸島防衛線を支援せよ！』達成後","reward_text":"※南方連絡海域正面(南方連絡海域-1) ボスA勝利で達成(難易度丁ならBでも達成確認) / 九三式水中聴音機 輸送船×2"},{"id":"t044","name":"「三川艦隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","prev":["t042"],"next":["t047"],"info":["「鳥海」「青葉」「加古」「古鷹」「天龍」"],"content":"「鳥海」「青葉」「加古」「古鷹」「天龍」を含む高速艦隊を編成せよ！ ※もう１枠に低速艦を入れると達成不可。","unlock":"『戦艦と重巡による主力艦隊を編成せよ！』達成後","reward_text":"高速修復材×3 戦略P400"},{"id":"t045","name":"「第六戦隊」を編成せよ！","cat":"E: Z1 入手","kind":"task","prev":["t042"],"next":["t048"],"info":["「古鷹」「加古」「青葉」「衣笠」"],"content":"「古鷹」「加古」「青葉」「衣笠」を基幹とした第六戦隊を編成せよ！","unlock":"『「第六駆逐隊」を編成せよ！』達成後","reward_text":"給糧艦「伊良湖」x1 戦略P350"},{"id":"t046","name":"南方連絡航路対潜哨戒を実施せよ！","cat":"主線/支線","kind":"task","prev":["t043"],"next":["t049"],"info":["南方連絡2","第4艦隊開放"],"content":"第四艦隊3","unlock":"『南方連絡海域正面の制海権を確保せよ！』達成後","reward_text":"有力な艦隊を南方海域正面に展開、敵戦力を撃滅して同海域の制海権を確保せよ！ ※南方航路(南方連絡海域-2) / 第4艦隊の開放 輸送船x2"},{"id":"t047","name":"「第四戦隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","prev":["t044"],"next":["t009","t050","t051"],"info":["「愛宕」「高雄」「鳥海」「摩耶」"],"content":"「愛宕」「高雄」「鳥海」「摩耶」を基幹とした第四戦隊を編成せよ！","unlock":"『「三川艦隊」を編成せよ！』達成後","reward_text":"開発資材x4 戦略P400"},{"id":"t048","name":"新編「第二航空戦隊」を編成せよ","cat":"E: Z1 入手","kind":"task","prev":["t045"],"next":["t052"],"info":["旗艦「飛龍改二」「蒼龍」他｢駆逐｣2"],"content":"「飛龍改二」(※旗艦)及び「蒼龍」を基幹とした二航戦(要駆逐艦2隻)を編成せよ！","unlock":"『「第六戦隊」を編成せよ！』達成後","reward_text":"開発資材x2 戦略P:700"},{"id":"t049","name":"「川内」型軽巡姉妹の全3艦を編成せよ","cat":"主線/支線","kind":"task","prev":["t021","t046"],"next":["t053","t054","t056"],"info":["｢川内｣｢神通｣｢那珂｣","第5艦隊開放"],"content":"第五艦隊2","unlock":"『南方連絡航路対潜哨戒を実施せよ！』及び『「砲撃演習」を継続実施せよ！』達成後(要確認)","reward_text":"川内型軽巡洋艦「川内」「神通」「那珂」を同一艦隊に配属せよ！ / 第5艦隊の開放 戦略P200"},{"id":"t050","name":"「西村艦隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","prev":["t047"],"next":["t057","t058"],"info":["「扶桑」「山城」「最上」「時雨」"],"content":"「扶桑」「山城」「最上」「時雨」を基幹とした西村艦隊を編成せよ！","unlock":"『「第四戦隊」を編成せよ！』達成後","reward_text":"給糧艦間宮 戦略P500"},{"id":"t051","name":"潜水艦隊を編成せよ！","cat":"D: Littorio 入手","kind":"task","prev":["t047"],"next":["t059"],"info":["｢潜水｣2"],"content":"伊号潜水艦2隻からなる潜水艦隊を編成せよ！","unlock":"『「第四戦隊」を編成せよ！』達成後","reward_text":"応急修理要員x1 戦略P200"},{"id":"t052","name":"新編「第二航空戦隊」出撃せよ！","cat":"E: Z1 入手","kind":"task","prev":["t048"],"next":["t060","t061"],"info":["南方2　旗艦 「飛龍改二」「蒼龍」「駆逐」2"],"content":"「新編「二航戦」を基幹とした艦隊で、珊瑚諸島沖に出撃、敵機動部隊を撃滅せよ！ ※飛龍改二旗艦+蒼龍の他に編成時と同じで「駆逐2」が条件","unlock":"『新編「第二航空戦隊」を編成せよ』達成後","reward_text":"給糧艦「間宮」 家具箱（大）x1"},{"id":"t053","name":"第十六戦隊(第一次)」を編成せよ！","cat":"主線/支線","kind":"task","prev":["t049"],"next":["t062"],"info":["旗艦「足柄」「球磨」「長良」"]},{"id":"t054","name":"「妙高」型重巡姉妹の全4隻を編成せよ！","cat":"主線/支線","kind":"task","prev":["t049"],"next":["t063"],"info":["「妙高」「那智」「足柄」「羽黒」"],"content":"第七艦隊1","unlock":"『「川内」型軽巡洋艦を全て編成せよ』達成後","reward_text":"妙高型重巡洋艦「妙高」「那智」「足柄」「羽黒」を同一艦隊に配属せよ / 高速修復材x1 開発資材x2"},{"id":"t055","name":"※Bから","cat":"主線/支線","kind":"note"},{"id":"t056","name":"北方海峡の警備を実施せよ！","cat":"主線/支線","kind":"task","prev":["t049"],"next":["t064","t065"],"info":["北方2　3回"],"content":"第六艦隊1","unlock":"川内型編成任務後出現、他条件の有無は未確認","reward_text":"※「北方泊地海域」の2エリア目。ボス3回S勝利で達成。 / 22号対水上電探 戦略P150"},{"id":"t057","name":"第五航空戦隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","prev":["t050"],"next":["t007","t067"],"info":["「翔鶴」「瑞鶴」｢駆逐｣2","同時受託任務数1上昇"],"content":"「翔鶴」「瑞鶴」を基幹とし、駆逐艦2隻を加えた第五航空戦隊を編成せよ！","unlock":"『「西村艦隊」を編成せよ！』達成後","reward_text":"同時受託任務数1上昇 戦略P700"},{"id":"t058","name":"西村艦隊出撃せよ","cat":"D: Littorio 入手","kind":"task","prev":["t050"],"next":["t007","t067"],"info":["「扶桑」「山城」「最上」「時雨」南方連絡4","同時受託任務数1上昇"]},{"id":"t059","name":"「第八駆逐隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","prev":["t051"],"next":["t068"],"info":["「朝潮」「満潮」「大潮」「荒潮」"],"content":"「朝潮」「満潮」「大潮」「荒潮」4隻による第八駆逐隊を編成せよ！ ※表記4隻「のみ」の艦隊を作ると達成","unlock":"『潜水艦隊を編成せよ！』達成後","reward_text":"戦闘糧食x1 戦略P:200"},{"id":"t060","name":"再編成「第二航空戦隊」を強化せよ！","cat":"E: Z1 入手","kind":"task","prev":["t052"],"next":["t068"],"info":["旗艦「蒼龍改二」「飛龍改二」他｢駆逐｣2"],"content":"「蒼龍改二」(※旗艦)及び「飛龍改二」を基幹とした二航戦(要駆逐艦2隻)を編成せよ！","unlock":"新編「第二航空戦隊」出撃せよ！達成後","reward_text":"開発資材x4 戦略P:800"},{"id":"t061","name":"機種転換","cat":"主線/支線","kind":"task","prev":["t052","t081","t099","t110"],"next":["t123"],"rewards":["天山一二型(村田隊)","烈風(六〇一空)"],"info":["｢第一艦隊旗艦｣+「九九式艦爆(江草隊)」で｢彗星｣2廃棄","彗星(江草隊)","｢第一艦隊旗艦｣+｢零戦52型丙(六〇一空)｣で｢烈風｣2廃棄","烈風(六〇一空)","第一艦隊旗艦｢翔鶴｣+｢九七式艦攻(村田隊)｣で｢天山｣2廃棄","天山一二型(村田隊)"],"content":"工廠2(終点)","unlock":"*年初初期表示","reward_text":"「零戦21型(熟練)」搭載空母を第一艦隊旗艦に配備した状態で、新たに「零戦52型」を２つ廃棄せよ！ / 装備改修(変化)「零式艦戦21型(熟練)」→ 「零式艦戦52型(熟練)」"},{"id":"t062","name":"第十六戦隊(第一次)出撃せよ！","cat":"主線/支線","kind":"task","prev":["t053"],"next":["t071"],"info":["北方泊地3 旗艦「足柄」「球磨」「長良」"]},{"id":"t063","name":"「金剛」型による高速戦艦部隊を編成せよ！","cat":"主線/支線","kind":"task","prev":["t054"],"next":["t072"],"info":["「金剛」「比叡」「榛名」「霧島」","第7艦隊開放"],"content":"第七艦隊2","unlock":"『「妙高」型重巡姉妹の全4隻を編成せよ！』及び『オリョール海西部に進出せよ！』達成(第6艦隊開放後)後","reward_text":"金剛型戦艦「金剛」「比叡」「榛名」「霧島」全4隻の高速戦艦を集中配備せよ！ / 第7艦隊の開放"},{"id":"t064","name":"北方海域の哨戒を実施せよ！","cat":"主線/支線","kind":"task","prev":["t056"],"next":["t073"],"info":["北方1"],"content":"艦隊を北方海域に展開、モーレイ海の哨戒を実施せよ！","unlock":"『北方海峡の警備を実施せよ！』達成後","reward_text":"高速建造材x3 戦略P:300"},{"id":"t065","name":"オリョール海西部に進出せよ！","cat":"主線/支線","kind":"task","prev":["t056"],"next":["t075","t077","t079"],"info":["中部西2","第6艦隊開放"],"content":"第六艦隊2","unlock":"『北方海峡の警備を実施せよ！』達成後","reward_text":"有力な艦隊を中部海域に展開、オリョール海進出を図れ！※「中部西海域」の2エリア目。ボスS勝利で達成(要確認) [甲]A勝利で達成[丁][丙]B勝利で達成 / 第6艦隊の開放"},{"id":"t066","name":"ろ号","cat":"主線/支線","kind":"task","prev":[],"next":["t080"],"info":["マンスリー"],"recurrence":"monthly"},{"id":"t067","name":"「新型正規空母」を配備せよ！","cat":"D: Littorio 入手","kind":"task","prev":["t057","t058"],"next":["t081"],"info":["「雲龍」「天城」「葛城」いずれか"],"content":"新型正規空母、雲龍型航空母艦を第一艦隊旗艦に配備せよ ※「雲龍」「天城」「葛城」:3隻ともドロップ限定","unlock":"『「第五航空戦隊」を編成せよ！』達成後","reward_text":"高速建材x？"},{"id":"t068","name":"「第三十駆逐隊(第一次)」を編成せよ！","cat":"E: Z1 入手","kind":"task","prev":["t059","t060"],"next":["t082"],"rewards":["天山一二型(友永隊)","彗星(江草隊)"],"info":["「睦月」「如月」「弥生」「望月」"],"content":"「睦月」「如月」「弥生」「望月」4隻による第三十駆逐隊(第一次)を編成せよ！","unlock":"『「第八駆逐隊」を編成せよ！』達成後","reward_text":"戦闘糧食x1 戦略P:200"},{"id":"t069","name":"天山一二型(友永隊)","cat":"E: Z1 入手","kind":"reward"},{"id":"t070","name":"彗星(江草隊)","cat":"E: Z1 入手","kind":"reward"},{"id":"t071","name":"「第十六戦隊(第二次)」を編成せよ！","cat":"主線/支線","kind":"task","prev":["t062"],"next":["t083"],"info":["旗艦「名取」「五十鈴」「鬼怒」"],"content":"「名取」を旗艦として「五十鈴」「鬼怒」を擁する、第十六戦隊(第二次)を編成せよ！","unlock":"『第十六戦隊(第一次)出撃せよ！』達成後","reward_text":"高速修復材x3 開発資材x3"},{"id":"t072","name":"「南雲機動部隊」を編成せよ！","cat":"主線/支線","kind":"task","prev":["t063"],"next":[],"info":["「赤城」「加賀」「飛龍」「蒼龍」","第8艦隊開放"],"content":"第八艦隊1","unlock":"『「金剛」型による高速戦艦部隊を編成せよ！』達成後","reward_text":"一航戦「赤城」「加賀」二航戦「飛龍」「蒼龍」からなる第一機動部隊を編成せよ！ / 第8艦隊の開放"},{"id":"t073","name":"陽動作戦「AL作戦」を実施せよ！","cat":"主線/支線","kind":"task","prev":["t064"],"next":["t084"],"info":["AL2、AL3"],"content":"北方AL海域において、「AL作戦」を実施せよ！ ※北方AL海域沖(AL海域-2)と北方AL海域中心部(AL海域-3)両方ボスS勝利で達成(難易度乙でA勝利可、難易度丁B勝利可)","unlock":"『北方海域の哨戒を実施せよ！！』達成後","reward_text":"勲章x1 戦略P:800"},{"id":"t074","name":"※B　艦隊開放ルートへ","cat":"主線/支線","kind":"note"},{"id":"t075","name":"「第十八駆逐隊」を編成せよ！","cat":"主線/支線","kind":"task","prev":["t065"],"next":["t085"],"rewards":["53cm艦首(酸素)魚雷"],"info":["「霞」「霰」「陽炎」「不知火」"],"content":"「霞」「霰」「陽炎」「不知火」全4隻による第十八駆逐隊を編成せよ！","unlock":"『オリョール海西部に進出せよ！』達成後","reward_text":"戦闘糧食x1 戦略P200"},{"id":"t076","name":"53cm艦首(酸素)魚雷","cat":"主線/支線","kind":"reward"},{"id":"t077","name":"精強な「潜水艦隊」を編成せよ！","cat":"主線/支線","kind":"task","prev":["t009","t065"],"next":[],"info":["旗艦｢潜水(Lv80以上)｣｢潜水(Lv40以上)｣3","53cm艦首(酸素)魚雷"],"content":"旗艦に練度80以上、僚艦も全て練度40以上の精鋭潜水艦隊を編成せよ！ ※旗艦Lv80(改造後の潜水空母可)、僚艦Lv40の3隻で達成可能。","unlock":"『オリョール海西部に進出せよ！』+ 『中規模潜水艦隊を編成せよ！』達成後","reward_text":"開発資材x3 53cm艦首(酸素)魚雷"},{"id":"t078","name":"※E　Z1入手任務群へ","cat":"主線/支線","kind":"note"},{"id":"t079","name":"潜水艦隊「第六艦隊」を編成せよ！","cat":"主線/支線","kind":"task","prev":["t009","t065"],"next":["t008"],"info":["旗艦｢大鯨｣｢潜水｣4"],"content":"「潜水母艦」と複数の潜水艦(4隻以上)からなる潜水艦隊「第六艦隊」を編成せよ！ ※大鯨(旗艦必須)+潜水艦4隻で達成。","unlock":"『中規模潜水艦隊を編成せよ！』達成後","reward_text":"伊良湖x1 戦略P400"},{"id":"t080","name":"「空母機動部隊」西へ！","cat":"主線/支線","kind":"task","prev":["t066"],"next":["t007","t097"],"info":["西方1 ｢空母系｣(軽込み)2｢駆逐｣2","※空母機動部隊「第三艦隊」を編成せよ！にも必要","※「第五航空戦隊」を再編成せよ！にも必要"],"content":"出撃","unlock":"『ろ号作戦』達成後","reward_text":"航空母艦2隻(随伴駆逐艦2隻)を基幹とする機動部隊で、カレー洋の敵艦隊を撃滅せよ！ ※西方海域1。軽空母でも可 / 改修資材x4 家具箱(大)x2"},{"id":"t081","name":"「第六〇一航空隊」発艦せよ！","cat":"D: Littorio 入手","kind":"task","prev":["t067"],"next":["t061"],"info":["南方泊地3旗艦「雲龍」「天城」「葛城」いずれか","熟練艦載機整備員","熟練搭乗員"],"content":"雲龍型航空母艦旗艦の機動部隊で南方泊地沖で敵機動部隊を迎撃、これを撃滅せよ！ ※南方泊地海域の第3海域トラック泊地沖S勝利。 編成任務と異なり、第一艦隊でなくても可。 ブラウザ版と異なり、改装前の雲龍型でも可。","unlock":"「新型正規空母」を配備せよ！","reward_text":"熟練艦載機整備員 熟練搭乗員x1"},{"id":"t082","name":"「第三十駆逐隊(第ニ次)」を編成せよ！","cat":"E: Z1 入手","kind":"task","prev":["t068"],"next":["t088"],"info":["「睦月」「弥生」「卯月」「望月」"]},{"id":"t083","name":"第十六戦隊(第二次)出撃","cat":"主線/支線","kind":"task","prev":["t071"],"next":[],"info":["西方2 旗艦「名取」「五十鈴」「鬼怒」"]},{"id":"t084","name":"発動！「MI作戦」","cat":"主線/支線","kind":"task","prev":["t073"],"next":["t090","t107","t109"],"info":["MI1,MI2,MI3,MI4"],"content":"MI海域において「MI作戦」を実施、同作戦を完遂せよ！ MI海域の全ての海域のボスに勝利、一部B勝利込みでも達成確認したので全てB勝利以上でもOKと思われる。","unlock":"『陽動作戦「AL作戦」を実施せよ！』及び『西南要塞を攻略せよ！』達成後","reward_text":"勲章x1 戦略P:2000"},{"id":"t085","name":"主力戦艦部隊「第二戦隊」を編成せよ！","cat":"主線/支線","kind":"task","prev":["t075"],"next":["t091"],"info":["｢長門｣｢陸奥｣｢扶桑｣｢山城｣"],"content":"長門型2隻及び扶桑型2隻の計4隻の主力戦艦からなる第二戦隊を編成せよ！","unlock":"『「第十八駆逐隊」を編成せよ！』達成後","reward_text":"高速修復剤x3 戦略P800"},{"id":"t086","name":"潜水艦53cm艦首魚雷(8門)","cat":"主線/支線","kind":"reward"},{"id":"t087","name":"烈風(六〇一空)","cat":"D: Littorio 入手","kind":"reward"},{"id":"t088","name":"「第三十駆逐隊」対潜哨戒！","cat":"E: Z1 入手","kind":"task","prev":["t082"],"next":["t096"],"info":["南方泊地1「睦月」「弥生」「卯月」「望月」"],"content":"出撃","unlock":"「第三十駆逐隊(第二次)」を編成せよ！","reward_text":"「第三十駆逐隊（第二次）」は直ちに抜錨！南方トラック泊地の対潜哨戒を実施せよ！ ※南方泊地海域1トラック泊地周辺部「睦月」「弥生」「卯月」「望月」+｢出撃可能艦種の2隻｣A勝利以上でクリア / 特注家具職人x1 家具箱(大)x1"},{"id":"t089","name":"※A 瑞雲12(六三四)ルートへ","cat":"主線/支線","kind":"note"},{"id":"t090","name":"西部方面派遣艦隊、出撃せよ！","cat":"主線/支線","kind":"task","prev":["t084"],"next":["t097"],"info":["西部いずれか　4回"],"content":"西方海域に西部方面派遣艦隊を派遣し、同方面の再集結中の敵増援艦隊を叩け！ ※西方海域のどこでも良いのでボスに4回勝利する。A勝利可。","unlock":"『発動！「MI作戦」』達成後","reward_text":"家具箱(大)x3 戦略P:1000"},{"id":"t091","name":"「第二戦隊」抜錨！","cat":"主線/支線","kind":"task","prev":["t085"],"next":["t098"],"info":["西方1  2回 ｢長門｣｢陸奥｣｢扶桑｣｢山城｣","一式徹甲弾"],"content":"「第二戦隊」を基幹とした艦隊でカレー洋に進出、反復出撃により敵海上兵力を激撃せよ！ ※長門、陸奥、扶桑、山城を含む艦隊で西方海域第1作戦海域のボスに2回勝利、S勝利2回で達成確認、A未確認","unlock":"主力戦艦部隊「第二戦隊」を編成せよ！達成後","reward_text":"一式徹甲弾"},{"id":"t092","name":"遠洋潜水艦作戦を実施せよ！","cat":"主線/支線","kind":"task","prev":["t007","t008"],"next":["t099"],"info":["FS遠征｢遠洋潜水艦作戦｣","潜水艦53cm艦首魚雷(8門)"],"content":"「遠洋潜水艦作戦」を反復実施し、潜水艦隊による敵艦隊漸減に努めよ！（FS海域の遠征\"遠洋潜水艦作戦\"2回成功で達成）","unlock":"中部西海域潜水艦哨戒を実施せよ！","reward_text":"潜水艦53cm艦首魚雷(8門)"},{"id":"t093","name":"※D Littorio入手任務群へ","cat":"未分類","kind":"note"},{"id":"t094","name":"「第五航空戦隊」珊瑚諸島沖に出撃せよ","cat":"未分類","kind":"task","prev":["t007","t008"],"next":["t099","t101"],"info":["南方2 「翔鶴」「瑞鶴」「朧」「秋雲」"],"content":"再編成した「第五航空戦隊」(「翔鶴」「瑞鶴」「朧」「秋雲」)を珊瑚諸島沖に展開、敵機動部隊を捕捉撃滅せよ！ ※南方海域2南方海域珊瑚諸島沖をS勝利で達成、A不可","unlock":"「第五航空戦隊」を再編成せよ！達成後","reward_text":"勲章x1 戦略P500"},{"id":"t095","name":"※Aから","cat":"D: Littorio 入手","kind":"note"},{"id":"t096","name":"「第五戦隊」編成せよ","cat":"E: Z1 入手","kind":"task","prev":["t088"],"next":["t103","t104"],"info":["「妙高」「那智」「羽黒」"],"content":"編成(分岐)","unlock":"「第三十駆逐隊」対潜哨戒！","reward_text":"「妙高」「那智」「羽黒」を基幹とした第五戦隊を編成せよ！ / 開発資材x4 戦略P400"},{"id":"t097","name":"空母機動部隊「第三艦隊」を編成せよ！","cat":"主線/支線","kind":"task","prev":["t080","t090"],"next":["t105","t106"],"info":["旗艦「翔鶴」「瑞鶴」「瑞鳳」｢駆逐｣2"],"content":"「翔鶴」を旗艦として、「瑞鶴」「瑞鳳」及び随伴艦を配備した第三艦隊を編成せよ！ 上記三隻に適当な駆逐×3を編成で達成確認","unlock":"『西部方面派遣艦隊、出撃せよ！』達成後","reward_text":"改修資材x4 戦略P1000"},{"id":"t098","name":"戦艦を主力とした水上打撃部隊を編成せよ！","cat":"主線/支線","kind":"task","prev":["t091"],"next":["t107","t109"],"info":["｢大和｣｢武蔵｣｢長門｣｢陸奥｣｢伊勢｣｢日向｣｢扶桑｣｢山城｣いずれか3｢軽巡｣1"],"content":"大和型・長門型・伊勢型・扶桑型のいずれか3隻と軽巡1隻他の水上打撃部隊を配備せよ！","unlock":"「第二戦隊」抜錨！達成後","reward_text":"開発資材x3 戦略P400"},{"id":"t099","name":"精鋭「九七式艦攻」部隊の編成","cat":"主線/支線","kind":"task","prev":["t092","t094"],"next":["t061"],"rewards":["九七式艦攻(村田隊)"],"info":["｢第一艦隊旗艦｣+｢翔鶴｣か｢赤城｣で｢九七式艦攻｣3廃棄","九七式艦攻(村田隊)"],"content":"「翔鶴」または「赤城」を第一艦隊旗艦にした状態で、新たに「九七式艦攻」を３つ廃棄せよ！","unlock":"「第五航空戦隊」珊瑚諸島沖に出撃せよ達成後","reward_text":"九七式艦攻(村田隊)"},{"id":"t100","name":"九七式艦攻(村田隊)","cat":"主線/支線","kind":"reward"},{"id":"t101","name":"「新編成航空戦隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","prev":["t094"],"next":["t111"],"info":["｢空母｣2｢駆逐｣2+｢航戦｣1か｢航巡｣2"],"content":"空母２隻＋航空戦艦/航空巡洋艦２隻＋駆逐艦２隻の新航空戦隊を編成せよ！ 第一艦隊で空母２隻駆逐艦２隻+航空戦艦１隻又は航空巡洋艦２隻を編成する","unlock":"『「第五航空戦隊」珊瑚諸島沖に出撃せよ』達成後 &「第十六戦隊(第二次)」出撃せよ！","reward_text":"開発資材x3 改修資材x3"},{"id":"t102","name":"22号対水上電探改四","cat":"D: Littorio 入手","kind":"reward"},{"id":"t103","name":"新型電探を配備せよ！","cat":"E: Z1 入手","kind":"task","prev":["t096"],"next":[],"rewards":["22号対水上電探改四"],"info":["第一艦隊旗艦｢妙高改二｣","22号対水上電探改四"],"content":"編成(終点)","unlock":"「第五戦隊」編成せよ！","reward_text":"新型電探運用試験のため、第一艦隊の旗艦に「妙高改二」を配備せよ！ / 22号対水上電探改四"},{"id":"t104","name":"観艦式予行を実施せよ！","cat":"E: Z1 入手","kind":"task","prev":["t096"],"next":["t112"],"info":["鎮守府遠征「観艦式予行」2"],"content":"遠征1","unlock":"「第五戦隊」編成せよ！","reward_text":"観艦式を実施する。準備として「観艦式予行」を実施、これを２回成功させよ！ / 開発資材x3"},{"id":"t105","name":"精鋭「艦戦」隊の新編","cat":"主線/支線","kind":"task","prev":["t097"],"next":["t113"],"info":["｢第一艦隊旗艦｣+｢鳳翔｣+｢錬度MAX零戦21型｣で｢零戦21型｣2｢九六式艦戦｣1廃棄","零式艦戦21型(熟練)","要「熟練搭乗員」","イヤリー"],"recurrence":"yearly"},{"id":"t106","name":"「第三航空戦隊」を編成せよ！","cat":"主線/支線","kind":"task","prev":["t097"],"next":["t114"],"info":["旗艦｢瑞鶴改｣(改二、改二甲も可)｢瑞鳳｣｢千歳｣｢千代田｣(千歳千代田は軽空のみ)","熟練搭乗員","「熟練搭乗員」はすぐ←の任務で使う"],"content":"「瑞鶴改」を旗艦とし、航空母艦「瑞鳳」「千歳」「千代田」を加えた4隻の空母部隊を編成せよ！ 千歳と千代田は軽空母のみ、水母不可","unlock":"『空母機動部隊「第三艦隊」を編成せよ！』達成後","reward_text":"開発資材x3 熟練搭乗員x1"},{"id":"t107","name":"艦隊旗艦、戦艦「大和」出撃せよ！","cat":"主線/支線","kind":"task","prev":["t084","t098"],"next":[],"rewards":["試製51cm連装砲"],"info":["MI3 旗艦｢大和｣","試製51cm連装砲"],"content":"旗艦「大和」出撃する！MI諸島近海に展開し、その巨砲で敵MI島基地守備隊を粉砕せよ！ 大和旗艦でMI海域3面をS勝利で達成。A勝利は不可。","unlock":"『発動！「MI作戦」』 『戦艦を主力とした水上打撃部隊を編成せよ！』達成後","reward_text":"試製51cm連装砲 戦略P:300"},{"id":"t108","name":"試製51cm連装砲","cat":"主線/支線","kind":"reward"},{"id":"t109","name":"「水上打撃部隊」南方へ！","cat":"主線/支線","kind":"task","prev":["t084","t098"],"next":["t115","t117"],"info":["南方1 ｢戦艦｣(高速不可)3｢軽巡｣1","イヤリー"],"recurrence":"yearly","content":"出撃","unlock":"*年初初期表示","reward_text":"戦艦３隻軽巡１隻他の艦隊で南方海域の第１海域勝利 高速戦艦は不可 航空戦艦はOK / 高速修復剤x2"},{"id":"t110","name":"い号作戦","cat":"主線/支線","kind":"task","prev":[],"next":["t061"],"info":["マンスリー"],"recurrence":"monthly","content":"出撃5","unlock":"『敵補給ラインを寸断せよ！』達成後","reward_text":"空母6～8隻撃破する / 高速修復剤x3"},{"id":"t111","name":"新編成航空戦隊、北方へ進出せよ！","cat":"D: Littorio 入手","kind":"task","prev":["t101"],"next":["t119"],"info":["北方4 ｢空母｣2｢駆逐｣2+｢航戦｣1か｢航巡｣2"],"content":"「新編成航空部隊」を北方アルフォンシーノ列島沖へ展開、同海域の敵艦隊を撃滅せよ！ ※北方海域4。空母２隻+航空戦艦１隻又は航空巡洋艦２隻＋駆逐艦２隻の艦隊。第一艦隊でなくてよい。S勝利達成確認。A勝利要検証","unlock":"「新編成航空戦隊」を編成せよ！","reward_text":"勲章x1 戦略P700"},{"id":"t112","name":"観艦式を敢行せよ！","cat":"E: Z1 入手","kind":"task","prev":["t104"],"next":["t120"],"info":["鎮守府遠征「観艦式」","同時受託任務数1上昇"],"content":"遠征2","unlock":"演習を強化、艦隊の練度向上に努めよ！","reward_text":"練度の高い艦隊で「観艦式」本番を実施する。「観艦式」を成功させよ！ / 改修資材x3 同時受託任務数1上昇"},{"id":"t113","name":"機種転換(零戦52)","cat":"主線/支線","kind":"task","prev":["t105"],"next":["t128"],"info":["｢第一艦隊旗艦｣+｢零式艦戦21型(熟練)｣で｢零戦52型｣2廃棄","イヤリー","鳳翔も練度も熟練搭乗員も不要"],"recurrence":"yearly"},{"id":"t114","name":"「第三航空戦隊」近海諸島防衛線に出撃！","cat":"主線/支線","kind":"task","prev":["t106"],"next":["t122"],"info":["鎮守府4 旗艦｢瑞鶴改｣(改二、改二甲も可)｢瑞鳳｣｢千歳｣｢千代田｣(千歳千代田は軽空のみ)"],"content":"編成した「第三航空戦隊」を近海諸島防衛線に展開、敵進攻艦隊を補足撃滅せよ！ ※旗艦「瑞鶴改」+「瑞鳳」「千歳」「千代田」+自由枠2、「千歳」「千代田」は軽母 「鎮守府海域:第四海域(近海諸島防衛線)」をS勝利(A勝利不可)","unlock":"「第三航空戦隊」を編成せよ！","reward_text":"高速修復材x4 給糧艦「伊良湖」x3"},{"id":"t115","name":"「戦艦部隊」北方海域に突入せよ！","cat":"主線/支線","kind":"task","prev":["t109"],"next":[],"rewards":["一式徹甲弾"],"info":["北方3 ｢戦艦｣2｢軽空｣1(航戦、高戦、空母不可、該当艦種の隻数もこれ以上増やすとアウト)","一式徹甲弾"],"content":"戦艦２隻と直援軽空母１隻(正規空母無し)基幹の艦隊で、北方キス島後方海域に突入せよ！ ※S勝利で達成、A不可 航空戦艦、高速戦艦は不可 正規空母1隻以上、戦艦3隻以上、軽空母2隻以上は達成不可","unlock":"「水上打撃部隊」南方へ！達成後","reward_text":"開発資材x4 一式徹甲弾"},{"id":"t116","name":"一式徹甲弾","cat":"主線/支線","kind":"reward"},{"id":"t117","name":"南方海域珊瑚諸島沖の制空権を握れ！","cat":"主線/支線","kind":"task","prev":["t109"],"next":["t123"],"info":["南方2 2回","イヤリー"],"recurrence":"yearly","content":"出撃2","unlock":"「水上打撃部隊」南方へ！達成後 他任務も条件？","reward_text":"南方海域珊瑚諸島沖に反復出撃し、敵機動部隊本体を補足撃滅、制海権を確保せよ！ 南方海域第2作戦海域のボスに2回S勝利。A勝利は不可。 / 開発資材x5 改修資材x5"},{"id":"t118","name":"天山一二型(村田隊)","cat":"主線/支線","kind":"reward"},{"id":"t119","name":"精強な「水上反撃部隊」を再編成せよ！","cat":"D: Littorio 入手","kind":"task","prev":["t111"],"next":["t125"],"info":["旗艦「霞」「足柄」「大淀」「朝霜」「清霜」"],"content":"駆逐艦「霞」旗艦、「足柄」「大淀」「朝霜」「清霜」他の水上反撃部隊を再編成せよ！","unlock":"軽快な「水上反撃部隊」を編成せよ！ &新編成航空戦隊、北方へ進出せよ！","reward_text":"高速修復材x3 戦闘糧食x3"},{"id":"t120","name":"遠洋練習航海を実施せよ！","cat":"E: Z1 入手","kind":"task","prev":["t112"],"next":[],"rewards":["鹿島"],"info":["中部海域遠征「遠洋練習航海」及びFS海域遠征「南洋方面遠洋練習航海」","鹿島","難易度甲・史のみ"],"content":"遠征3(終点)","unlock":"観艦式を敢行せよ！","reward_text":"「遠洋練習航海」及び「南洋方面遠洋練習航海」を実施、これを成功させよ！ ※中部海域の遠征「遠洋練習航海」及びFS海域の遠征「南洋方面遠洋練習航海」 / 練習巡洋艦「鹿島」 難易度 史/甲向けのみ"},{"id":"t121","name":"鹿島","cat":"E: Z1 入手","kind":"reward"},{"id":"t122","name":"「第四航空戦隊」を編成せよ！","cat":"主線/支線","kind":"task","prev":["t114"],"next":["t126"],"info":["｢伊勢改｣｢日向改｣","瑞雲(六三四空)"],"content":"航空戦艦「伊勢改」及び「日向改」を基幹戦力とした第四航空戦隊を編成せよ！","unlock":"「第三航空戦隊」近海諸島防衛線に出撃！","reward_text":"改修資材x3 瑞雲(六三四空)"},{"id":"t123","name":"新型「艦戦」の改良","cat":"主線/支線","kind":"task","prev":["t061","t117"],"next":["t126"],"rewards":["烈風改"],"info":["第一艦隊旗艦+｢錬度MAX烈風｣で｢烈風｣1｢零戦52型｣1廃棄","烈風改","イヤリー","条件となるイヤリー任務をこなすと毎年出現"],"recurrence":"yearly","content":"工廠(終点)","unlock":"機種転換(村田)及び南方海域珊瑚諸島沖の制空権を握れ！達成後","reward_text":"第一艦隊旗艦に練度max「烈風」搭載空母を配備した状態で、「烈風」x1「零戦52型」x1を廃棄せよ！ / 装備改修(変化)「烈風」→ 「烈風改」"},{"id":"t124","name":"烈風改","cat":"主線/支線","kind":"reward"},{"id":"t125","name":"「礼号作戦」実施せよ！","cat":"D: Littorio 入手","kind":"task","prev":["t119"],"next":["t126"],"info":["中部西2 旗艦「霞」「足柄」「大淀」「朝霜」「清霜」"],"content":"精強な「水上反撃部隊」で、中部西海域オリョール海西部に突入！敵艦隊を撃滅せよ！ ※旗艦「霞」+「足柄」「大淀」「朝霜」「清霜」","unlock":"精強な「水上反撃部隊」を再編成せよ！","reward_text":"勲章x1 戦略P700"},{"id":"t126","name":"精強「航空戦艦」戦隊を編成せよ！","cat":"D: Littorio 入手","kind":"task","prev":["t122","t123","t125"],"next":["t128"],"rewards":["瑞雲12型"],"info":["「伊勢改」「日向改」「扶桑改二」「山城改二」｢駆逐｣2","瑞雲12型"],"content":"「伊勢改」「日向改」「扶桑改二」「山城改二」と直衛駆逐艦２隻の精強航空戦艦戦隊を編成せよ！","unlock":"「礼号作戦」実施せよ！ &「第四航空戦隊」を編成せよ！","reward_text":"開発資材x3 瑞雲12型"},{"id":"t127","name":"瑞雲12型","cat":"D: Littorio 入手","kind":"reward"},{"id":"t128","name":"精鋭「新型瑞雲」部隊の編成","cat":"D: Littorio 入手","kind":"task","prev":["t113","t126"],"next":[],"rewards":["瑞雲12型(六三四空)"],"info":["｢第一艦隊旗艦｣+｢錬度MAX瑞雲(六三四空)｣で｢瑞雲12型｣1｢瑞雲｣2廃棄","瑞雲12型(六三四空)"],"content":"第一艦隊旗艦に練度max「瑞雲(六三四空)」搭載艦を配備した状態で、「瑞雲12型」x1「瑞雲」x2を廃棄せよ！","unlock":"精強「航空戦艦」戦隊を編成せよ！&機種転換(零式艦戦21型(熟練)→零式艦戦52型(熟練))","reward_text":"装備改修(変化)「瑞雲(六三四空)」→ 「瑞雲12型(六三四空)」"},{"id":"t129","name":"瑞雲12型(六三四空)","cat":"D: Littorio 入手","kind":"reward"}];
+const STORAGE_KEY = 'kc_quest_state_v2';
+
+const TASKS_BY_ID = Object.fromEntries(TASKS.map(t => [t.id, t]));
+const REAL_TASKS = TASKS.filter(t => t.kind === 'task');
+
+const state = (() => {
+  try {
+    const s = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    return {
+      done: s.done || {},
+      notes: s.notes || {},
+      prevAdd: s.prevAdd || {},
+      prevRemove: s.prevRemove || {},
+      recentLimit: s.recentLimit || 8,
+    };
+  } catch { return { done: {}, notes: {}, prevAdd: {}, prevRemove: {}, recentLimit: 8 }; }
+})();
+
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function effPrereqs(t) {
+  const base = new Set(t.prev || []);
+  (state.prevAdd[t.id] || []).forEach(x => base.add(x));
+  (state.prevRemove[t.id] || []).forEach(x => base.delete(x));
+  return [...base];
+}
+
+function isAvailable(t) {
+  if (state.done[t.id]) return false;
+  return effPrereqs(t).every(pid => state.done[pid]);
+}
+
+function computeBuckets() {
+  const available = REAL_TASKS.filter(isAvailable);
+  const availSet = new Set(available.map(t => t.id));
+
+  // 剛完成: direct upstream prereqs of available tasks (already done)
+  const upstreamIds = new Set();
+  available.forEach(a => effPrereqs(a).forEach(pid => {
+    if (state.done[pid]) upstreamIds.add(pid);
+  }));
+  const recentDone = [...upstreamIds]
+    .map(id => TASKS_BY_ID[id])
+    .filter(t => t && t.kind === 'task')
+    .sort((a, b) => (state.done[b.id] || 0) - (state.done[a.id] || 0));
+
+  // 預計解鎖: direct downstream of available tasks (not done, not yet available)
+  const downstreamIds = new Set();
+  available.forEach(a => (a.next || []).forEach(nid => {
+    if (!state.done[nid] && !availSet.has(nid)) downstreamIds.add(nid);
+  }));
+  const upcoming = [...downstreamIds]
+    .map(id => TASKS_BY_ID[id])
+    .filter(t => t && t.kind === 'task');
+
+  return { recentDone, available, upcoming };
+}
+
+const ui = {
+  search: document.getElementById('search'),
+  filter: document.getElementById('filter'),
+  allControls: document.getElementById('all-controls'),
+  tabs: document.getElementById('tabs'),
+  list: document.getElementById('list'),
+  progress: document.getElementById('progress'),
+  vwFocus: document.getElementById('vw-focus'),
+  vwAll: document.getElementById('vw-all'),
+};
+
+let viewMode = 'focus';
+let activeCategory = 'all';
+
+function categories() {
+  const set = new Set(REAL_TASKS.map(t => t.cat));
+  return ['all', ...Array.from(set)];
+}
+
+function renderTabs() {
+  ui.tabs.innerHTML = '';
+  categories().forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (cat === activeCategory ? ' active' : '');
+    btn.textContent = cat === 'all' ? '全部' : cat;
+    btn.onclick = () => { activeCategory = cat; renderTabs(); render(); };
+    ui.tabs.appendChild(btn);
+  });
+}
+
+function highlight(text, query) {
+  if (!query) return text;
+  const re = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+  return text.replace(re, m => `<mark>${m}</mark>`);
+}
+
+function updateProgress() {
+  const doneCount = REAL_TASKS.filter(t => state.done[t.id]).length;
+  ui.progress.textContent = `${doneCount} / ${REAL_TASKS.length}`;
+}
+
+function render() {
+  ui.list.innerHTML = '';
+  if (viewMode === 'focus') renderFocus();
+  else renderAll();
+  updateProgress();
+}
+
+function makeBucket(title, kind, items, opts = {}) {
+  const wrap = document.createElement('div');
+  wrap.className = 'bucket';
+  const head = document.createElement('div');
+  head.className = 'bucket-header ' + kind;
+  const titleSpan = document.createElement('span');
+  titleSpan.textContent = title + (opts.subtitle ? ` · ${opts.subtitle}` : '');
+  head.appendChild(titleSpan);
+  const cnt = document.createElement('span');
+  cnt.className = 'count';
+  cnt.textContent = items.length;
+  head.appendChild(cnt);
+  wrap.appendChild(head);
+  if (items.length === 0) {
+    const e = document.createElement('div');
+    e.className = 'bucket-empty';
+    e.textContent = opts.emptyText || '(目前無)';
+    wrap.appendChild(e);
+  } else {
+    items.forEach(t => wrap.appendChild(renderTask(t, '', kind)));
+  }
+  return wrap;
+}
+
+function renderFocus() {
+  const { recentDone, available, upcoming } = computeBuckets();
+  const limit = state.recentLimit;
+  const recentShown = recentDone.slice(0, limit);
+
+  const recentBucket = makeBucket('剛完成', 'done', recentShown, {
+    subtitle: recentDone.length > limit ? `最近 ${limit} / 共 ${recentDone.length}` : null,
+    emptyText: '尚未勾選任何任務'
+  });
+  if (recentDone.length > limit) {
+    const more = document.createElement('button');
+    more.className = 'tab';
+    more.style.cssText = 'margin: 6px 4px 0; padding: 6px 12px;';
+    more.textContent = `顯示更多已完成 (+${Math.min(8, recentDone.length - limit)})`;
+    more.onclick = () => { state.recentLimit += 8; save(); render(); };
+    recentBucket.appendChild(more);
+  }
+  ui.list.appendChild(recentBucket);
+
+  ui.list.appendChild(makeBucket('進行中(可解鎖)', 'avail', available, {
+    emptyText: '所有可進行任務都已完成 🎉'
+  }));
+
+  ui.list.appendChild(makeBucket('預計解鎖', 'upcoming', upcoming, {
+    emptyText: '進行中的任務沒有後續任務'
+  }));
+}
+
+function renderAll() {
+  const query = ui.search.value.trim();
+  const filterVal = ui.filter.value;
+
+  let visible = TASKS.filter(t => {
+    if (t.kind === 'reward') return false;
+    if (activeCategory !== 'all' && t.cat !== activeCategory) return false;
+    if (query) {
+      const blob = (t.name + ' ' + JSON.stringify(state.notes[t.id] || {})).toLowerCase();
+      if (!blob.includes(query.toLowerCase())) return false;
+    }
+    if (t.kind === 'task') {
+      if (filterVal === 'todo' && state.done[t.id]) return false;
+      if (filterVal === 'done' && !state.done[t.id]) return false;
+    } else {
+      if (filterVal !== 'all') return false;
+    }
+    return true;
+  });
+
+  if (visible.length === 0) {
+    ui.list.innerHTML = '<div class="empty">沒有符合的項目</div>';
+    return;
+  }
+
+  const byCat = {};
+  visible.forEach(t => { (byCat[t.cat] = byCat[t.cat] || []).push(t); });
+  Object.entries(byCat).forEach(([cat, items]) => {
+    if (activeCategory === 'all') {
+      const h = document.createElement('div');
+      h.className = 'bucket-header';
+      h.innerHTML = `<span>${cat}</span><span class="count">${items.length}</span>`;
+      ui.list.appendChild(h);
+    }
+    items.forEach(t => ui.list.appendChild(renderTask(t, query, t.kind === 'note' ? 'note' : (state.done[t.id] ? 'done' : ''))));
+  });
+}
+
+function renderTask(t, query, kindClass) {
+  const el = document.createElement('div');
+  el.className = 'task ' + (kindClass || '') + (t.kind === 'note' ? ' note' : '');
+  el.dataset.id = t.id;
+
+  const row = document.createElement('div');
+  row.className = 'task-row';
+
+  if (t.kind === 'task') {
+    const ck = document.createElement('label');
+    ck.className = 'check';
+    ck.onclick = (e) => e.stopPropagation();
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.checked = !!state.done[t.id];
+    input.onchange = () => {
+      if (input.checked) state.done[t.id] = Date.now();
+      else delete state.done[t.id];
+      save();
+      render();
+    };
+    ck.appendChild(input);
+    row.appendChild(ck);
+  }
+
+  const body = document.createElement('div');
+  body.className = 'task-body';
+  const nameEl = document.createElement('div');
+  nameEl.className = 'task-name';
+  nameEl.innerHTML = `<span class="id">${t.id}</span>${highlight(t.name, query)}`;
+  body.appendChild(nameEl);
+
+  const meta = document.createElement('div');
+  meta.className = 'task-meta';
+  if (t.kind === 'task') {
+    const catTag = document.createElement('span');
+    catTag.className = 'tag cat';
+    catTag.textContent = t.cat;
+    meta.appendChild(catTag);
+    if (t.recurrence) {
+      const recTag = document.createElement('span');
+      recTag.className = 'tag recurrence';
+      const labels = { monthly: '月', yearly: '年', weekly: '週', daily: '日' };
+      recTag.textContent = labels[t.recurrence] || t.recurrence;
+      meta.appendChild(recTag);
+    }
+    if (t.rewards && t.rewards.length) {
+      t.rewards.forEach(r => {
+        const tag = document.createElement('span');
+        tag.className = 'tag reward';
+        tag.textContent = '🎁 ' + r;
+        meta.appendChild(tag);
+      });
+    }
+    // Show prereq context for upcoming tasks
+    if (kindClass === 'upcoming') {
+      const prereqs = effPrereqs(t).filter(pid => !state.done[pid]);
+      prereqs.forEach(pid => {
+        const ptask = TASKS_BY_ID[pid];
+        if (!ptask) return;
+        const tag = document.createElement('span');
+        tag.className = 'tag prereq notdone';
+        tag.textContent = '前置: ' + (ptask.name.length > 18 ? ptask.name.slice(0, 18) + '…' : ptask.name);
+        meta.appendChild(tag);
+      });
+    }
+  }
+  if (meta.children.length) body.appendChild(meta);
+  row.appendChild(body);
+
+  if (t.kind === 'task') {
+    const tg = document.createElement('button');
+    tg.className = 'toggle';
+    tg.textContent = '▾';
+    tg.onclick = (e) => { e.stopPropagation(); el.classList.toggle('expanded'); };
+    row.appendChild(tg);
+  }
+
+  el.appendChild(row);
+
+  if (t.kind === 'task') {
+    const det = document.createElement('div');
+    det.className = 'details';
+    det.appendChild(makeWikiInfo(t));
+    det.appendChild(makePrereqEditor(t));
+    det.appendChild(makeNextList(t));
+    det.appendChild(makeNotesEditor(t));
+    el.appendChild(det);
+  }
+
+  return el;
+}
+
+function makeWikiInfo(t) {
+  const frag = document.createDocumentFragment();
+  const flowInfo = (t.info || []).join('\n');
+  const sections = [
+    ['unlock', '開放条件', t.unlock],
+    ['content', '任務內容', t.content],
+    ['reward_text', '報酬', t.reward_text],
+    ['info-flow', '流程圖摘要', flowInfo],
+  ];
+  sections.forEach(([cls, label, value]) => {
+    if (!value) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'field wiki-info ' + cls;
+    const lbl = document.createElement('label');
+    lbl.textContent = label;
+    wrap.appendChild(lbl);
+    const div = document.createElement('div');
+    div.className = 'info-block';
+    div.textContent = value;
+    wrap.appendChild(div);
+    frag.appendChild(wrap);
+  });
+  return frag;
+}
+
+function makePrereqEditor(t) {
+  const wrap = document.createElement('div');
+  wrap.className = 'field';
+  const label = document.createElement('label');
+  label.textContent = '前置任務(可手動修正)';
+  wrap.appendChild(label);
+  const box = document.createElement('div');
+  box.className = 'relbox';
+  effPrereqs(t).forEach(pid => {
+    const ptask = TASKS_BY_ID[pid];
+    if (!ptask) return;
+    const tag = document.createElement('span');
+    tag.className = 'reltag linkable' + (state.done[pid] ? ' done' : '');
+    tag.textContent = ptask.name.length > 22 ? ptask.name.slice(0, 22) + '…' : ptask.name;
+    tag.onclick = () => scrollToTask(pid);
+    const x = document.createElement('span');
+    x.className = 'x';
+    x.textContent = '×';
+    x.title = '移除這個前置';
+    x.onclick = (e) => {
+      e.stopPropagation();
+      state.prevRemove[t.id] = state.prevRemove[t.id] || [];
+      if (!state.prevRemove[t.id].includes(pid)) state.prevRemove[t.id].push(pid);
+      const addArr = state.prevAdd[t.id];
+      if (addArr) state.prevAdd[t.id] = addArr.filter(x => x !== pid);
+      save(); render();
+    };
+    tag.appendChild(x);
+    box.appendChild(tag);
+  });
+  const addBtn = document.createElement('span');
+  addBtn.className = 'reltag linkable';
+  addBtn.textContent = '+ 新增前置';
+  addBtn.onclick = () => openPrereqPicker(t.id);
+  box.appendChild(addBtn);
+  wrap.appendChild(box);
+  return wrap;
+}
+
+function makeNextList(t) {
+  const next = (t.next || []).filter(nid => TASKS_BY_ID[nid]);
+  if (next.length === 0) return document.createTextNode('');
+  const wrap = document.createElement('div');
+  wrap.className = 'field';
+  const label = document.createElement('label');
+  label.textContent = '解鎖後續';
+  wrap.appendChild(label);
+  const box = document.createElement('div');
+  box.className = 'relbox';
+  next.forEach(nid => {
+    const ntask = TASKS_BY_ID[nid];
+    const tag = document.createElement('span');
+    tag.className = 'reltag linkable' + (state.done[nid] ? ' done' : '');
+    tag.textContent = ntask.name.length > 22 ? ntask.name.slice(0, 22) + '…' : ntask.name;
+    tag.onclick = () => scrollToTask(nid);
+    box.appendChild(tag);
+  });
+  wrap.appendChild(box);
+  return wrap;
+}
+
+function makeNotesEditor(t) {
+  const frag = document.createDocumentFragment();
+  const fields = [
+    ['cond', '條件 / 達成方法'],
+    ['note', '備註'],
+  ];
+  const note = state.notes[t.id] || {};
+  fields.forEach(([key, lbl]) => {
+    const f = document.createElement('div');
+    f.className = 'field';
+    f.innerHTML = `<label>${lbl}</label><textarea data-field="${key}"></textarea>`;
+    const ta = f.querySelector('textarea');
+    ta.value = note[key] || '';
+    ta.addEventListener('input', () => {
+      if (!state.notes[t.id]) state.notes[t.id] = {};
+      state.notes[t.id][key] = ta.value;
+      if (!ta.value) delete state.notes[t.id][key];
+      if (Object.keys(state.notes[t.id]).length === 0) delete state.notes[t.id];
+      save();
+    });
+    frag.appendChild(f);
+  });
+  return frag;
+}
+
+function scrollToTask(id) {
+  // Switch to all view and scroll to it
+  viewMode = 'all';
+  setView();
+  render();
+  setTimeout(() => {
+    const el = document.querySelector(`.task[data-id="${id}"]`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('expanded');
+    }
+  }, 50);
+}
+
+function openPrereqPicker(taskId) {
+  const dlg = document.getElementById('dlg');
+  document.getElementById('dlg-title').textContent = '選擇要新增的前置任務';
+  const body = document.getElementById('dlg-body');
+  body.innerHTML = '<input type="search" id="picker-search" placeholder="搜尋任務..."><div class="add-prereq-list" id="picker-list"></div>';
+  const search = body.querySelector('#picker-search');
+  const list = body.querySelector('#picker-list');
+  const current = new Set(effPrereqs(TASKS_BY_ID[taskId]));
+  current.add(taskId);
+
+  function renderPicker() {
+    const q = search.value.toLowerCase();
+    list.innerHTML = '';
+    REAL_TASKS.filter(t => !current.has(t.id) && (!q || t.name.toLowerCase().includes(q))).slice(0, 50).forEach(t => {
+      const div = document.createElement('div');
+      div.className = 'pick';
+      div.textContent = `[${t.cat}] ${t.name}`;
+      div.onclick = () => {
+        state.prevAdd[taskId] = state.prevAdd[taskId] || [];
+        if (!state.prevAdd[taskId].includes(t.id)) state.prevAdd[taskId].push(t.id);
+        const remArr = state.prevRemove[taskId];
+        if (remArr) state.prevRemove[taskId] = remArr.filter(x => x !== t.id);
+        save();
+        dlg.close();
+        render();
+      };
+      list.appendChild(div);
+    });
+  }
+  search.addEventListener('input', renderPicker);
+  renderPicker();
+  document.getElementById('dlg-ok').style.display = 'none';
+  document.getElementById('dlg-cancel').textContent = '關閉';
+  dlg.showModal();
+}
+
+function setView() {
+  ui.vwFocus.classList.toggle('active', viewMode === 'focus');
+  ui.vwAll.classList.toggle('active', viewMode === 'all');
+  ui.allControls.style.display = viewMode === 'all' ? 'flex' : 'none';
+  ui.tabs.style.display = viewMode === 'all' ? 'flex' : 'none';
+}
+
+ui.vwFocus.onclick = () => { viewMode = 'focus'; setView(); render(); };
+ui.vwAll.onclick = () => { viewMode = 'all'; setView(); render(); };
+ui.search.addEventListener('input', () => render());
+ui.filter.addEventListener('change', () => render());
+
+// Bottom bar
+const dlg = document.getElementById('dlg');
+const dlgBody = document.getElementById('dlg-body');
+const dlgOk = document.getElementById('dlg-ok');
+const dlgCancel = document.getElementById('dlg-cancel');
+let dlgMode = '';
+let dlgPayload = null;
+
+function openIO(mode) {
+  dlgMode = mode;
+  document.getElementById('dlg-title').textContent = mode === 'export' ? '匯出備份(複製這段文字)' : '匯入備份(貼上 JSON)';
+  dlgBody.innerHTML = '<textarea id="io-text"></textarea>';
+  const ta = dlgBody.querySelector('#io-text');
+  if (mode === 'export') { ta.value = JSON.stringify(state, null, 2); ta.readOnly = true; }
+  else { ta.value = ''; ta.readOnly = false; }
+  dlgOk.style.display = '';
+  dlgOk.textContent = mode === 'import' ? '匯入' : '完成';
+  dlgCancel.textContent = mode === 'import' ? '取消' : '關閉';
+  dlg.showModal();
+}
+
+document.getElementById('btn-export').onclick = () => openIO('export');
+document.getElementById('btn-import').onclick = () => openIO('import');
+document.getElementById('btn-reset').onclick = () => {
+  if (confirm('確定要清掉所有勾選、備註、前置修改嗎?(可先匯出備份)')) {
+    state.done = {}; state.notes = {}; state.prevAdd = {}; state.prevRemove = {};
+    save(); render();
+  }
+};
+dlgCancel.onclick = () => dlg.close();
+dlgOk.onclick = () => {
+  if (dlgMode === 'import') {
+    try {
+      const ta = dlgBody.querySelector('#io-text');
+      const obj = JSON.parse(ta.value);
+      state.done = obj.done || {};
+      state.notes = obj.notes || {};
+      state.prevAdd = obj.prevAdd || {};
+      state.prevRemove = obj.prevRemove || {};
+      save(); render();
+    } catch (e) { alert('JSON 格式錯誤: ' + e.message); return; }
+  }
+  dlg.close();
+};
+
+renderTabs();
+setView();
+render();
+</script>
+</body>
+</html>

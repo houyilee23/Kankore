@@ -442,6 +442,117 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+/* Stage C: Planner panel */
+#planner {
+  padding: 8px 14px 80px;
+}
+.planner-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.planner-label {
+  font-size: 13px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+#planner-select {
+  flex: 1;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  min-width: 0;
+  -webkit-appearance: none;
+}
+.planner-summary {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  background: var(--panel);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+.planner-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.planner-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 5px;
+  font-size: 13px;
+  min-height: 44px;
+}
+.planner-step.done {
+  opacity: 0.6;
+  border-left-color: var(--done);
+}
+.planner-step.avail {
+  border-left-color: var(--avail);
+  background: rgba(94, 160, 239, 0.08);
+}
+.planner-step.upcoming {
+  border-left-color: var(--upcoming);
+  opacity: 0.85;
+}
+.planner-step.planner-target {
+  border-left-color: var(--accent);
+  background: rgba(94, 160, 239, 0.07);
+  font-weight: 600;
+}
+.planner-check {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.planner-check input {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--done);
+}
+.step-icon { flex-shrink: 0; }
+.step-id {
+  color: var(--text-dim);
+  font-size: 10px;
+  font-family: ui-monospace, monospace;
+  flex-shrink: 0;
+}
+.step-name {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+  line-height: 1.3;
+}
+.step-name s { opacity: 0.55; }
+.planner-start-hint {
+  color: var(--avail);
+  font-size: 11px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.planner-msg {
+  text-align: center;
+  padding: 24px 16px;
+  font-size: 14px;
+  color: var(--text-dim);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+}
+.planner-msg.done-msg { color: var(--done); border-color: var(--done); }
 </style>
 </head>
 <body>
@@ -456,6 +567,7 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
   <div class="view-switch">
     <button id="vw-focus" class="active">進度焦點</button>
     <button id="vw-all">全部清單</button>
+    <button id="vw-planner">🗺 規劃</button>
   </div>
   <div class="controls" id="all-controls" style="display:none">
     <input type="search" id="search" placeholder="搜尋任務名稱或備註...">
@@ -470,6 +582,14 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
 </header>
 
 <main id="list"></main>
+
+<section id="planner" style="display:none">
+  <div class="planner-header">
+    <span class="planner-label">目標：</span>
+    <select id="planner-select"><option value="">— 選擇目標任務 —</option></select>
+  </div>
+  <div id="planner-body"><div class="planner-msg">請選擇目標任務</div></div>
+</section>
 
 <div class="bottom-bar">
   <button id="btn-export">匯出備份</button>
@@ -557,6 +677,10 @@ const ui = {
   progressFill: document.getElementById('progress-fill'),
   vwFocus: document.getElementById('vw-focus'),
   vwAll: document.getElementById('vw-all'),
+  vwPlanner: document.getElementById('vw-planner'),
+  planner: document.getElementById('planner'),
+  plannerSelect: document.getElementById('planner-select'),
+  plannerBody: document.getElementById('planner-body'),
 };
 
 let viewMode = 'focus';
@@ -609,6 +733,11 @@ function updateProgress() {
 }
 
 function render() {
+  if (viewMode === 'planner') {
+    renderPlanner();
+    updateProgress();
+    return;
+  }
   ui.list.innerHTML = '';
   if (viewMode === 'focus') renderFocus();
   else renderAll();
@@ -974,18 +1103,193 @@ function openPrereqPicker(taskId) {
   dlg.showModal();
 }
 
+function buildAncestors(targetId) {
+  const target = TASKS_BY_ID[targetId];
+  if (!target) return new Set();
+  const visited = new Set();
+  const queue = [];
+
+  function enqueue(id) {
+    if (!visited.has(id)) { visited.add(id); queue.push(id); }
+  }
+
+  enqueue(targetId);
+  // reward nodes have no prev edges; find tasks that grant this reward by name
+  if (target.kind === 'reward') {
+    TASKS.forEach(t => {
+      if (t.kind === 'task' && (t.rewards || []).includes(target.name)) enqueue(t.id);
+    });
+  }
+
+  while (queue.length) {
+    const id = queue.shift();
+    const t = TASKS_BY_ID[id];
+    if (!t || t.kind === 'reward') continue;
+    effPrereqs(t).forEach(pid => enqueue(pid));
+  }
+  return visited;
+}
+
+function topoSort(nodeSet) {
+  const taskNodes = [...nodeSet].filter(id => {
+    const t = TASKS_BY_ID[id];
+    return t && t.kind !== 'reward';
+  });
+  const rewardNodes = [...nodeSet].filter(id => {
+    const t = TASKS_BY_ID[id];
+    return t && t.kind === 'reward';
+  });
+
+  const inDeg = {};
+  taskNodes.forEach(id => { inDeg[id] = 0; });
+  taskNodes.forEach(id => {
+    const t = TASKS_BY_ID[id];
+    if (!t) return;
+    effPrereqs(t).forEach(pid => { if (pid in inDeg) inDeg[id]++; });
+  });
+
+  const queue = taskNodes.filter(id => inDeg[id] === 0);
+  const result = [];
+  while (queue.length) {
+    const id = queue.shift();
+    result.push(id);
+    taskNodes.forEach(nid => {
+      const nt = TASKS_BY_ID[nid];
+      if (!nt) return;
+      if (effPrereqs(nt).includes(id)) {
+        inDeg[nid]--;
+        if (inDeg[nid] === 0) queue.push(nid);
+      }
+    });
+  }
+  const resultSet = new Set(result);
+  taskNodes.forEach(id => { if (!resultSet.has(id)) result.push(id); });
+  return [...result, ...rewardNodes];
+}
+
+function plannerStepStatus(taskId, ancestorSet) {
+  const t = TASKS_BY_ID[taskId];
+  if (!t || t.kind !== 'task') return null;
+  if (state.done[taskId]) return 'done';
+  const blocked = effPrereqs(t).some(pid => {
+    const pt = TASKS_BY_ID[pid];
+    if (!pt || pt.kind === 'note') return false;
+    if (!ancestorSet.has(pid)) return false;
+    return !state.done[pid];
+  });
+  return blocked ? 'upcoming' : 'avail';
+}
+
+function isTargetAchieved(targetId) {
+  const t = TASKS_BY_ID[targetId];
+  if (!t) return false;
+  if (t.kind === 'task') return !!state.done[targetId];
+  if (t.kind === 'reward') {
+    const grantors = TASKS.filter(gt => gt.kind === 'task' && (gt.rewards || []).includes(t.name));
+    return grantors.length > 0 && grantors.every(gt => state.done[gt.id]);
+  }
+  return false;
+}
+
+function renderPlanner() {
+  const targetId = ui.plannerSelect.value;
+  if (!targetId) {
+    ui.plannerBody.innerHTML = '<div class="planner-msg">請選擇目標任務</div>';
+    return;
+  }
+  if (isTargetAchieved(targetId)) {
+    ui.plannerBody.innerHTML = '<div class="planner-msg done-msg">✅ 目標已達成</div>';
+    return;
+  }
+
+  const ancestorSet = buildAncestors(targetId);
+  const sorted = topoSort(ancestorSet);
+  const displayNodes = sorted.filter(id => {
+    const t = TASKS_BY_ID[id];
+    return t && t.kind !== 'note';
+  });
+
+  const incompleteCount = displayNodes.filter(id => {
+    const t = TASKS_BY_ID[id];
+    return t && t.kind === 'task' && !state.done[id];
+  }).length;
+
+  const parts = [];
+  parts.push(`<div class="planner-summary">建議完成順序（還差 ${incompleteCount} 步）</div>`);
+  parts.push('<ol class="planner-steps">');
+
+  let firstAvail = true;
+  displayNodes.forEach(id => {
+    const t = TASKS_BY_ID[id];
+    if (!t) return;
+    const isDone = !!state.done[id];
+    const isTarget = id === targetId;
+
+    let icon, cls, hint = '';
+    if (t.kind === 'reward') {
+      icon = '🎁'; cls = 'planner-step planner-target';
+    } else {
+      const status = plannerStepStatus(id, ancestorSet);
+      if (status === 'done') {
+        icon = '✅'; cls = 'planner-step done';
+      } else if (status === 'avail') {
+        icon = '🔵'; cls = 'planner-step avail';
+        if (firstAvail) { firstAvail = false; hint = '<span class="planner-start-hint">← 從這裡開始</span>'; }
+      } else {
+        icon = '🟡'; cls = 'planner-step upcoming';
+      }
+      if (isTarget) cls += ' planner-target';
+    }
+
+    const rawName = t.kind === 'reward' ? `${t.name}（目標）` : t.name;
+    const dispName = isDone ? `<s>${rawName}</s>` : rawName;
+    const ckbox = t.kind === 'task'
+      ? `<label class="planner-check"><input type="checkbox" data-id="${id}"${isDone ? ' checked' : ''}></label>`
+      : '';
+    parts.push(`<li class="${cls}">${ckbox}<span class="step-icon">${icon}</span><span class="step-id">${id}</span><span class="step-name">${dispName}</span>${hint}</li>`);
+  });
+
+  parts.push('</ol>');
+  ui.plannerBody.innerHTML = parts.join('');
+}
+
+function populatePlannerSelect() {
+  const sel = ui.plannerSelect;
+  sel.innerHTML = '<option value="">— 選擇目標任務 —</option>';
+  TASKS.filter(t => t.kind === 'task' || t.kind === 'reward').forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.id;
+    opt.textContent = `[${t.id}] ${t.name}`;
+    sel.appendChild(opt);
+  });
+}
+
 function setView() {
   ui.vwFocus.classList.toggle('active', viewMode === 'focus');
   ui.vwAll.classList.toggle('active', viewMode === 'all');
+  ui.vwPlanner.classList.toggle('active', viewMode === 'planner');
   ui.allControls.style.display = viewMode === 'all' ? 'flex' : 'none';
   ui.tabs.style.display = viewMode === 'all' ? 'flex' : 'none';
   ui.typeTabs.style.display = viewMode === 'all' ? 'flex' : 'none';
+  ui.list.style.display = viewMode === 'planner' ? 'none' : '';
+  ui.planner.style.display = viewMode === 'planner' ? '' : 'none';
 }
 
 ui.vwFocus.onclick = () => { viewMode = 'focus'; setView(); render(); };
 ui.vwAll.onclick = () => { viewMode = 'all'; setView(); render(); };
+ui.vwPlanner.onclick = () => { viewMode = 'planner'; setView(); render(); };
 ui.search.addEventListener('input', () => render());
 ui.filter.addEventListener('change', () => render());
+ui.plannerSelect.addEventListener('change', () => render());
+ui.plannerBody.addEventListener('change', e => {
+  if (e.target.type !== 'checkbox') return;
+  const id = e.target.dataset.id;
+  if (!id) return;
+  if (e.target.checked) state.done[id] = Date.now();
+  else delete state.done[id];
+  save();
+  render();
+});
 
 // Bottom bar
 const dlg = document.getElementById('dlg');
@@ -1034,6 +1338,7 @@ dlgOk.onclick = () => {
 
 renderTabs();
 renderTypeTabs();
+populatePlannerSelect();
 setView();
 render();
 </script>

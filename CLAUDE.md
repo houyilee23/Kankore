@@ -151,6 +151,12 @@
     --avail: #5ea0ef;     /* 可進行藍 */
     --upcoming: #c89b3c;  /* 待解鎖橘 */
     --note: #c89b3c;
+    --type-sortie: #e05555;      /* 任務類型：出撃 */
+    --type-exercise: #5ea0ef;    /* 任務類型：演習 */
+    --type-expedition: #4caf7d;  /* 任務類型：遠征 */
+    --type-factory: #9c7cd4;     /* 任務類型：工廠 */
+    --type-remodel: #e07b30;     /* 任務類型：改裝 */
+    --type-formation: #9aa0ab;   /* 任務類型：編成 */
   }
   ```
 - **注意**：新增 CSS 變數時要加在 `:root` 區塊，並在本文件的色票參考中補充記錄

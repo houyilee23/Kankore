@@ -1,7 +1,7 @@
 # 艦これ改 任務追蹤器 — 實作計畫（本輪）
 
 > 撰寫日期：2026-04-29  
-> 最後更新：2026-04-30（Stage A~D 完成）  
+> 最後更新：2026-05-01（Stage A~E 完成）  
 > 適用版本：guide.html（目前 TASKS t001~t129）  
 > 參考：`notes/feature-ideas.md`（A-1、C-1、C-2、E-1、D-2、F-1）
 
@@ -9,16 +9,16 @@
 
 ## 目前完成狀態
 
-| Stage | 功能             | 狀態      | Commit    | 實際行數增量 |
-|-------|-----------------|-----------|-----------|------------|
-| A     | type badge + 篩選 | ✅ 已完成 | `be9f531` | 約 +160 行  |
-| B     | 進度條           | ✅ 已完成 | `75c271c` | 約 +55 行   |
-| C     | 路線規劃器       | ✅ 已完成 | `9b730aa` | 約 +150 行  |
-| D     | 前置跳轉 badge   | ✅ 已完成 | `fd9b787` | +101 行     |
-| E     | 艦娘需求清單     | ⏳ 待實作 | —         | 預估 +205 行 |
+| Stage | 功能              | 狀態      | Commit    | 實際行數增量  |
+|-------|------------------|-----------|-----------|--------------|
+| A     | type badge + 篩選  | ✅ 已完成 | `be9f531` | 約 +160 行    |
+| B     | 進度條            | ✅ 已完成 | `75c271c` | 約 +55 行     |
+| C     | 路線規劃器        | ✅ 已完成 | `9b730aa` | 約 +150 行    |
+| D     | 前置跳轉 badge    | ✅ 已完成 | `fd9b787` | +101 行       |
+| E     | 艦娘清單（擴版）   | ✅ 已完成 | `3fbade3` | +777 行       |
 
-> guide.html 目前 **1447 行**（2026-04-30 量測，已含 Stage A~D）。  
-> 所有變更已合併至 `main` 並部署到 GitHub Pages。
+> guide.html 目前 **2178 行**（2026-05-01 量測，已含 Stage A~E）。  
+> Stage A~D 已合併至 `main` 並部署到 GitHub Pages；Stage E 仍在 `claude/charming-rubin-631bd5` 分支待 push。
 
 ---
 
@@ -261,11 +261,11 @@ Badge 用 `<span class="type-badge type-sortie">⚓ 出撃</span>` 格式，圓�
 
 ---
 
-## ⏳ Stage E：艦娘需求清單（待實作）
+## ✅ Stage E：艦娘需求清單（已完成）
 
 ### 1. 目標 / 範圍
 
-建立「所需艦娘」頁面：從 TASKS 的 `require_ships` 欄位（需先補充）彙整出全部需要的艦娘清單，使用者可勾選「我已持有」，系統自動計算哪些任務因缺少艦娘而受阻。
+建立完整的艦娘管理面板：以 **艦種**（戰艦/航母/重巡/輕巡/驅逐/潛艦…共 19 類）為主分類、**艦型**（金剛型 / 陽炎型 …）為次分類，列出全遊戲約 170 艘艦娘的改造鏈（base + forms 表示「未改 → 改 → 改二」）。使用者可勾選「本輪持有」、「釘選下一輪初始艦娘」，並從 TASKS 的 `require_ships` 欄位即時計算哪些任務因缺少艦娘而受阻。
 
 ### 2. 涉及修改的檔案區塊
 
@@ -338,24 +338,20 @@ localStorage.setItem('kc_ships_v1', JSON.stringify({ '翔鶴': true, '瑞鶴': t
 
 **手機驗收**：在 iOS Safari 打開，點「艦娘」，確認清單列出艦娘，勾選「翔鶴」後，任務清單中 t007 等任務的 warning badge 消失。
 
-### 7. 預估
+### 7. 實際行數
 
-- 資料補標（`require_ships`）：約 +80 行 JSON 修改（分散在 TASKS 陣列），**工時最長**
-- CSS（面板樣式）：約 +40 行
-- HTML（面板結構）：約 +15 行
-- JS（彙整 + 渲染 + 交叉比對）：約 +70 行
-- **總計：約 +205 行**，預估工時 3 小時（含資料補標）
++777 行（CSS 面板樣式、SHIPS 資料 ~170 艦娘、TASKS 補 `require_ships` 共 46 筆、艦娘渲染與事件、跨艦種 alsoIn 處理、釘選與新一輪流程）
 
 ### 8. 依賴關係
 
-- 技術上不依賴其他 Stage，但資料補標工作量大，建議放最後
-- 可先做 UI 骨架（view-switch 按鈕 + 空面板），之後補 `require_ships` 欄位
+- 技術上不依賴其他 Stage
+- 資料補標已完成 46 個任務節點（多於原始預估 33 筆，因額外掃過 info 欄位中提及艦名的任務）
 
-### 9. 下個 session 的起點
+### 9. 後續維護備忘
 
-1. 閱讀 `CLAUDE.md`（架構約束）和本文件（目前完成狀態）
-2. 確認 `guide.html` 當前行數（目前 1447 行，Stage E 完成後預估 ~1650 行）
-3. 從補標 `require_ships` 資料開始，或先搭 UI 骨架再回來補資料
+1. 新增任務若提及特定艦娘，記得補上 `require_ships`
+2. 新增艦娘改造（如未來改三）時，更新 `SHIPS` 陣列對應 base 的 `forms`
+3. 跨艦種改造（如 大鯨 → 龍鳳 由潛水母艦變成輕空母）使用 `alsoIn: { from, type }` 標記
 
 ---
 
@@ -367,16 +363,18 @@ localStorage.setItem('kc_ships_v1', JSON.stringify({ '翔鶴': true, '瑞鶴': t
 | B     | 進度條           | ✅ 完成  | 約 +55 行  | `75c271c` |
 | C     | 路線規劃器       | ✅ 完成  | 約 +150 行 | `9b730aa` |
 | D     | 前置跳轉 badge   | ✅ 完成  | +101 行    | `fd9b787` |
-| E     | 艦娘需求清單     | ⏳ 待實作 | 預估 +205 行 | —       |
+| E     | 艦娘需求清單     | ✅ 完成  | +777 行    | `3fbade3` |
 
-> guide.html 目前 **1447 行**（Stage A~D 完成後）。Stage E 完成後預估約 **1650 行**。  
-> 所有已完成的變更均在 `main` 分支，已部署至 GitHub Pages（repo: `houyilee23/Kankore`）。
+> guide.html 目前 **2178 行**（Stage A~E 全部完成）。  
+> Stage A~D 已部署至 `main` 分支（GitHub Pages, repo: `houyilee23/Kankore`）。  
+> Stage E 目前在 `claude/charming-rubin-631bd5` 分支，等待 review 後 merge / push。
 
 ---
 
 ## Commit 記錄
 
 ```
+3fbade3  feat: add ship roster panel with task ship-requirement warnings  ← Stage E
 fd9b787  feat: add prerequisite jump badges on locked tasks   ← Stage D
 9b730aa  feat: add shortest-path quest planner               ← Stage C
 75c271c  feat: add per-category progress bars                ← Stage B

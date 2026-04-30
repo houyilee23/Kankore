@@ -80,13 +80,9 @@
 | `reward_text` | `string`（可選）               | 報酬文字（如「開発資材x3 勲章x1」）           |
 | `rewards`     | `string[]`（可選）             | 特定裝備/艦娘名稱陣列                         |
 | `recurrence`  | `'monthly'｜'yearly'`（可選） | 週期性標記                                   |
-
-#### 規劃中新增欄位（尚未加入，加入時請同步更新本文件）
-
-| 欄位              | 類型                                                                          | 說明                        |
-|------------------|-------------------------------------------------------------------------------|-----------------------------|
-| `type`           | `'sortie'｜'exercise'｜'expedition'｜'factory'｜'remodel'｜'formation'`       | 任務種類（出撃/演習/遠征/工廠/改裝/編成） |
-| `require_ships`  | `string[]`                                                                    | 所需艦娘名稱清單（結構化）    |
+| `type`        | `'sortie'｜'exercise'｜'expedition'｜'factory'｜'remodel'｜'formation'`（可選） | 任務種類（出撃/演習/遠征/工廠/改裝/編成） |
+| `require_ships` | `string[]`（可選）          | 所需艦娘名稱清單（結構化）；以 base 級別判定持有，任一改型即視為滿足 |
+| `require_strict_forms` | `string[]`（可選）   | 嚴格指定特定艦娘型態（罕見例外，如 t079 必須未改造的「大鯨」，龍鳳/龍鳳改不可）；檢查 `shipsState.ownedForms[form]`，base 級別持有不視為滿足 |
 
 #### id 命名規則
 
@@ -102,7 +98,8 @@
 
 | Key                   | 說明                                                                       |
 |----------------------|----------------------------------------------------------------------------|
-| `kc_quest_state_v2`  | 主要狀態物件，包含子欄位：`done`（Set）、`notes`（map）、`prevAdd`、`prevRemove`、`recentLimit` |
+| `kc_quest_state_v2`  | 主要狀態物件，包含子欄位：`done`、`notes`、`prevAdd`、`prevRemove`、`recentLimit`、`pinnedGoals` |
+| `kc_ships_v1`        | 艦娘持有狀態：`owned`（base 級）、`pinned`（base 級）、`foldedTypes`、`ownedForms`（特定型態級，搭配 `require_strict_forms`） |
 
 ### 命名規則
 
@@ -113,7 +110,6 @@
 
 | Key             | 說明               |
 |----------------|--------------------|
-| `kc_ships_v1`  | 使用者艦娘持有清單   |
 | `kc_prefs_v1`  | 使用者偏好設定       |
 
 ---

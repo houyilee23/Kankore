@@ -2004,11 +2004,13 @@ const SHIPS = [
   { base: '瑞鳳', cls: '祥鳳型', type: '輕空母', forms: ['瑞鳳', '瑞鳳改', '瑞鳳改二'] },
   { base: '飛鷹', cls: '飛鷹型', type: '輕空母', forms: ['飛鷹', '飛鷹改'] },
   { base: '隼鷹', cls: '飛鷹型', type: '輕空母', forms: ['隼鷹', '隼鷹改', '隼鷹改二'] },
-  { base: '龍鳳', cls: '龍鳳型', type: '輕空母', forms: ['大鯨', '龍鳳', '龍鳳改'], alsoIn: { from: '大鯨', type: '潛水母艦' } },
+  // 龍鳳：base type 為輕空母，但 大鯨 形態屬於潛水母艦，獨立持有狀態
+  { base: '龍鳳', cls: '龍鳳型', type: '輕空母', forms: ['大鯨', '龍鳳', '龍鳳改'], alsoIn: { type: '潛水母艦', forms: ['大鯨'] } },
 
   // 水上機母艦
-  { base: '千歳', cls: '千歳型', type: '水上機母艦', forms: ['千歳', '千歳改', '千歳甲', '千歳航'], alsoIn: { from: '千歳航', type: '輕空母' } },
-  { base: '千代田', cls: '千歳型', type: '水上機母艦', forms: ['千代田', '千代田改', '千代田甲', '千代田航'], alsoIn: { from: '千代田航', type: '輕空母' } },
+  // 千歳/千代田：base type 為水上機母艦；千歳航/千代田航 為輕空母改型，獨立持有狀態
+  { base: '千歳', cls: '千歳型', type: '水上機母艦', forms: ['千歳', '千歳改', '千歳甲', '千歳航'], alsoIn: { type: '輕空母', forms: ['千歳航'] } },
+  { base: '千代田', cls: '千歳型', type: '水上機母艦', forms: ['千代田', '千代田改', '千代田甲', '千代田航'], alsoIn: { type: '輕空母', forms: ['千代田航'] } },
   { base: '瑞穂', cls: '瑞穂型', type: '水上機母艦', forms: ['瑞穂', '瑞穂改'] },
   { base: '秋津洲', cls: '秋津洲型', type: '水上機母艦', forms: ['秋津洲', '秋津洲改'] },
 
@@ -2173,12 +2175,13 @@ const shipsState = (() => {
   try {
     const s = JSON.parse(localStorage.getItem(SHIPS_STORAGE_KEY)) || {};
     return {
-      owned: s.owned || {},     // { base: timestamp }
-      pinned: s.pinned || {},   // { base: timestamp }
+      owned: s.owned || {},         // { base: timestamp } — 主 bucket（base type）的持有
+      pinned: s.pinned || {},       // { base: timestamp } — base 級釘選
       foldedTypes: s.foldedTypes || {}, // { typeName: true }
-      ownedForms: s.ownedForms || {},   // { exactFormName: timestamp } — 用於 require_strict_forms
+      ownedForms: s.ownedForms || {},   // { exactFormName: timestamp } — alt-bucket / 嚴格 form 的持有，與 owned 獨立
+      pinnedForms: s.pinnedForms || {}, // { exactFormName: timestamp } — alt-form 級釘選
     };
-  } catch { return { owned: {}, pinned: {}, foldedTypes: {}, ownedForms: {} }; }
+  } catch { return { owned: {}, pinned: {}, foldedTypes: {}, ownedForms: {}, pinnedForms: {} }; }
 })();
 function saveShips() { localStorage.setItem(SHIPS_STORAGE_KEY, JSON.stringify(shipsState)); }
 
@@ -2188,25 +2191,46 @@ function shipBaseFromName(name) {
   return s ? s.base : null;
 }
 
-// Compute set of bases needed by any incomplete task with require_ships / require_strict_forms
+// 預先計算「哪些 form 是某個 base 的獨立 alt-form」
+// e.g. ALT_FORM_TO_BASE = { '大鯨': '龍鳳', '千歳航': '千歳', '千代田航': '千代田' }
+const ALT_FORM_TO_BASE = (() => {
+  const m = {};
+  SHIPS.forEach(s => {
+    if (s.alsoIn && Array.isArray(s.alsoIn.forms)) {
+      s.alsoIn.forms.forEach(f => { m[f] = s.base; });
+    }
+  });
+  return m;
+})();
+
+// Compute sets needed by any incomplete task
+// 回傳 { neededBases: Set<base>, neededAltForms: Set<form> }
+//   - require_ships → neededBases
+//   - require_strict_forms：若 form 是某 ship 的 altForm，加入 neededAltForms（標記 alt row）；
+//                          否則加入 neededBases（fallback，會由 base row 顯示）
 function computeRequiredShipBases() {
-  const needed = new Set();
+  const neededBases = new Set();
+  const neededAltForms = new Set();
   REAL_TASKS.forEach(t => {
     if (state.done[t.id]) return;
     if (Array.isArray(t.require_ships)) {
       t.require_ships.forEach(name => {
         const base = shipBaseFromName(name);
-        if (base) needed.add(base);
+        if (base) neededBases.add(base);
       });
     }
     if (Array.isArray(t.require_strict_forms)) {
       t.require_strict_forms.forEach(form => {
-        const base = shipBaseFromName(form);
-        if (base) needed.add(base);
+        if (ALT_FORM_TO_BASE[form]) {
+          neededAltForms.add(form);
+        } else {
+          const base = shipBaseFromName(form);
+          if (base) neededBases.add(base);
+        }
       });
     }
   });
-  return needed;
+  return { neededBases, neededAltForms };
 }
 
 // 由 TASKS 預先計算「哪些 base 有任務指定特定 form」
@@ -2225,13 +2249,20 @@ const STRICT_FORMS_BY_BASE = (() => {
 })();
 
 // Bucket ships by display 艦種 (handles alsoIn cross-type display)
+// 兩種 alsoIn 模式：
+//   1. alsoIn.from（共享持有，如扶桑改二）：在另一 bucket 顯示同一 base，共用 owned[base]
+//   2. alsoIn.forms（獨立持有，如大鯨/千歳航/千代田航）：alt bucket 顯示為獨立 row，使用 ownedForms[altForm]
 function shipsByType() {
   const map = {};
   SHIPS_TYPE_LIST().forEach(t => { map[t] = []; });
   SHIPS.forEach(s => {
     (map[s.type] = map[s.type] || []).push({ ship: s, primary: true });
     if (s.alsoIn) {
-      (map[s.alsoIn.type] = map[s.alsoIn.type] || []).push({ ship: s, primary: false });
+      const entry = { ship: s, primary: false };
+      if (Array.isArray(s.alsoIn.forms) && s.alsoIn.forms.length > 0) {
+        entry.altForms = s.alsoIn.forms;
+      }
+      (map[s.alsoIn.type] = map[s.alsoIn.type] || []).push(entry);
     }
   });
   return map;
@@ -2255,16 +2286,21 @@ function renderShipsPanel() {
   const summaryEl = document.getElementById('ships-summary');
   if (!list || !summaryEl) return;
 
-  const ownedCount = Object.keys(shipsState.owned).length;
-  const pinnedCount = Object.keys(shipsState.pinned).length;
-  const totalCount = SHIPS.length;
-  const neededBases = computeRequiredShipBases();
-  const missingNeeded = [...neededBases].filter(b => !shipsState.owned[b]).length;
+  // 持有/釘選/總數 都把 alt-form 算進去（它們是獨立可勾選的項目）
+  const altFormsAll = Object.keys(ALT_FORM_TO_BASE);
+  const ownedCount = Object.keys(shipsState.owned).length + Object.keys(shipsState.ownedForms).filter(f => ALT_FORM_TO_BASE[f]).length;
+  const pinnedCount = Object.keys(shipsState.pinned).length + Object.keys(shipsState.pinnedForms).filter(f => ALT_FORM_TO_BASE[f]).length;
+  const totalCount = SHIPS.length + altFormsAll.length;
+  const { neededBases, neededAltForms } = computeRequiredShipBases();
+  const missingNeededBases = [...neededBases].filter(b => !shipsState.owned[b]).length;
+  const missingNeededAltForms = [...neededAltForms].filter(f => !shipsState.ownedForms[f]).length;
+  const neededTotal = neededBases.size + neededAltForms.size;
+  const missingNeeded = missingNeededBases + missingNeededAltForms;
 
   summaryEl.innerHTML = `
     <span>持有: <b>${ownedCount}</b> / ${totalCount}</span>
     <span>釘選: <b>${pinnedCount}</b></span>
-    <span>任務需要: <b>${neededBases.size}</b> (缺 ${missingNeeded})</span>
+    <span>任務需要: <b>${neededTotal}</b> (缺 ${missingNeeded})</span>
   `;
 
   const q = shipsSearch.trim().toLowerCase();
@@ -2278,17 +2314,22 @@ function renderShipsPanel() {
     if (!entries.length) return;
 
     // Apply filter & search
-    const filtered = entries.filter(({ ship, primary }) => {
-      const owned = !!shipsState.owned[ship.base];
-      const pinned = !!shipsState.pinned[ship.base];
-      const isNeeded = neededBases.has(ship.base);
+    const filtered = entries.filter(({ ship, primary, altForms }) => {
+      // alt-form 列：持有/釘選/需要 都用 form 級別判定
+      const isAlt = Array.isArray(altForms) && altForms.length > 0;
+      const altKey = isAlt ? altForms[0] : null;
+      const owned = isAlt ? !!shipsState.ownedForms[altKey] : !!shipsState.owned[ship.base];
+      const pinned = isAlt ? !!shipsState.pinnedForms[altKey] : !!shipsState.pinned[ship.base];
+      const isNeeded = isAlt ? neededAltForms.has(altKey) : neededBases.has(ship.base);
 
       if (shipsFilter === 'owned' && !owned) return false;
       if (shipsFilter === 'missing' && owned) return false;
       if (shipsFilter === 'pinned' && !pinned) return false;
       if (shipsFilter === 'needed' && !isNeeded) return false;
       if (q) {
-        const haystack = (ship.base + ' ' + ship.cls + ' ' + ship.forms.join(' ')).toLowerCase();
+        const formsStr = isAlt ? altForms.join(' ') : ship.forms.join(' ');
+        const nameStr = isAlt ? altKey : ship.base;
+        const haystack = (nameStr + ' ' + ship.cls + ' ' + formsStr).toLowerCase();
         if (!haystack.includes(q)) return false;
       }
       return true;
@@ -2302,7 +2343,12 @@ function renderShipsPanel() {
     bucket.dataset.type = typeName;
 
     const folded = !!shipsState.foldedTypes[typeName];
-    const ownedInType = filtered.filter(e => shipsState.owned[e.ship.base]).length;
+    const ownedInType = filtered.filter(e => {
+      if (Array.isArray(e.altForms) && e.altForms.length > 0) {
+        return !!shipsState.ownedForms[e.altForms[0]];
+      }
+      return !!shipsState.owned[e.ship.base];
+    }).length;
 
     const header = document.createElement('div');
     header.className = 'ship-type-header';
@@ -2329,8 +2375,8 @@ function renderShipsPanel() {
         label.className = 'ship-class-label';
         label.textContent = cls;
         body.appendChild(label);
-        byClass[cls].forEach(({ ship, primary }) => {
-          body.appendChild(renderShipRow(ship, primary, neededBases));
+        byClass[cls].forEach(({ ship, primary, altForms }) => {
+          body.appendChild(renderShipRow(ship, primary, neededBases, neededAltForms, altForms));
         });
       });
 
@@ -2348,15 +2394,22 @@ function renderShipsPanel() {
   }
 }
 
-function renderShipRow(ship, primary, neededBases) {
-  const owned = !!shipsState.owned[ship.base];
-  const pinned = !!shipsState.pinned[ship.base];
-  const isNeeded = neededBases && neededBases.has(ship.base);
+function renderShipRow(ship, primary, neededBases, neededAltForms, altForms) {
+  // alt-form 列：使用 form 級別的持有/釘選/需要狀態，與 base 完全獨立
+  const isAlt = Array.isArray(altForms) && altForms.length > 0;
+  const altKey = isAlt ? altForms[0] : null;
+
+  const owned = isAlt ? !!shipsState.ownedForms[altKey] : !!shipsState.owned[ship.base];
+  const pinned = isAlt ? !!shipsState.pinnedForms[altKey] : !!shipsState.pinned[ship.base];
+  const isNeeded = isAlt
+    ? (neededAltForms && neededAltForms.has(altKey))
+    : (neededBases && neededBases.has(ship.base));
 
   const row = document.createElement('div');
-  row.className = 'ship-row' + (owned ? ' owned' : '');
+  row.className = 'ship-row' + (owned ? ' owned' : '') + (isAlt ? ' alt-form' : '');
   if (!owned) row.classList.add('disabled-pin');
   row.dataset.base = ship.base;
+  if (isAlt) row.dataset.altForm = altKey;
 
   // checkbox
   const cb = document.createElement('label');
@@ -2369,43 +2422,63 @@ function renderShipRow(ship, primary, neededBases) {
   nameWrap.className = 'ship-name-wrap';
   const nameEl = document.createElement('div');
   nameEl.className = 'ship-name';
-  let nameHtml = ship.base;
-  if (!primary) {
+  // alt-form 列：顯示 alt form 名稱（例：'大鯨'、'千歳航'），而不是 base
+  let nameHtml = isAlt ? altKey : ship.base;
+  if (isAlt) {
+    nameHtml += `<span class="ship-cross">≠ ${ship.base}</span>`;
+  } else if (!primary) {
+    // 共享 alsoIn（如扶桑改二）：保留原本標示
     nameHtml += `<span class="ship-cross">改後 ${ship.type}</span>`;
   }
   if (isNeeded) nameHtml += ' <span class="ship-warning">任務需要</span>';
   nameEl.innerHTML = nameHtml;
   nameWrap.appendChild(nameEl);
 
-  if (ship.forms.length > 1) {
+  // 顯示這個列對應的 form 鏈
+  // - alt-form 列：只顯示 altForms 範圍
+  // - 主列（primary，含 alsoIn.forms 拆分的 ship）：顯示 forms 排除 altForms
+  // - 共享 alsoIn 或無 alsoIn：顯示完整 forms
+  let displayForms = ship.forms;
+  if (isAlt) {
+    displayForms = altForms;
+  } else if (primary && ship.alsoIn && Array.isArray(ship.alsoIn.forms)) {
+    const altSet = new Set(ship.alsoIn.forms);
+    displayForms = ship.forms.filter(f => !altSet.has(f));
+  }
+  if (displayForms.length > 1) {
     const forms = document.createElement('div');
     forms.className = 'ship-forms';
-    forms.textContent = ship.forms.join(' → ');
+    forms.textContent = displayForms.join(' → ');
     nameWrap.appendChild(forms);
   }
 
-  // 若這個 base 有任務指定嚴格 form（例：t079 要求未改造的「大鯨」），顯示 form 級別的勾選列
-  const strictForms = STRICT_FORMS_BY_BASE[ship.base];
-  if (strictForms && strictForms.size > 0) {
-    const picker = document.createElement('div');
-    picker.className = 'ship-strict-forms';
-    picker.title = '部分任務指定特定型態，請勾選實際持有者';
-    strictForms.forEach(form => {
-      const chip = document.createElement('label');
-      chip.className = 'ship-form-chip' + (shipsState.ownedForms[form] ? ' on' : '');
-      const cb = document.createElement('input');
-      cb.type = 'checkbox';
-      cb.checked = !!shipsState.ownedForms[form];
-      cb.dataset.action = 'toggle-form';
-      cb.dataset.form = form;
-      cb.dataset.base = ship.base;
-      const txt = document.createElement('span');
-      txt.textContent = form;
-      chip.appendChild(cb);
-      chip.appendChild(txt);
-      picker.appendChild(chip);
-    });
-    nameWrap.appendChild(picker);
+  // 若這個 base 有任務指定嚴格 form 但該 form 不是 alt-form（沒有獨立 row），顯示 form picker chips
+  // alt-form 列本身不顯示 chip（因為它就是 form 本身）
+  if (!isAlt) {
+    const strictForms = STRICT_FORMS_BY_BASE[ship.base];
+    const altSet = new Set(ship.alsoIn && Array.isArray(ship.alsoIn.forms) ? ship.alsoIn.forms : []);
+    const chipsToShow = strictForms ? [...strictForms].filter(f => !altSet.has(f)) : [];
+    if (chipsToShow.length > 0) {
+      const picker = document.createElement('div');
+      picker.className = 'ship-strict-forms';
+      picker.title = '部分任務指定特定型態，請勾選實際持有者';
+      chipsToShow.forEach(form => {
+        const chip = document.createElement('label');
+        chip.className = 'ship-form-chip' + (shipsState.ownedForms[form] ? ' on' : '');
+        const cbi = document.createElement('input');
+        cbi.type = 'checkbox';
+        cbi.checked = !!shipsState.ownedForms[form];
+        cbi.dataset.action = 'toggle-form';
+        cbi.dataset.form = form;
+        cbi.dataset.base = ship.base;
+        const txt = document.createElement('span');
+        txt.textContent = form;
+        chip.appendChild(cbi);
+        chip.appendChild(txt);
+        picker.appendChild(chip);
+      });
+      nameWrap.appendChild(picker);
+    }
   }
 
   row.appendChild(nameWrap);
@@ -2440,20 +2513,34 @@ function wireShipsEvents() {
     } else if (action === 'toggle-own') {
       const row = tgt.closest('.ship-row');
       if (!row) return;
-      const base = row.dataset.base;
-      if (shipsState.owned[base]) {
-        delete shipsState.owned[base];
-        // un-owning auto un-pins
-        delete shipsState.pinned[base];
-        // 同步移除這個 base 之下所有 form 級別的勾選
-        const ship = SHIPS_BY_BASE[base];
-        if (ship) ship.forms.forEach(f => { delete shipsState.ownedForms[f]; });
+      const altForm = row.dataset.altForm;
+      if (altForm) {
+        // alt-form 列：與 base 級別完全獨立
+        if (shipsState.ownedForms[altForm]) {
+          delete shipsState.ownedForms[altForm];
+          delete shipsState.pinnedForms[altForm];
+        } else {
+          shipsState.ownedForms[altForm] = Date.now();
+        }
       } else {
-        shipsState.owned[base] = Date.now();
+        const base = row.dataset.base;
+        if (shipsState.owned[base]) {
+          delete shipsState.owned[base];
+          delete shipsState.pinned[base];
+          // 同步清除這個 base 對應的 strict-form 勾選（chip-row 那種，非獨立 alt-form）
+          const ship = SHIPS_BY_BASE[base];
+          if (ship) {
+            const altSet = new Set(ship.alsoIn && Array.isArray(ship.alsoIn.forms) ? ship.alsoIn.forms : []);
+            ship.forms.forEach(f => {
+              if (!altSet.has(f)) delete shipsState.ownedForms[f];
+            });
+          }
+        } else {
+          shipsState.owned[base] = Date.now();
+        }
       }
       saveShips();
       renderShipsPanel();
-      // Re-render task list to update warnings
       if (viewMode !== 'ships') render();
     } else if (action === 'toggle-form') {
       const cb = tgt.matches('input[data-action="toggle-form"]') ? tgt : tgt.querySelector('input[data-action="toggle-form"]');
@@ -2464,7 +2551,8 @@ function wireShipsEvents() {
         delete shipsState.ownedForms[form];
       } else {
         shipsState.ownedForms[form] = Date.now();
-        // 勾選任一 form 自動標記 base 為持有
+        // chip-row 的 strict-form 是「base 之下的特定型態」（非 alsoIn 獨立列），
+        // 勾選時自動標記 base 為持有（持有任一改型即視為持有 base）
         if (base && !shipsState.owned[base]) shipsState.owned[base] = Date.now();
       }
       saveShips();
@@ -2473,10 +2561,17 @@ function wireShipsEvents() {
     } else if (action === 'toggle-pin') {
       const row = tgt.closest('.ship-row');
       if (!row) return;
-      const base = row.dataset.base;
-      if (!shipsState.owned[base]) return; // can't pin unowned
-      if (shipsState.pinned[base]) delete shipsState.pinned[base];
-      else shipsState.pinned[base] = Date.now();
+      const altForm = row.dataset.altForm;
+      if (altForm) {
+        if (!shipsState.ownedForms[altForm]) return; // 未持有不可釘選
+        if (shipsState.pinnedForms[altForm]) delete shipsState.pinnedForms[altForm];
+        else shipsState.pinnedForms[altForm] = Date.now();
+      } else {
+        const base = row.dataset.base;
+        if (!shipsState.owned[base]) return; // 未持有不可釘選
+        if (shipsState.pinned[base]) delete shipsState.pinned[base];
+        else shipsState.pinned[base] = Date.now();
+      }
       saveShips();
       renderShipsPanel();
     }
@@ -2501,13 +2596,15 @@ function wireShipsEvents() {
     renderShipsPanel();
   };
   document.getElementById('ships-new-run').onclick = () => {
-    const pinnedCount = Object.keys(shipsState.pinned).length;
+    const pinnedCount = Object.keys(shipsState.pinned).length + Object.keys(shipsState.pinnedForms).length;
     if (!confirm(`開始新一輪？\n所有「持有」狀態將被清除，僅保留 ${pinnedCount} 艘已釘選艦娘為新一輪初始艦娘。\n(任務勾選不會被影響)`)) return;
-    const keep = { ...shipsState.pinned };
+    const keepBases = { ...shipsState.pinned };
+    const keepForms = { ...shipsState.pinnedForms };
     shipsState.owned = {};
     shipsState.ownedForms = {};
-    Object.keys(keep).forEach(base => { shipsState.owned[base] = Date.now(); });
-    // pinned remains as-is for next-next-run hints
+    Object.keys(keepBases).forEach(base => { shipsState.owned[base] = Date.now(); });
+    Object.keys(keepForms).forEach(form => { shipsState.ownedForms[form] = Date.now(); });
+    // pinned / pinnedForms remain as-is for next-next-run hints
     saveShips();
     renderShipsPanel();
     if (viewMode !== 'ships') render();

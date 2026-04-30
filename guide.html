@@ -601,6 +601,215 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
   100% { background: var(--panel); }
 }
 .task.flash { animation: task-flash 1.8s ease-out; }
+/* Stage E: ship roster panel */
+#ships-panel { padding: 8px 14px 80px; }
+.ships-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.ships-controls input[type="search"] {
+  flex: 1;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 16px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  -webkit-appearance: none;
+}
+.ships-controls select {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 14px;
+  padding: 9px 8px;
+  border-radius: 8px;
+}
+.ships-summary {
+  font-size: 12px;
+  color: var(--text-dim);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.ships-summary b { color: var(--accent); font-variant-numeric: tabular-nums; }
+.ships-actions {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.ships-actions button {
+  flex: 1;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 9px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.ship-type-bucket { margin-bottom: 6px; }
+.ship-type-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  min-height: 44px;
+}
+.ship-type-header:active { background: var(--panel-2); }
+.ship-type-header .fold-icon {
+  color: var(--text-dim);
+  font-size: 11px;
+  width: 12px;
+  flex-shrink: 0;
+}
+.ship-type-header .ship-type-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 14px;
+}
+.ship-type-header .ship-type-count {
+  background: var(--panel-2);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.ship-type-body {
+  margin-top: 4px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 4px 6px;
+}
+.ship-class-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+  padding: 8px 10px 4px;
+  border-top: 1px dashed var(--border);
+  margin-top: 2px;
+}
+.ship-class-label:first-child { border-top: none; margin-top: 0; }
+.ship-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  min-height: 44px;
+  border-radius: 6px;
+}
+.ship-row.owned { background: rgba(94, 160, 239, 0.06); }
+.ship-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.ship-checkbox input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.ship-name-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.ship-name {
+  font-size: 14px;
+  word-break: break-word;
+  line-height: 1.25;
+}
+.ship-row.owned .ship-name { color: var(--accent); }
+.ship-forms {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: ui-monospace, monospace;
+  line-height: 1.2;
+}
+.ship-cross {
+  display: inline-block;
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(156, 124, 212, 0.18);
+  color: #b89df0;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.ship-pin-btn {
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-dim);
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.4;
+}
+.ship-pin-btn.active {
+  opacity: 1;
+  color: var(--upcoming);
+  border-color: rgba(200, 155, 60, 0.4);
+  background: rgba(200, 155, 60, 0.1);
+}
+.ship-pin-btn:active { background: var(--panel-2); }
+.ship-row:not(.owned) .ship-pin-btn:not(.active) { opacity: 0.18; }
+.ship-row.disabled-pin .ship-pin-btn { pointer-events: none; opacity: 0.18; }
+.ships-empty {
+  color: var(--text-dim);
+  font-size: 13px;
+  padding: 24px 16px;
+  text-align: center;
+}
+/* Task card: missing ship warning badge */
+.ship-warning {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(224, 85, 85, 0.15);
+  border: 1px solid rgba(224, 85, 85, 0.45);
+  color: #ef9595;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+.ship-warning-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px 10px 8px 44px;
+  background: rgba(224, 85, 85, 0.06);
+  border-top: 1px solid var(--border);
+}
+.ship-warning-list .ship-warning { font-size: 11px; padding: 3px 8px; }
+.task.ship-blocked { border-left-color: #e05555; }
 </style>
 </head>
 <body>
@@ -616,6 +825,7 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
     <button id="vw-focus" class="active">進度焦點</button>
     <button id="vw-all">全部清單</button>
     <button id="vw-planner">🗺 規劃</button>
+    <button id="vw-ships">⚓ 艦娘</button>
   </div>
   <div class="controls" id="all-controls" style="display:none">
     <input type="search" id="search" placeholder="搜尋任務名稱或備註...">
@@ -639,6 +849,26 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
   <div id="planner-body"><div class="planner-msg">請選擇目標任務</div></div>
 </section>
 
+<section id="ships-panel" style="display:none">
+  <div class="ships-controls">
+    <input type="search" id="ships-search" placeholder="搜尋艦娘名稱...">
+    <select id="ships-filter">
+      <option value="all">全部</option>
+      <option value="owned">已持有</option>
+      <option value="missing">未持有</option>
+      <option value="pinned">已釘選</option>
+      <option value="needed">任務需要</option>
+    </select>
+  </div>
+  <div class="ships-summary" id="ships-summary"></div>
+  <div class="ships-actions">
+    <button id="ships-expand-all">全部展開</button>
+    <button id="ships-collapse-all">全部摺疊</button>
+    <button id="ships-new-run">🔄 新一輪</button>
+  </div>
+  <div id="ships-list"></div>
+</section>
+
 <div class="bottom-bar">
   <button id="btn-export">匯出備份</button>
   <button id="btn-import">匯入備份</button>
@@ -655,7 +885,7 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
 </dialog>
 
 <script>
-const TASKS = [{"id":"t001","name":"スタート","cat":"主線/支線","kind":"task","type":"sortie","prev":[],"next":["t005"]},{"id":"t002","name":"※未分類","cat":"未分類","kind":"note"},{"id":"t003","name":"※D　Littorio入手任務群","cat":"D: Littorio 入手","kind":"note"},{"id":"t004","name":"※E　Z1入手任務群","cat":"E: Z1 入手","kind":"note"},{"id":"t005","name":"はじめての「建造」！","cat":"主線/支線","kind":"task","type":"factory","prev":["t001"],"next":["t010"],"info":["1隻以上建造","進水不要、建造開始した時点でクリア"],"content":"「工廠」で鋼材などの資材を使って、新しい艦を「建造」せよ！","unlock":"初期任務","reward_text":"開発資材x1 高速建造x2"},{"id":"t006","name":"南西諸島海域クリア後？","cat":"未分類","kind":"note"},{"id":"t007","name":"「第五航空戦隊」を再編成せよ！","cat":"未分類","kind":"task","type":"formation","prev":["t057","t058","t080"],"next":["t016","t092","t094"],"info":["「翔鶴」「瑞鶴」「朧」「秋雲」"],"content":"「翔鶴」「瑞鶴」と、随伴駆逐艦「朧」「秋雲」を基幹とした新第五航空戦隊を再編成せよ！","unlock":"『「第五航空戦隊」を編成せよ！』達成後 ※「空母機動部隊」西へ！の達成も必要？","reward_text":"開発資材x5 戦略P:800"},{"id":"t008","name":"中部西海域潜水艦哨戒を実施せよ！","cat":"主線/支線","kind":"task","type":"expedition","prev":["t079"],"next":["t013","t092","t094"],"rewards":["潜水艦53cm艦首魚雷(8門)"],"info":["中部西遠征｢中部西海域潜水艦哨戒｣2","潜水艦53cm艦首魚雷(8門)"],"content":"「中部西海域潜水艦哨戒」を反復実施し、哨戒と潜水艦隊練度向上に努めよ！（2回成功で達成）","unlock":"潜水艦隊「第六艦隊」を編成せよ！","reward_text":"潜水艦53cm艦首魚雷(8門)"},{"id":"t009","name":"中規模潜水艦隊を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t047"],"next":["t014","t077","t079"],"info":["｢潜水｣3"],"content":"伊号潜水艦3隻からなる潜水艦隊を編成せよ！","unlock":"『「第四戦隊」を編成せよ！』達成後","reward_text":"給糧艦「伊良湖」x1 戦略P300"},{"id":"t010","name":"はじめての「編成」！","cat":"主線/支線","kind":"task","type":"formation","prev":["t005"],"next":["t015","t027"],"info":["2隻以上編成","砲撃演習の開放"]},{"id":"t011","name":"「北号作戦」を実施せよ！","cat":"未分類","kind":"task","type":"expedition","prev":[],"next":[],"rewards":["瑞雲(六三四空)"],"info":["南西遠征｢北号作戦｣","瑞雲(六三四空)"],"content":"航空戦艦2隻を投入する強行資源輸送作戦「北号作戦」を実施せよ ※南西諸島海域の4つ目の遠征が「北号作戦」","unlock":"南西諸島海域クリア後？","reward_text":"瑞雲(六三四空) 戦略P:500"},{"id":"t012","name":"瑞雲(六三四空)","cat":"主線/支線","kind":"reward"},{"id":"t013","name":"潜水艦派遣による技術入手を強化せよ！","cat":"D: Littorio 入手","kind":"task","type":"expedition","prev":["t008"],"next":["t016"],"info":["西南遠征｢潜水艦派遣作戦｣6","瑞雲(六三四空)"],"content":"潜水艦派遣作戦を継続して成功させ、他国製技術の導入に努めよ！（西南海域の遠征\"潜水艦派遣作戦\"6回で達成）","unlock":"中部西海域潜水艦哨戒を実施せよ！、潜水艦派遣による海外艦との接触作戦 達成後","reward_text":"瑞雲(六三四空) 戦略P150"},{"id":"t014","name":"第一次潜水艦派遣作戦","cat":"E: Z1 入手","kind":"task","type":"expedition","prev":["t009"],"next":["t018"],"info":["西南遠征｢潜水艦派遣作戦｣"],"content":"第一次潜水艦派遣作戦を実施、これを成功させよ！ ※西南海域の遠征、潜水艦派遣作戦(潜水艦4隻以上、13日)","unlock":"『中規模潜水艦隊を編成せよ！』達成後","reward_text":"応急修理要員x1 戦略P150"},{"id":"t015","name":"はじめての「演習」！","cat":"主線/支線","kind":"task","type":"exercise","prev":["t010"],"next":["t019"],"info":["艦隊行動演習の実施","砲撃演習の開放"],"content":"第三艦隊1","unlock":"『はじめての「編成」！』達成後","reward_text":"はじめての「演習」！「艦隊行動演習」を実施せよ！ / 開発資材x1 砲戦演習の開放"},{"id":"t016","name":"潜水艦派遣作戦による海外艦救援！","cat":"D: Littorio 入手","kind":"task","type":"expedition","prev":["t007","t013"],"next":[],"rewards":["Littorio"],"info":["西方 遠征「海外艦との接触｣4","Littorio","多くの長期間遠征を経る。Z1と共通性高く、同時並行推奨"],"content":"有力な潜水艦隊派遣による海外艦との接触、同救援を継続的に実施せよ！（西方海域の遠征\"海外艦との接触\"を丁4回で達成）","unlock":"「第五航空戦隊」を再編成せよ！ 潜水艦派遣による技術入手を強化せよ！達成後","reward_text":"高速戦艦「Littorio」 戦略P200"},{"id":"t017","name":"Littorio","cat":"D: Littorio 入手","kind":"reward"},{"id":"t018","name":"第２次潜水艦派遣作戦","cat":"E: Z1 入手","kind":"task","type":"expedition","prev":["t014"],"next":["t020"],"info":["西南遠征｢潜水艦派遣作戦｣"],"content":"第２次潜水艦派遣作戦を成功させよ！ ※西南海域の遠征、潜水艦派遣作戦(潜水艦4隻以上、13日)","unlock":"「第１次潜水艦派遣作戦」達成後","reward_text":"開発資材x3 Ju87C改"},{"id":"t019","name":"「砲撃演習」を実施せよ！","cat":"主線/支線","kind":"task","type":"exercise","prev":["t015"],"next":["t021","t022"],"info":["砲撃演習の実施","雷撃演習の開放"]},{"id":"t020","name":"潜水艦派遣作戦による技術入手の継続！","cat":"E: Z1 入手","kind":"task","type":"expedition","prev":["t018"],"next":["t023"],"info":["西南遠征｢潜水艦派遣作戦｣2"],"content":"第３次及び第４次潜水艦派遣作戦を成功させ、他国製技術の導入に努めよ！（潜水艦派遣作戦を2回成功で達成）","unlock":"「第２次潜水艦派遣作戦」達成後","reward_text":"改修資材x4 Ju87C改"},{"id":"t021","name":"「砲撃演習」を継続実施せよ！","cat":"主線/支線","kind":"task","type":"exercise","prev":["t019"],"next":["t025","t049"],"info":["砲撃演習の実施2回"],"content":"第五艦隊1","unlock":"『「砲撃演習」を実施せよ！』達成後","reward_text":"艦隊戦の練度を向上させるため、「砲戦演習」を継続して実施せよ！ ※砲撃演習を2回実施で達成確認。 / 12.7cm連装砲B型改二"},{"id":"t022","name":"「艦娘」出撃！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t019"],"next":["t026"],"info":["出撃"],"content":"第三艦隊3","unlock":"『「砲戦演習」を実施せよ！』達成後","reward_text":"艦隊を出撃させ、敵艦隊と交戦せよ！ ※D敗北でも可。 / 開発資材x1"},{"id":"t023","name":"潜水艦派遣による海外艦との接触作戦","cat":"E: Z1 入手","kind":"task","type":"expedition","prev":["t020"],"next":[],"rewards":["Z1"],"info":["西方遠征｢海外艦との接触｣","Z1","最後は西方、それ以外は西南遠征。どれも期間が長いので失敗注意"],"content":"有力な潜水艦による海外艦との接触作戦を成功させよ！","unlock":"潜水艦派遣作戦による技術入手の継続！達成後","reward_text":"駆逐艦「Z1」 戦略P200"},{"id":"t024","name":"Z1","cat":"E: Z1 入手","kind":"reward"},{"id":"t025","name":"「演習」を実施し、夜戦練度を高めよ！","cat":"主線/支線","kind":"task","type":"exercise","prev":["t021"],"next":["t028"],"info":["艦隊行動演習2回、雷撃演習2回","対潜戦演習の開放"],"content":"「艦隊行動演習」及び「雷撃戦演習」を継続して実施せよ！ ※艦隊行動演習を2回、雷撃戦演習を2回実施で達成確認。","unlock":"『「砲撃演習」を継続実施せよ！』達成後","reward_text":"熟練見張員 対潜戦演習の開放"},{"id":"t026","name":"鎮守府正面海域を護れ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t022"],"next":["t029"],"info":["鎮守府1"],"content":"第三艦隊4","unlock":"『「艦娘」出撃！』達成後","reward_text":"鎮守府正面海域に艦隊を出撃させ、敵艦の跳梁を阻止せよ！ ※鎮守府正面海域の「敵主力艦隊」(1-1-Cマス)にB勝利以上で達成。 / 高速修復剤x2"},{"id":"t027","name":"「駆逐隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t010"],"next":["t030"],"info":["｢駆逐艦｣4"],"content":"第二艦隊2","unlock":"『はじめての編成！』達成後","reward_text":"駆逐艦4隻以上で構成される「駆逐隊」を編成せよ！ ※駆逐艦以外を含む5隻以上の編成でも可。 / 高速建造x1"},{"id":"t028","name":"「対潜戦演習」を実施せよ！","cat":"主線/支線","kind":"task","type":"exercise","prev":["t025"],"next":["t031","t032"],"info":["対潜演習実施","航空戦演習の開放"],"content":"明石向け・演習","unlock":"『艦隊の夜戦練度向上に努めよ！』達成後","reward_text":"艦隊の対潜戦練度を向上させるため、「対潜戦演習」を実施せよ！ / 九四式爆雷投射機 航空戦演習の開放"},{"id":"t029","name":"鎮守府海域沖を警備せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t026"],"next":["t033"],"info":["鎮守府2出撃のみでも可"],"content":"第三艦隊5","unlock":"『鎮守府正面海域を護れ！』達成後","reward_text":"鎮守府海域沖に艦隊を出撃させ、同方面の警備を強化せよ！ ※鎮守府海域沖(1-2)に出撃1回で達成。勝敗問わず。 / 輸送船x1 家具箱(小)x1"},{"id":"t030","name":"「水雷戦隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t027"],"next":["t034","t035"],"info":["旗艦｢軽巡｣他「駆逐」2以上"],"content":"第二艦隊3","unlock":"『「駆逐隊」を編成せよ！』達成後","reward_text":"軽巡洋艦を旗艦とし、数隻の駆逐艦で構成される「水雷戦隊」を編成せよ！ ※旗艦軽巡、他駆逐2隻で達成。 / 開発資材x1 戦略P100"},{"id":"t031","name":"トラック泊地周辺の対潜哨戒を実施せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t028"],"next":["t036"],"info":["南方泊地1","鳳翔","鳳翔は瑞雲12型(六三四空)任務の途中で必要になる"],"content":"明石2？","unlock":"「対潜演習」を実施せよ、マンスリー「南方連絡海域正面の制海権を確保せよ！」達成後","reward_text":"艦隊を南方泊地に進出させ、トラック泊地対潜哨戒を実施せよ！ / 軽空母「鳳翔」"},{"id":"t032","name":"「航空戦演習」を実施せよ！","cat":"主線/支線","kind":"task","type":"exercise","prev":["t028"],"next":[],"info":["航空戦演習実施","総合演習の開放","零式艦戦21型(熟練)"],"content":"艦隊の航空戦練度を向上させるため、「航空戦演習」を実施せよ！","unlock":"「対潜戦演習」を実施せよ！達成後","reward_text":"零式艦戦21型(熟練) 総合演習の開放"},{"id":"t033","name":"接近する「敵前衛艦隊」を迎撃せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t029"],"next":["t037","t038"],"info":["鎮守府2"],"content":"第三艦隊6","unlock":"『鎮守府海域沖を警備せよ！』達成後","reward_text":"鎮守府沖に接近する「敵前衛艦隊」を捕捉、これを撃破せよ！ ※1-2-DマスでS勝利で達成。 / 駆逐艦「深雪」 九四式爆雷投射機"},{"id":"t034","name":"軽巡2隻を擁する隊を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t030"],"next":["t039"],"info":["｢軽巡｣2"],"content":"第三艦隊8","unlock":"『「水雷戦隊」を編成せよ！』達成後","reward_text":"軽巡洋艦2隻を擁する高速艦隊を編成せよ！ ※軽巡2隻のみの編成でも可。第1艦隊以外も可。 / 開発資材x2"},{"id":"t035","name":"大規模艦隊を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t030"],"next":["t040"],"info":["6隻編成","第2艦隊開放"],"content":"第二艦隊4","unlock":"『「水雷戦隊」を編成せよ！』達成後","reward_text":"全6隻で構成される主力艦隊を編成せよ！ / 第2艦隊の開放"},{"id":"t036","name":"トラック泊地周辺警備を実施せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t031"],"next":[],"info":["南方泊地2","明石"],"content":"明石3？","unlock":"『トラック泊地周辺の対潜哨戒を実施せよ！』及び『「川内」型軽巡姉妹の全3艦を編成せよ達成後』","reward_text":"南方トラック泊地は前線の要だ。トラック泊地周辺警備を実施して、工作艦の前線投入を準備せよ！ / 工作艦「明石」"},{"id":"t037","name":"近海諸島防衛線を支援せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t033"],"next":["t043"],"info":["鎮守府4"],"content":"第四艦隊1","unlock":"『接近する「敵前衛艦隊」を迎撃せよ！』達成後","reward_text":"※近海諸島防衛線(鎮守府海域-4) / 重巡洋艦「衣笠」 輸送船x1"},{"id":"t038","name":"「水雷戦隊」出撃せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t033"],"next":["t041"],"info":["旗艦「軽巡」他「駆逐」出撃"],"content":"第三艦隊7","unlock":"『接近する「敵前衛艦隊」を迎撃せよ！』達成後","reward_text":"軽巡洋艦1隻を旗艦とし、複数の駆逐艦からなる水雷戦隊で出撃せよ！ / 開発資材x2 戦略P100"},{"id":"t039","name":"「重巡戦隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t034"],"next":["t041"],"info":["｢重巡｣2"],"content":"第三艦隊9","unlock":"『軽巡2隻を擁する隊を編成せよ！』達成後","reward_text":"重巡洋艦2隻を擁する重巡艦隊を編成せよ！ ※重巡2隻のみの編成でも可。第1艦隊以外も可。 / 高速建造x1 開発資材x1"},{"id":"t040","name":"「水上機母艦」を配備せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t035"],"next":["t042"],"info":["｢水母｣"],"content":"多数の水上偵察機を運用する「水上機母艦」を艦隊に配備せよ！","unlock":"『大規模艦隊を編成せよ！』達成後","reward_text":"開発資材x1 戦略P100"},{"id":"t041","name":"「重巡洋艦」出撃せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t038","t039"],"next":["t043"],"info":["旗艦｢重巡｣出撃","第3艦隊開放"],"content":"第三艦隊10","unlock":"『「重巡戦隊」を編成せよ！』及び『「水雷戦隊」出撃せよ！』達成後","reward_text":"重巡洋艦を旗艦とした艦隊を編成、これを出撃させよ！ / 第3艦隊の開放 戦略P150"},{"id":"t042","name":"「第六駆逐隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t040"],"next":["t044","t045"],"info":["「暁」「響」「雷」「電」"],"content":"「暁」「響」「雷」「電」4隻による第六駆逐隊を編成せよ！","unlock":"『「水上機母艦」を配備せよ！』達成後","reward_text":"応急修理要員x1 戦略P200"},{"id":"t043","name":"南方連絡海域正面の制海権を確保せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t037","t041"],"next":["t046"],"info":["南方連絡1"],"content":"第四艦隊2","unlock":"『近海諸島防衛線を支援せよ！』達成後","reward_text":"※南方連絡海域正面(南方連絡海域-1) ボスA勝利で達成(難易度丁ならBでも達成確認) / 九三式水中聴音機 輸送船×2"},{"id":"t044","name":"「三川艦隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t042"],"next":["t047"],"info":["「鳥海」「青葉」「加古」「古鷹」「天龍」"],"content":"「鳥海」「青葉」「加古」「古鷹」「天龍」を含む高速艦隊を編成せよ！ ※もう１枠に低速艦を入れると達成不可。","unlock":"『戦艦と重巡による主力艦隊を編成せよ！』達成後","reward_text":"高速修復材×3 戦略P400"},{"id":"t045","name":"「第六戦隊」を編成せよ！","cat":"E: Z1 入手","kind":"task","type":"formation","prev":["t042"],"next":["t048"],"info":["「古鷹」「加古」「青葉」「衣笠」"],"content":"「古鷹」「加古」「青葉」「衣笠」を基幹とした第六戦隊を編成せよ！","unlock":"『「第六駆逐隊」を編成せよ！』達成後","reward_text":"給糧艦「伊良湖」x1 戦略P350"},{"id":"t046","name":"南方連絡航路対潜哨戒を実施せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t043"],"next":["t049"],"info":["南方連絡2","第4艦隊開放"],"content":"第四艦隊3","unlock":"『南方連絡海域正面の制海権を確保せよ！』達成後","reward_text":"有力な艦隊を南方海域正面に展開、敵戦力を撃滅して同海域の制海権を確保せよ！ ※南方航路(南方連絡海域-2) / 第4艦隊の開放 輸送船x2"},{"id":"t047","name":"「第四戦隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t044"],"next":["t009","t050","t051"],"info":["「愛宕」「高雄」「鳥海」「摩耶」"],"content":"「愛宕」「高雄」「鳥海」「摩耶」を基幹とした第四戦隊を編成せよ！","unlock":"『「三川艦隊」を編成せよ！』達成後","reward_text":"開発資材x4 戦略P400"},{"id":"t048","name":"新編「第二航空戦隊」を編成せよ","cat":"E: Z1 入手","kind":"task","type":"formation","prev":["t045"],"next":["t052"],"info":["旗艦「飛龍改二」「蒼龍」他｢駆逐｣2"],"content":"「飛龍改二」(※旗艦)及び「蒼龍」を基幹とした二航戦(要駆逐艦2隻)を編成せよ！","unlock":"『「第六戦隊」を編成せよ！』達成後","reward_text":"開発資材x2 戦略P:700"},{"id":"t049","name":"「川内」型軽巡姉妹の全3艦を編成せよ","cat":"主線/支線","kind":"task","type":"formation","prev":["t021","t046"],"next":["t053","t054","t056"],"info":["｢川内｣｢神通｣｢那珂｣","第5艦隊開放"],"content":"第五艦隊2","unlock":"『南方連絡航路対潜哨戒を実施せよ！』及び『「砲撃演習」を継続実施せよ！』達成後(要確認)","reward_text":"川内型軽巡洋艦「川内」「神通」「那珂」を同一艦隊に配属せよ！ / 第5艦隊の開放 戦略P200"},{"id":"t050","name":"「西村艦隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t047"],"next":["t057","t058"],"info":["「扶桑」「山城」「最上」「時雨」"],"content":"「扶桑」「山城」「最上」「時雨」を基幹とした西村艦隊を編成せよ！","unlock":"『「第四戦隊」を編成せよ！』達成後","reward_text":"給糧艦間宮 戦略P500"},{"id":"t051","name":"潜水艦隊を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t047"],"next":["t059"],"info":["｢潜水｣2"],"content":"伊号潜水艦2隻からなる潜水艦隊を編成せよ！","unlock":"『「第四戦隊」を編成せよ！』達成後","reward_text":"応急修理要員x1 戦略P200"},{"id":"t052","name":"新編「第二航空戦隊」出撃せよ！","cat":"E: Z1 入手","kind":"task","type":"sortie","prev":["t048"],"next":["t060","t061"],"info":["南方2　旗艦 「飛龍改二」「蒼龍」「駆逐」2"],"content":"「新編「二航戦」を基幹とした艦隊で、珊瑚諸島沖に出撃、敵機動部隊を撃滅せよ！ ※飛龍改二旗艦+蒼龍の他に編成時と同じで「駆逐2」が条件","unlock":"『新編「第二航空戦隊」を編成せよ』達成後","reward_text":"給糧艦「間宮」 家具箱（大）x1"},{"id":"t053","name":"第十六戦隊(第一次)」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t049"],"next":["t062"],"info":["旗艦「足柄」「球磨」「長良」"]},{"id":"t054","name":"「妙高」型重巡姉妹の全4隻を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t049"],"next":["t063"],"info":["「妙高」「那智」「足柄」「羽黒」"],"content":"第七艦隊1","unlock":"『「川内」型軽巡洋艦を全て編成せよ』達成後","reward_text":"妙高型重巡洋艦「妙高」「那智」「足柄」「羽黒」を同一艦隊に配属せよ / 高速修復材x1 開発資材x2"},{"id":"t055","name":"※Bから","cat":"主線/支線","kind":"note"},{"id":"t056","name":"北方海峡の警備を実施せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t049"],"next":["t064","t065"],"info":["北方2　3回"],"content":"第六艦隊1","unlock":"川内型編成任務後出現、他条件の有無は未確認","reward_text":"※「北方泊地海域」の2エリア目。ボス3回S勝利で達成。 / 22号対水上電探 戦略P150"},{"id":"t057","name":"第五航空戦隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t050"],"next":["t007","t067"],"info":["「翔鶴」「瑞鶴」｢駆逐｣2","同時受託任務数1上昇"],"content":"「翔鶴」「瑞鶴」を基幹とし、駆逐艦2隻を加えた第五航空戦隊を編成せよ！","unlock":"『「西村艦隊」を編成せよ！』達成後","reward_text":"同時受託任務数1上昇 戦略P700"},{"id":"t058","name":"西村艦隊出撃せよ","cat":"D: Littorio 入手","kind":"task","type":"sortie","prev":["t050"],"next":["t007","t067"],"info":["「扶桑」「山城」「最上」「時雨」南方連絡4","同時受託任務数1上昇"]},{"id":"t059","name":"「第八駆逐隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t051"],"next":["t068"],"info":["「朝潮」「満潮」「大潮」「荒潮」"],"content":"「朝潮」「満潮」「大潮」「荒潮」4隻による第八駆逐隊を編成せよ！ ※表記4隻「のみ」の艦隊を作ると達成","unlock":"『潜水艦隊を編成せよ！』達成後","reward_text":"戦闘糧食x1 戦略P:200"},{"id":"t060","name":"再編成「第二航空戦隊」を強化せよ！","cat":"E: Z1 入手","kind":"task","type":"formation","prev":["t052"],"next":["t068"],"info":["旗艦「蒼龍改二」「飛龍改二」他｢駆逐｣2"],"content":"「蒼龍改二」(※旗艦)及び「飛龍改二」を基幹とした二航戦(要駆逐艦2隻)を編成せよ！","unlock":"新編「第二航空戦隊」出撃せよ！達成後","reward_text":"開発資材x4 戦略P:800"},{"id":"t061","name":"機種転換","cat":"主線/支線","kind":"task","type":"factory","prev":["t052","t081","t099","t110"],"next":["t123"],"rewards":["天山一二型(村田隊)","烈風(六〇一空)"],"info":["｢第一艦隊旗艦｣+「九九式艦爆(江草隊)」で｢彗星｣2廃棄","彗星(江草隊)","｢第一艦隊旗艦｣+｢零戦52型丙(六〇一空)｣で｢烈風｣2廃棄","烈風(六〇一空)","第一艦隊旗艦｢翔鶴｣+｢九七式艦攻(村田隊)｣で｢天山｣2廃棄","天山一二型(村田隊)"],"content":"工廠2(終点)","unlock":"*年初初期表示","reward_text":"「零戦21型(熟練)」搭載空母を第一艦隊旗艦に配備した状態で、新たに「零戦52型」を２つ廃棄せよ！ / 装備改修(変化)「零式艦戦21型(熟練)」→ 「零式艦戦52型(熟練)」"},{"id":"t062","name":"第十六戦隊(第一次)出撃せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t053"],"next":["t071"],"info":["北方泊地3 旗艦「足柄」「球磨」「長良」"]},{"id":"t063","name":"「金剛」型による高速戦艦部隊を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t054"],"next":["t072"],"info":["「金剛」「比叡」「榛名」「霧島」","第7艦隊開放"],"content":"第七艦隊2","unlock":"『「妙高」型重巡姉妹の全4隻を編成せよ！』及び『オリョール海西部に進出せよ！』達成(第6艦隊開放後)後","reward_text":"金剛型戦艦「金剛」「比叡」「榛名」「霧島」全4隻の高速戦艦を集中配備せよ！ / 第7艦隊の開放"},{"id":"t064","name":"北方海域の哨戒を実施せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t056"],"next":["t073"],"info":["北方1"],"content":"艦隊を北方海域に展開、モーレイ海の哨戒を実施せよ！","unlock":"『北方海峡の警備を実施せよ！』達成後","reward_text":"高速建造材x3 戦略P:300"},{"id":"t065","name":"オリョール海西部に進出せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t056"],"next":["t075","t077","t079"],"info":["中部西2","第6艦隊開放"],"content":"第六艦隊2","unlock":"『北方海峡の警備を実施せよ！』達成後","reward_text":"有力な艦隊を中部海域に展開、オリョール海進出を図れ！※「中部西海域」の2エリア目。ボスS勝利で達成(要確認) [甲]A勝利で達成[丁][丙]B勝利で達成 / 第6艦隊の開放"},{"id":"t066","name":"ろ号","cat":"主線/支線","kind":"task","type":"sortie","prev":[],"next":["t080"],"info":["マンスリー"],"recurrence":"monthly"},{"id":"t067","name":"「新型正規空母」を配備せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t057","t058"],"next":["t081"],"info":["「雲龍」「天城」「葛城」いずれか"],"content":"新型正規空母、雲龍型航空母艦を第一艦隊旗艦に配備せよ ※「雲龍」「天城」「葛城」:3隻ともドロップ限定","unlock":"『「第五航空戦隊」を編成せよ！』達成後","reward_text":"高速建材x？"},{"id":"t068","name":"「第三十駆逐隊(第一次)」を編成せよ！","cat":"E: Z1 入手","kind":"task","type":"formation","prev":["t059","t060"],"next":["t082"],"rewards":["天山一二型(友永隊)","彗星(江草隊)"],"info":["「睦月」「如月」「弥生」「望月」"],"content":"「睦月」「如月」「弥生」「望月」4隻による第三十駆逐隊(第一次)を編成せよ！","unlock":"『「第八駆逐隊」を編成せよ！』達成後","reward_text":"戦闘糧食x1 戦略P:200"},{"id":"t069","name":"天山一二型(友永隊)","cat":"E: Z1 入手","kind":"reward"},{"id":"t070","name":"彗星(江草隊)","cat":"E: Z1 入手","kind":"reward"},{"id":"t071","name":"「第十六戦隊(第二次)」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t062"],"next":["t083"],"info":["旗艦「名取」「五十鈴」「鬼怒」"],"content":"「名取」を旗艦として「五十鈴」「鬼怒」を擁する、第十六戦隊(第二次)を編成せよ！","unlock":"『第十六戦隊(第一次)出撃せよ！』達成後","reward_text":"高速修復材x3 開発資材x3"},{"id":"t072","name":"「南雲機動部隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t063"],"next":[],"info":["「赤城」「加賀」「飛龍」「蒼龍」","第8艦隊開放"],"content":"第八艦隊1","unlock":"『「金剛」型による高速戦艦部隊を編成せよ！』達成後","reward_text":"一航戦「赤城」「加賀」二航戦「飛龍」「蒼龍」からなる第一機動部隊を編成せよ！ / 第8艦隊の開放"},{"id":"t073","name":"陽動作戦「AL作戦」を実施せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t064"],"next":["t084"],"info":["AL2、AL3"],"content":"北方AL海域において、「AL作戦」を実施せよ！ ※北方AL海域沖(AL海域-2)と北方AL海域中心部(AL海域-3)両方ボスS勝利で達成(難易度乙でA勝利可、難易度丁B勝利可)","unlock":"『北方海域の哨戒を実施せよ！！』達成後","reward_text":"勲章x1 戦略P:800"},{"id":"t074","name":"※B　艦隊開放ルートへ","cat":"主線/支線","kind":"note"},{"id":"t075","name":"「第十八駆逐隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t065"],"next":["t085"],"rewards":["53cm艦首(酸素)魚雷"],"info":["「霞」「霰」「陽炎」「不知火」"],"content":"「霞」「霰」「陽炎」「不知火」全4隻による第十八駆逐隊を編成せよ！","unlock":"『オリョール海西部に進出せよ！』達成後","reward_text":"戦闘糧食x1 戦略P200"},{"id":"t076","name":"53cm艦首(酸素)魚雷","cat":"主線/支線","kind":"reward"},{"id":"t077","name":"精強な「潜水艦隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t009","t065"],"next":[],"info":["旗艦｢潜水(Lv80以上)｣｢潜水(Lv40以上)｣3","53cm艦首(酸素)魚雷"],"content":"旗艦に練度80以上、僚艦も全て練度40以上の精鋭潜水艦隊を編成せよ！ ※旗艦Lv80(改造後の潜水空母可)、僚艦Lv40の3隻で達成可能。","unlock":"『オリョール海西部に進出せよ！』+ 『中規模潜水艦隊を編成せよ！』達成後","reward_text":"開発資材x3 53cm艦首(酸素)魚雷"},{"id":"t078","name":"※E　Z1入手任務群へ","cat":"主線/支線","kind":"note"},{"id":"t079","name":"潜水艦隊「第六艦隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t009","t065"],"next":["t008"],"info":["旗艦｢大鯨｣｢潜水｣4"],"content":"「潜水母艦」と複数の潜水艦(4隻以上)からなる潜水艦隊「第六艦隊」を編成せよ！ ※大鯨(旗艦必須)+潜水艦4隻で達成。","unlock":"『中規模潜水艦隊を編成せよ！』達成後","reward_text":"伊良湖x1 戦略P400"},{"id":"t080","name":"「空母機動部隊」西へ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t066"],"next":["t007","t097"],"info":["西方1 ｢空母系｣(軽込み)2｢駆逐｣2","※空母機動部隊「第三艦隊」を編成せよ！にも必要","※「第五航空戦隊」を再編成せよ！にも必要"],"content":"出撃","unlock":"『ろ号作戦』達成後","reward_text":"航空母艦2隻(随伴駆逐艦2隻)を基幹とする機動部隊で、カレー洋の敵艦隊を撃滅せよ！ ※西方海域1。軽空母でも可 / 改修資材x4 家具箱(大)x2"},{"id":"t081","name":"「第六〇一航空隊」発艦せよ！","cat":"D: Littorio 入手","kind":"task","type":"sortie","prev":["t067"],"next":["t061"],"info":["南方泊地3旗艦「雲龍」「天城」「葛城」いずれか","熟練艦載機整備員","熟練搭乗員"],"content":"雲龍型航空母艦旗艦の機動部隊で南方泊地沖で敵機動部隊を迎撃、これを撃滅せよ！ ※南方泊地海域の第3海域トラック泊地沖S勝利。 編成任務と異なり、第一艦隊でなくても可。 ブラウザ版と異なり、改装前の雲龍型でも可。","unlock":"「新型正規空母」を配備せよ！","reward_text":"熟練艦載機整備員 熟練搭乗員x1"},{"id":"t082","name":"「第三十駆逐隊(第ニ次)」を編成せよ！","cat":"E: Z1 入手","kind":"task","type":"formation","prev":["t068"],"next":["t088"],"info":["「睦月」「弥生」「卯月」「望月」"]},{"id":"t083","name":"第十六戦隊(第二次)出撃","cat":"主線/支線","kind":"task","type":"sortie","prev":["t071"],"next":[],"info":["西方2 旗艦「名取」「五十鈴」「鬼怒」"]},{"id":"t084","name":"発動！「MI作戦」","cat":"主線/支線","kind":"task","type":"sortie","prev":["t073"],"next":["t090","t107","t109"],"info":["MI1,MI2,MI3,MI4"],"content":"MI海域において「MI作戦」を実施、同作戦を完遂せよ！ MI海域の全ての海域のボスに勝利、一部B勝利込みでも達成確認したので全てB勝利以上でもOKと思われる。","unlock":"『陽動作戦「AL作戦」を実施せよ！』及び『西南要塞を攻略せよ！』達成後","reward_text":"勲章x1 戦略P:2000"},{"id":"t085","name":"主力戦艦部隊「第二戦隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t075"],"next":["t091"],"info":["｢長門｣｢陸奥｣｢扶桑｣｢山城｣"],"content":"長門型2隻及び扶桑型2隻の計4隻の主力戦艦からなる第二戦隊を編成せよ！","unlock":"『「第十八駆逐隊」を編成せよ！』達成後","reward_text":"高速修復剤x3 戦略P800"},{"id":"t086","name":"潜水艦53cm艦首魚雷(8門)","cat":"主線/支線","kind":"reward"},{"id":"t087","name":"烈風(六〇一空)","cat":"D: Littorio 入手","kind":"reward"},{"id":"t088","name":"「第三十駆逐隊」対潜哨戒！","cat":"E: Z1 入手","kind":"task","type":"sortie","prev":["t082"],"next":["t096"],"info":["南方泊地1「睦月」「弥生」「卯月」「望月」"],"content":"出撃","unlock":"「第三十駆逐隊(第二次)」を編成せよ！","reward_text":"「第三十駆逐隊（第二次）」は直ちに抜錨！南方トラック泊地の対潜哨戒を実施せよ！ ※南方泊地海域1トラック泊地周辺部「睦月」「弥生」「卯月」「望月」+｢出撃可能艦種の2隻｣A勝利以上でクリア / 特注家具職人x1 家具箱(大)x1"},{"id":"t089","name":"※A 瑞雲12(六三四)ルートへ","cat":"主線/支線","kind":"note"},{"id":"t090","name":"西部方面派遣艦隊、出撃せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t084"],"next":["t097"],"info":["西部いずれか　4回"],"content":"西方海域に西部方面派遣艦隊を派遣し、同方面の再集結中の敵増援艦隊を叩け！ ※西方海域のどこでも良いのでボスに4回勝利する。A勝利可。","unlock":"『発動！「MI作戦」』達成後","reward_text":"家具箱(大)x3 戦略P:1000"},{"id":"t091","name":"「第二戦隊」抜錨！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t085"],"next":["t098"],"info":["西方1  2回 ｢長門｣｢陸奥｣｢扶桑｣｢山城｣","一式徹甲弾"],"content":"「第二戦隊」を基幹とした艦隊でカレー洋に進出、反復出撃により敵海上兵力を激撃せよ！ ※長門、陸奥、扶桑、山城を含む艦隊で西方海域第1作戦海域のボスに2回勝利、S勝利2回で達成確認、A未確認","unlock":"主力戦艦部隊「第二戦隊」を編成せよ！達成後","reward_text":"一式徹甲弾"},{"id":"t092","name":"遠洋潜水艦作戦を実施せよ！","cat":"主線/支線","kind":"task","type":"expedition","prev":["t007","t008"],"next":["t099"],"info":["FS遠征｢遠洋潜水艦作戦｣","潜水艦53cm艦首魚雷(8門)"],"content":"「遠洋潜水艦作戦」を反復実施し、潜水艦隊による敵艦隊漸減に努めよ！（FS海域の遠征\"遠洋潜水艦作戦\"2回成功で達成）","unlock":"中部西海域潜水艦哨戒を実施せよ！","reward_text":"潜水艦53cm艦首魚雷(8門)"},{"id":"t093","name":"※D Littorio入手任務群へ","cat":"未分類","kind":"note"},{"id":"t094","name":"「第五航空戦隊」珊瑚諸島沖に出撃せよ","cat":"未分類","kind":"task","type":"sortie","prev":["t007","t008"],"next":["t099","t101"],"info":["南方2 「翔鶴」「瑞鶴」「朧」「秋雲」"],"content":"再編成した「第五航空戦隊」(「翔鶴」「瑞鶴」「朧」「秋雲」)を珊瑚諸島沖に展開、敵機動部隊を捕捉撃滅せよ！ ※南方海域2南方海域珊瑚諸島沖をS勝利で達成、A不可","unlock":"「第五航空戦隊」を再編成せよ！達成後","reward_text":"勲章x1 戦略P500"},{"id":"t095","name":"※Aから","cat":"D: Littorio 入手","kind":"note"},{"id":"t096","name":"「第五戦隊」編成せよ","cat":"E: Z1 入手","kind":"task","type":"formation","prev":["t088"],"next":["t103","t104"],"info":["「妙高」「那智」「羽黒」"],"content":"編成(分岐)","unlock":"「第三十駆逐隊」対潜哨戒！","reward_text":"「妙高」「那智」「羽黒」を基幹とした第五戦隊を編成せよ！ / 開発資材x4 戦略P400"},{"id":"t097","name":"空母機動部隊「第三艦隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t080","t090"],"next":["t105","t106"],"info":["旗艦「翔鶴」「瑞鶴」「瑞鳳」｢駆逐｣2"],"content":"「翔鶴」を旗艦として、「瑞鶴」「瑞鳳」及び随伴艦を配備した第三艦隊を編成せよ！ 上記三隻に適当な駆逐×3を編成で達成確認","unlock":"『西部方面派遣艦隊、出撃せよ！』達成後","reward_text":"改修資材x4 戦略P1000"},{"id":"t098","name":"戦艦を主力とした水上打撃部隊を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t091"],"next":["t107","t109"],"info":["｢大和｣｢武蔵｣｢長門｣｢陸奥｣｢伊勢｣｢日向｣｢扶桑｣｢山城｣いずれか3｢軽巡｣1"],"content":"大和型・長門型・伊勢型・扶桑型のいずれか3隻と軽巡1隻他の水上打撃部隊を配備せよ！","unlock":"「第二戦隊」抜錨！達成後","reward_text":"開発資材x3 戦略P400"},{"id":"t099","name":"精鋭「九七式艦攻」部隊の編成","cat":"主線/支線","kind":"task","type":"factory","prev":["t092","t094"],"next":["t061"],"rewards":["九七式艦攻(村田隊)"],"info":["｢第一艦隊旗艦｣+｢翔鶴｣か｢赤城｣で｢九七式艦攻｣3廃棄","九七式艦攻(村田隊)"],"content":"「翔鶴」または「赤城」を第一艦隊旗艦にした状態で、新たに「九七式艦攻」を３つ廃棄せよ！","unlock":"「第五航空戦隊」珊瑚諸島沖に出撃せよ達成後","reward_text":"九七式艦攻(村田隊)"},{"id":"t100","name":"九七式艦攻(村田隊)","cat":"主線/支線","kind":"reward"},{"id":"t101","name":"「新編成航空戦隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t094"],"next":["t111"],"info":["｢空母｣2｢駆逐｣2+｢航戦｣1か｢航巡｣2"],"content":"空母２隻＋航空戦艦/航空巡洋艦２隻＋駆逐艦２隻の新航空戦隊を編成せよ！ 第一艦隊で空母２隻駆逐艦２隻+航空戦艦１隻又は航空巡洋艦２隻を編成する","unlock":"『「第五航空戦隊」珊瑚諸島沖に出撃せよ』達成後 &「第十六戦隊(第二次)」出撃せよ！","reward_text":"開発資材x3 改修資材x3"},{"id":"t102","name":"22号対水上電探改四","cat":"D: Littorio 入手","kind":"reward"},{"id":"t103","name":"新型電探を配備せよ！","cat":"E: Z1 入手","kind":"task","type":"formation","prev":["t096"],"next":[],"rewards":["22号対水上電探改四"],"info":["第一艦隊旗艦｢妙高改二｣","22号対水上電探改四"],"content":"編成(終点)","unlock":"「第五戦隊」編成せよ！","reward_text":"新型電探運用試験のため、第一艦隊の旗艦に「妙高改二」を配備せよ！ / 22号対水上電探改四"},{"id":"t104","name":"観艦式予行を実施せよ！","cat":"E: Z1 入手","kind":"task","type":"expedition","prev":["t096"],"next":["t112"],"info":["鎮守府遠征「観艦式予行」2"],"content":"遠征1","unlock":"「第五戦隊」編成せよ！","reward_text":"観艦式を実施する。準備として「観艦式予行」を実施、これを２回成功させよ！ / 開発資材x3"},{"id":"t105","name":"精鋭「艦戦」隊の新編","cat":"主線/支線","kind":"task","type":"factory","prev":["t097"],"next":["t113"],"info":["｢第一艦隊旗艦｣+｢鳳翔｣+｢錬度MAX零戦21型｣で｢零戦21型｣2｢九六式艦戦｣1廃棄","零式艦戦21型(熟練)","要「熟練搭乗員」","イヤリー"],"recurrence":"yearly"},{"id":"t106","name":"「第三航空戦隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t097"],"next":["t114"],"info":["旗艦｢瑞鶴改｣(改二、改二甲も可)｢瑞鳳｣｢千歳｣｢千代田｣(千歳千代田は軽空のみ)","熟練搭乗員","「熟練搭乗員」はすぐ←の任務で使う"],"content":"「瑞鶴改」を旗艦とし、航空母艦「瑞鳳」「千歳」「千代田」を加えた4隻の空母部隊を編成せよ！ 千歳と千代田は軽空母のみ、水母不可","unlock":"『空母機動部隊「第三艦隊」を編成せよ！』達成後","reward_text":"開発資材x3 熟練搭乗員x1"},{"id":"t107","name":"艦隊旗艦、戦艦「大和」出撃せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t084","t098"],"next":[],"rewards":["試製51cm連装砲"],"info":["MI3 旗艦｢大和｣","試製51cm連装砲"],"content":"旗艦「大和」出撃する！MI諸島近海に展開し、その巨砲で敵MI島基地守備隊を粉砕せよ！ 大和旗艦でMI海域3面をS勝利で達成。A勝利は不可。","unlock":"『発動！「MI作戦」』 『戦艦を主力とした水上打撃部隊を編成せよ！』達成後","reward_text":"試製51cm連装砲 戦略P:300"},{"id":"t108","name":"試製51cm連装砲","cat":"主線/支線","kind":"reward"},{"id":"t109","name":"「水上打撃部隊」南方へ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t084","t098"],"next":["t115","t117"],"info":["南方1 ｢戦艦｣(高速不可)3｢軽巡｣1","イヤリー"],"recurrence":"yearly","content":"出撃","unlock":"*年初初期表示","reward_text":"戦艦３隻軽巡１隻他の艦隊で南方海域の第１海域勝利 高速戦艦は不可 航空戦艦はOK / 高速修復剤x2"},{"id":"t110","name":"い号作戦","cat":"主線/支線","kind":"task","type":"sortie","prev":[],"next":["t061"],"info":["マンスリー"],"recurrence":"monthly","content":"出撃5","unlock":"『敵補給ラインを寸断せよ！』達成後","reward_text":"空母6～8隻撃破する / 高速修復剤x3"},{"id":"t111","name":"新編成航空戦隊、北方へ進出せよ！","cat":"D: Littorio 入手","kind":"task","type":"sortie","prev":["t101"],"next":["t119"],"info":["北方4 ｢空母｣2｢駆逐｣2+｢航戦｣1か｢航巡｣2"],"content":"「新編成航空部隊」を北方アルフォンシーノ列島沖へ展開、同海域の敵艦隊を撃滅せよ！ ※北方海域4。空母２隻+航空戦艦１隻又は航空巡洋艦２隻＋駆逐艦２隻の艦隊。第一艦隊でなくてよい。S勝利達成確認。A勝利要検証","unlock":"「新編成航空戦隊」を編成せよ！","reward_text":"勲章x1 戦略P700"},{"id":"t112","name":"観艦式を敢行せよ！","cat":"E: Z1 入手","kind":"task","type":"expedition","prev":["t104"],"next":["t120"],"info":["鎮守府遠征「観艦式」","同時受託任務数1上昇"],"content":"遠征2","unlock":"演習を強化、艦隊の練度向上に努めよ！","reward_text":"練度の高い艦隊で「観艦式」本番を実施する。「観艦式」を成功させよ！ / 改修資材x3 同時受託任務数1上昇"},{"id":"t113","name":"機種転換(零戦52)","cat":"主線/支線","kind":"task","type":"factory","prev":["t105"],"next":["t128"],"info":["｢第一艦隊旗艦｣+｢零式艦戦21型(熟練)｣で｢零戦52型｣2廃棄","イヤリー","鳳翔も練度も熟練搭乗員も不要"],"recurrence":"yearly"},{"id":"t114","name":"「第三航空戦隊」近海諸島防衛線に出撃！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t106"],"next":["t122"],"info":["鎮守府4 旗艦｢瑞鶴改｣(改二、改二甲も可)｢瑞鳳｣｢千歳｣｢千代田｣(千歳千代田は軽空のみ)"],"content":"編成した「第三航空戦隊」を近海諸島防衛線に展開、敵進攻艦隊を補足撃滅せよ！ ※旗艦「瑞鶴改」+「瑞鳳」「千歳」「千代田」+自由枠2、「千歳」「千代田」は軽母 「鎮守府海域:第四海域(近海諸島防衛線)」をS勝利(A勝利不可)","unlock":"「第三航空戦隊」を編成せよ！","reward_text":"高速修復材x4 給糧艦「伊良湖」x3"},{"id":"t115","name":"「戦艦部隊」北方海域に突入せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t109"],"next":[],"rewards":["一式徹甲弾"],"info":["北方3 ｢戦艦｣2｢軽空｣1(航戦、高戦、空母不可、該当艦種の隻数もこれ以上増やすとアウト)","一式徹甲弾"],"content":"戦艦２隻と直援軽空母１隻(正規空母無し)基幹の艦隊で、北方キス島後方海域に突入せよ！ ※S勝利で達成、A不可 航空戦艦、高速戦艦は不可 正規空母1隻以上、戦艦3隻以上、軽空母2隻以上は達成不可","unlock":"「水上打撃部隊」南方へ！達成後","reward_text":"開発資材x4 一式徹甲弾"},{"id":"t116","name":"一式徹甲弾","cat":"主線/支線","kind":"reward"},{"id":"t117","name":"南方海域珊瑚諸島沖の制空権を握れ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t109"],"next":["t123"],"info":["南方2 2回","イヤリー"],"recurrence":"yearly","content":"出撃2","unlock":"「水上打撃部隊」南方へ！達成後 他任務も条件？","reward_text":"南方海域珊瑚諸島沖に反復出撃し、敵機動部隊本体を補足撃滅、制海権を確保せよ！ 南方海域第2作戦海域のボスに2回S勝利。A勝利は不可。 / 開発資材x5 改修資材x5"},{"id":"t118","name":"天山一二型(村田隊)","cat":"主線/支線","kind":"reward"},{"id":"t119","name":"精強な「水上反撃部隊」を再編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t111"],"next":["t125"],"info":["旗艦「霞」「足柄」「大淀」「朝霜」「清霜」"],"content":"駆逐艦「霞」旗艦、「足柄」「大淀」「朝霜」「清霜」他の水上反撃部隊を再編成せよ！","unlock":"軽快な「水上反撃部隊」を編成せよ！ &新編成航空戦隊、北方へ進出せよ！","reward_text":"高速修復材x3 戦闘糧食x3"},{"id":"t120","name":"遠洋練習航海を実施せよ！","cat":"E: Z1 入手","kind":"task","type":"expedition","prev":["t112"],"next":[],"rewards":["鹿島"],"info":["中部海域遠征「遠洋練習航海」及びFS海域遠征「南洋方面遠洋練習航海」","鹿島","難易度甲・史のみ"],"content":"遠征3(終点)","unlock":"観艦式を敢行せよ！","reward_text":"「遠洋練習航海」及び「南洋方面遠洋練習航海」を実施、これを成功させよ！ ※中部海域の遠征「遠洋練習航海」及びFS海域の遠征「南洋方面遠洋練習航海」 / 練習巡洋艦「鹿島」 難易度 史/甲向けのみ"},{"id":"t121","name":"鹿島","cat":"E: Z1 入手","kind":"reward"},{"id":"t122","name":"「第四航空戦隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t114"],"next":["t126"],"info":["｢伊勢改｣｢日向改｣","瑞雲(六三四空)"],"content":"航空戦艦「伊勢改」及び「日向改」を基幹戦力とした第四航空戦隊を編成せよ！","unlock":"「第三航空戦隊」近海諸島防衛線に出撃！","reward_text":"改修資材x3 瑞雲(六三四空)"},{"id":"t123","name":"新型「艦戦」の改良","cat":"主線/支線","kind":"task","type":"factory","prev":["t061","t117"],"next":["t126"],"rewards":["烈風改"],"info":["第一艦隊旗艦+｢錬度MAX烈風｣で｢烈風｣1｢零戦52型｣1廃棄","烈風改","イヤリー","条件となるイヤリー任務をこなすと毎年出現"],"recurrence":"yearly","content":"工廠(終点)","unlock":"機種転換(村田)及び南方海域珊瑚諸島沖の制空権を握れ！達成後","reward_text":"第一艦隊旗艦に練度max「烈風」搭載空母を配備した状態で、「烈風」x1「零戦52型」x1を廃棄せよ！ / 装備改修(変化)「烈風」→ 「烈風改」"},{"id":"t124","name":"烈風改","cat":"主線/支線","kind":"reward"},{"id":"t125","name":"「礼号作戦」実施せよ！","cat":"D: Littorio 入手","kind":"task","type":"sortie","prev":["t119"],"next":["t126"],"info":["中部西2 旗艦「霞」「足柄」「大淀」「朝霜」「清霜」"],"content":"精強な「水上反撃部隊」で、中部西海域オリョール海西部に突入！敵艦隊を撃滅せよ！ ※旗艦「霞」+「足柄」「大淀」「朝霜」「清霜」","unlock":"精強な「水上反撃部隊」を再編成せよ！","reward_text":"勲章x1 戦略P700"},{"id":"t126","name":"精強「航空戦艦」戦隊を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t122","t123","t125"],"next":["t128"],"rewards":["瑞雲12型"],"info":["「伊勢改」「日向改」「扶桑改二」「山城改二」｢駆逐｣2","瑞雲12型"],"content":"「伊勢改」「日向改」「扶桑改二」「山城改二」と直衛駆逐艦２隻の精強航空戦艦戦隊を編成せよ！","unlock":"「礼号作戦」実施せよ！ &「第四航空戦隊」を編成せよ！","reward_text":"開発資材x3 瑞雲12型"},{"id":"t127","name":"瑞雲12型","cat":"D: Littorio 入手","kind":"reward"},{"id":"t128","name":"精鋭「新型瑞雲」部隊の編成","cat":"D: Littorio 入手","kind":"task","type":"factory","prev":["t113","t126"],"next":[],"rewards":["瑞雲12型(六三四空)"],"info":["｢第一艦隊旗艦｣+｢錬度MAX瑞雲(六三四空)｣で｢瑞雲12型｣1｢瑞雲｣2廃棄","瑞雲12型(六三四空)"],"content":"第一艦隊旗艦に練度max「瑞雲(六三四空)」搭載艦を配備した状態で、「瑞雲12型」x1「瑞雲」x2を廃棄せよ！","unlock":"精強「航空戦艦」戦隊を編成せよ！&機種転換(零式艦戦21型(熟練)→零式艦戦52型(熟練))","reward_text":"装備改修(変化)「瑞雲(六三四空)」→ 「瑞雲12型(六三四空)」"},{"id":"t129","name":"瑞雲12型(六三四空)","cat":"D: Littorio 入手","kind":"reward"}];
+const TASKS = [{"id":"t001","name":"スタート","cat":"主線/支線","kind":"task","type":"sortie","prev":[],"next":["t005"]},{"id":"t002","name":"※未分類","cat":"未分類","kind":"note"},{"id":"t003","name":"※D　Littorio入手任務群","cat":"D: Littorio 入手","kind":"note"},{"id":"t004","name":"※E　Z1入手任務群","cat":"E: Z1 入手","kind":"note"},{"id":"t005","name":"はじめての「建造」！","cat":"主線/支線","kind":"task","type":"factory","prev":["t001"],"next":["t010"],"info":["1隻以上建造","進水不要、建造開始した時点でクリア"],"content":"「工廠」で鋼材などの資材を使って、新しい艦を「建造」せよ！","unlock":"初期任務","reward_text":"開発資材x1 高速建造x2"},{"id":"t006","name":"南西諸島海域クリア後？","cat":"未分類","kind":"note"},{"id":"t007","name":"「第五航空戦隊」を再編成せよ！","cat":"未分類","kind":"task","type":"formation","prev":["t057","t058","t080"],"next":["t016","t092","t094"],"require_ships":["翔鶴","瑞鶴","朧","秋雲"],"info":["「翔鶴」「瑞鶴」「朧」「秋雲」"],"content":"「翔鶴」「瑞鶴」と、随伴駆逐艦「朧」「秋雲」を基幹とした新第五航空戦隊を再編成せよ！","unlock":"『「第五航空戦隊」を編成せよ！』達成後 ※「空母機動部隊」西へ！の達成も必要？","reward_text":"開発資材x5 戦略P:800"},{"id":"t008","name":"中部西海域潜水艦哨戒を実施せよ！","cat":"主線/支線","kind":"task","type":"expedition","prev":["t079"],"next":["t013","t092","t094"],"rewards":["潜水艦53cm艦首魚雷(8門)"],"info":["中部西遠征｢中部西海域潜水艦哨戒｣2","潜水艦53cm艦首魚雷(8門)"],"content":"「中部西海域潜水艦哨戒」を反復実施し、哨戒と潜水艦隊練度向上に努めよ！（2回成功で達成）","unlock":"潜水艦隊「第六艦隊」を編成せよ！","reward_text":"潜水艦53cm艦首魚雷(8門)"},{"id":"t009","name":"中規模潜水艦隊を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t047"],"next":["t014","t077","t079"],"info":["｢潜水｣3"],"content":"伊号潜水艦3隻からなる潜水艦隊を編成せよ！","unlock":"『「第四戦隊」を編成せよ！』達成後","reward_text":"給糧艦「伊良湖」x1 戦略P300"},{"id":"t010","name":"はじめての「編成」！","cat":"主線/支線","kind":"task","type":"formation","prev":["t005"],"next":["t015","t027"],"info":["2隻以上編成","砲撃演習の開放"]},{"id":"t011","name":"「北号作戦」を実施せよ！","cat":"未分類","kind":"task","type":"expedition","prev":[],"next":[],"rewards":["瑞雲(六三四空)"],"info":["南西遠征｢北号作戦｣","瑞雲(六三四空)"],"content":"航空戦艦2隻を投入する強行資源輸送作戦「北号作戦」を実施せよ ※南西諸島海域の4つ目の遠征が「北号作戦」","unlock":"南西諸島海域クリア後？","reward_text":"瑞雲(六三四空) 戦略P:500"},{"id":"t012","name":"瑞雲(六三四空)","cat":"主線/支線","kind":"reward"},{"id":"t013","name":"潜水艦派遣による技術入手を強化せよ！","cat":"D: Littorio 入手","kind":"task","type":"expedition","prev":["t008"],"next":["t016"],"info":["西南遠征｢潜水艦派遣作戦｣6","瑞雲(六三四空)"],"content":"潜水艦派遣作戦を継続して成功させ、他国製技術の導入に努めよ！（西南海域の遠征\"潜水艦派遣作戦\"6回で達成）","unlock":"中部西海域潜水艦哨戒を実施せよ！、潜水艦派遣による海外艦との接触作戦 達成後","reward_text":"瑞雲(六三四空) 戦略P150"},{"id":"t014","name":"第一次潜水艦派遣作戦","cat":"E: Z1 入手","kind":"task","type":"expedition","prev":["t009"],"next":["t018"],"info":["西南遠征｢潜水艦派遣作戦｣"],"content":"第一次潜水艦派遣作戦を実施、これを成功させよ！ ※西南海域の遠征、潜水艦派遣作戦(潜水艦4隻以上、13日)","unlock":"『中規模潜水艦隊を編成せよ！』達成後","reward_text":"応急修理要員x1 戦略P150"},{"id":"t015","name":"はじめての「演習」！","cat":"主線/支線","kind":"task","type":"exercise","prev":["t010"],"next":["t019"],"info":["艦隊行動演習の実施","砲撃演習の開放"],"content":"第三艦隊1","unlock":"『はじめての「編成」！』達成後","reward_text":"はじめての「演習」！「艦隊行動演習」を実施せよ！ / 開発資材x1 砲戦演習の開放"},{"id":"t016","name":"潜水艦派遣作戦による海外艦救援！","cat":"D: Littorio 入手","kind":"task","type":"expedition","prev":["t007","t013"],"next":[],"rewards":["Littorio"],"info":["西方 遠征「海外艦との接触｣4","Littorio","多くの長期間遠征を経る。Z1と共通性高く、同時並行推奨"],"content":"有力な潜水艦隊派遣による海外艦との接触、同救援を継続的に実施せよ！（西方海域の遠征\"海外艦との接触\"を丁4回で達成）","unlock":"「第五航空戦隊」を再編成せよ！ 潜水艦派遣による技術入手を強化せよ！達成後","reward_text":"高速戦艦「Littorio」 戦略P200"},{"id":"t017","name":"Littorio","cat":"D: Littorio 入手","kind":"reward"},{"id":"t018","name":"第２次潜水艦派遣作戦","cat":"E: Z1 入手","kind":"task","type":"expedition","prev":["t014"],"next":["t020"],"info":["西南遠征｢潜水艦派遣作戦｣"],"content":"第２次潜水艦派遣作戦を成功させよ！ ※西南海域の遠征、潜水艦派遣作戦(潜水艦4隻以上、13日)","unlock":"「第１次潜水艦派遣作戦」達成後","reward_text":"開発資材x3 Ju87C改"},{"id":"t019","name":"「砲撃演習」を実施せよ！","cat":"主線/支線","kind":"task","type":"exercise","prev":["t015"],"next":["t021","t022"],"info":["砲撃演習の実施","雷撃演習の開放"]},{"id":"t020","name":"潜水艦派遣作戦による技術入手の継続！","cat":"E: Z1 入手","kind":"task","type":"expedition","prev":["t018"],"next":["t023"],"info":["西南遠征｢潜水艦派遣作戦｣2"],"content":"第３次及び第４次潜水艦派遣作戦を成功させ、他国製技術の導入に努めよ！（潜水艦派遣作戦を2回成功で達成）","unlock":"「第２次潜水艦派遣作戦」達成後","reward_text":"改修資材x4 Ju87C改"},{"id":"t021","name":"「砲撃演習」を継続実施せよ！","cat":"主線/支線","kind":"task","type":"exercise","prev":["t019"],"next":["t025","t049"],"info":["砲撃演習の実施2回"],"content":"第五艦隊1","unlock":"『「砲撃演習」を実施せよ！』達成後","reward_text":"艦隊戦の練度を向上させるため、「砲戦演習」を継続して実施せよ！ ※砲撃演習を2回実施で達成確認。 / 12.7cm連装砲B型改二"},{"id":"t022","name":"「艦娘」出撃！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t019"],"next":["t026"],"info":["出撃"],"content":"第三艦隊3","unlock":"『「砲戦演習」を実施せよ！』達成後","reward_text":"艦隊を出撃させ、敵艦隊と交戦せよ！ ※D敗北でも可。 / 開発資材x1"},{"id":"t023","name":"潜水艦派遣による海外艦との接触作戦","cat":"E: Z1 入手","kind":"task","type":"expedition","prev":["t020"],"next":[],"rewards":["Z1"],"info":["西方遠征｢海外艦との接触｣","Z1","最後は西方、それ以外は西南遠征。どれも期間が長いので失敗注意"],"content":"有力な潜水艦による海外艦との接触作戦を成功させよ！","unlock":"潜水艦派遣作戦による技術入手の継続！達成後","reward_text":"駆逐艦「Z1」 戦略P200"},{"id":"t024","name":"Z1","cat":"E: Z1 入手","kind":"reward"},{"id":"t025","name":"「演習」を実施し、夜戦練度を高めよ！","cat":"主線/支線","kind":"task","type":"exercise","prev":["t021"],"next":["t028"],"info":["艦隊行動演習2回、雷撃演習2回","対潜戦演習の開放"],"content":"「艦隊行動演習」及び「雷撃戦演習」を継続して実施せよ！ ※艦隊行動演習を2回、雷撃戦演習を2回実施で達成確認。","unlock":"『「砲撃演習」を継続実施せよ！』達成後","reward_text":"熟練見張員 対潜戦演習の開放"},{"id":"t026","name":"鎮守府正面海域を護れ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t022"],"next":["t029"],"info":["鎮守府1"],"content":"第三艦隊4","unlock":"『「艦娘」出撃！』達成後","reward_text":"鎮守府正面海域に艦隊を出撃させ、敵艦の跳梁を阻止せよ！ ※鎮守府正面海域の「敵主力艦隊」(1-1-Cマス)にB勝利以上で達成。 / 高速修復剤x2"},{"id":"t027","name":"「駆逐隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t010"],"next":["t030"],"info":["｢駆逐艦｣4"],"content":"第二艦隊2","unlock":"『はじめての編成！』達成後","reward_text":"駆逐艦4隻以上で構成される「駆逐隊」を編成せよ！ ※駆逐艦以外を含む5隻以上の編成でも可。 / 高速建造x1"},{"id":"t028","name":"「対潜戦演習」を実施せよ！","cat":"主線/支線","kind":"task","type":"exercise","prev":["t025"],"next":["t031","t032"],"info":["対潜演習実施","航空戦演習の開放"],"content":"明石向け・演習","unlock":"『艦隊の夜戦練度向上に努めよ！』達成後","reward_text":"艦隊の対潜戦練度を向上させるため、「対潜戦演習」を実施せよ！ / 九四式爆雷投射機 航空戦演習の開放"},{"id":"t029","name":"鎮守府海域沖を警備せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t026"],"next":["t033"],"info":["鎮守府2出撃のみでも可"],"content":"第三艦隊5","unlock":"『鎮守府正面海域を護れ！』達成後","reward_text":"鎮守府海域沖に艦隊を出撃させ、同方面の警備を強化せよ！ ※鎮守府海域沖(1-2)に出撃1回で達成。勝敗問わず。 / 輸送船x1 家具箱(小)x1"},{"id":"t030","name":"「水雷戦隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t027"],"next":["t034","t035"],"info":["旗艦｢軽巡｣他「駆逐」2以上"],"content":"第二艦隊3","unlock":"『「駆逐隊」を編成せよ！』達成後","reward_text":"軽巡洋艦を旗艦とし、数隻の駆逐艦で構成される「水雷戦隊」を編成せよ！ ※旗艦軽巡、他駆逐2隻で達成。 / 開発資材x1 戦略P100"},{"id":"t031","name":"トラック泊地周辺の対潜哨戒を実施せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t028"],"next":["t036"],"require_ships":["鳳翔"],"info":["南方泊地1","鳳翔","鳳翔は瑞雲12型(六三四空)任務の途中で必要になる"],"content":"明石2？","unlock":"「対潜演習」を実施せよ、マンスリー「南方連絡海域正面の制海権を確保せよ！」達成後","reward_text":"艦隊を南方泊地に進出させ、トラック泊地対潜哨戒を実施せよ！ / 軽空母「鳳翔」"},{"id":"t032","name":"「航空戦演習」を実施せよ！","cat":"主線/支線","kind":"task","type":"exercise","prev":["t028"],"next":[],"info":["航空戦演習実施","総合演習の開放","零式艦戦21型(熟練)"],"content":"艦隊の航空戦練度を向上させるため、「航空戦演習」を実施せよ！","unlock":"「対潜戦演習」を実施せよ！達成後","reward_text":"零式艦戦21型(熟練) 総合演習の開放"},{"id":"t033","name":"接近する「敵前衛艦隊」を迎撃せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t029"],"next":["t037","t038"],"info":["鎮守府2"],"content":"第三艦隊6","unlock":"『鎮守府海域沖を警備せよ！』達成後","reward_text":"鎮守府沖に接近する「敵前衛艦隊」を捕捉、これを撃破せよ！ ※1-2-DマスでS勝利で達成。 / 駆逐艦「深雪」 九四式爆雷投射機"},{"id":"t034","name":"軽巡2隻を擁する隊を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t030"],"next":["t039"],"info":["｢軽巡｣2"],"content":"第三艦隊8","unlock":"『「水雷戦隊」を編成せよ！』達成後","reward_text":"軽巡洋艦2隻を擁する高速艦隊を編成せよ！ ※軽巡2隻のみの編成でも可。第1艦隊以外も可。 / 開発資材x2"},{"id":"t035","name":"大規模艦隊を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t030"],"next":["t040"],"info":["6隻編成","第2艦隊開放"],"content":"第二艦隊4","unlock":"『「水雷戦隊」を編成せよ！』達成後","reward_text":"全6隻で構成される主力艦隊を編成せよ！ / 第2艦隊の開放"},{"id":"t036","name":"トラック泊地周辺警備を実施せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t031"],"next":[],"require_ships":["明石"],"info":["南方泊地2","明石"],"content":"明石3？","unlock":"『トラック泊地周辺の対潜哨戒を実施せよ！』及び『「川内」型軽巡姉妹の全3艦を編成せよ達成後』","reward_text":"南方トラック泊地は前線の要だ。トラック泊地周辺警備を実施して、工作艦の前線投入を準備せよ！ / 工作艦「明石」"},{"id":"t037","name":"近海諸島防衛線を支援せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t033"],"next":["t043"],"info":["鎮守府4"],"content":"第四艦隊1","unlock":"『接近する「敵前衛艦隊」を迎撃せよ！』達成後","reward_text":"※近海諸島防衛線(鎮守府海域-4) / 重巡洋艦「衣笠」 輸送船x1"},{"id":"t038","name":"「水雷戦隊」出撃せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t033"],"next":["t041"],"info":["旗艦「軽巡」他「駆逐」出撃"],"content":"第三艦隊7","unlock":"『接近する「敵前衛艦隊」を迎撃せよ！』達成後","reward_text":"軽巡洋艦1隻を旗艦とし、複数の駆逐艦からなる水雷戦隊で出撃せよ！ / 開発資材x2 戦略P100"},{"id":"t039","name":"「重巡戦隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t034"],"next":["t041"],"info":["｢重巡｣2"],"content":"第三艦隊9","unlock":"『軽巡2隻を擁する隊を編成せよ！』達成後","reward_text":"重巡洋艦2隻を擁する重巡艦隊を編成せよ！ ※重巡2隻のみの編成でも可。第1艦隊以外も可。 / 高速建造x1 開発資材x1"},{"id":"t040","name":"「水上機母艦」を配備せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t035"],"next":["t042"],"info":["｢水母｣"],"content":"多数の水上偵察機を運用する「水上機母艦」を艦隊に配備せよ！","unlock":"『大規模艦隊を編成せよ！』達成後","reward_text":"開発資材x1 戦略P100"},{"id":"t041","name":"「重巡洋艦」出撃せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t038","t039"],"next":["t043"],"info":["旗艦｢重巡｣出撃","第3艦隊開放"],"content":"第三艦隊10","unlock":"『「重巡戦隊」を編成せよ！』及び『「水雷戦隊」出撃せよ！』達成後","reward_text":"重巡洋艦を旗艦とした艦隊を編成、これを出撃させよ！ / 第3艦隊の開放 戦略P150"},{"id":"t042","name":"「第六駆逐隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t040"],"next":["t044","t045"],"require_ships":["暁","響","雷","電"],"info":["「暁」「響」「雷」「電」"],"content":"「暁」「響」「雷」「電」4隻による第六駆逐隊を編成せよ！","unlock":"『「水上機母艦」を配備せよ！』達成後","reward_text":"応急修理要員x1 戦略P200"},{"id":"t043","name":"南方連絡海域正面の制海権を確保せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t037","t041"],"next":["t046"],"info":["南方連絡1"],"content":"第四艦隊2","unlock":"『近海諸島防衛線を支援せよ！』達成後","reward_text":"※南方連絡海域正面(南方連絡海域-1) ボスA勝利で達成(難易度丁ならBでも達成確認) / 九三式水中聴音機 輸送船×2"},{"id":"t044","name":"「三川艦隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t042"],"next":["t047"],"require_ships":["鳥海","青葉","加古","古鷹","天龍"],"info":["「鳥海」「青葉」「加古」「古鷹」「天龍」"],"content":"「鳥海」「青葉」「加古」「古鷹」「天龍」を含む高速艦隊を編成せよ！ ※もう１枠に低速艦を入れると達成不可。","unlock":"『戦艦と重巡による主力艦隊を編成せよ！』達成後","reward_text":"高速修復材×3 戦略P400"},{"id":"t045","name":"「第六戦隊」を編成せよ！","cat":"E: Z1 入手","kind":"task","type":"formation","prev":["t042"],"next":["t048"],"require_ships":["古鷹","加古","青葉","衣笠"],"info":["「古鷹」「加古」「青葉」「衣笠」"],"content":"「古鷹」「加古」「青葉」「衣笠」を基幹とした第六戦隊を編成せよ！","unlock":"『「第六駆逐隊」を編成せよ！』達成後","reward_text":"給糧艦「伊良湖」x1 戦略P350"},{"id":"t046","name":"南方連絡航路対潜哨戒を実施せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t043"],"next":["t049"],"info":["南方連絡2","第4艦隊開放"],"content":"第四艦隊3","unlock":"『南方連絡海域正面の制海権を確保せよ！』達成後","reward_text":"有力な艦隊を南方海域正面に展開、敵戦力を撃滅して同海域の制海権を確保せよ！ ※南方航路(南方連絡海域-2) / 第4艦隊の開放 輸送船x2"},{"id":"t047","name":"「第四戦隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t044"],"next":["t009","t050","t051"],"require_ships":["愛宕","高雄","鳥海","摩耶"],"info":["「愛宕」「高雄」「鳥海」「摩耶」"],"content":"「愛宕」「高雄」「鳥海」「摩耶」を基幹とした第四戦隊を編成せよ！","unlock":"『「三川艦隊」を編成せよ！』達成後","reward_text":"開発資材x4 戦略P400"},{"id":"t048","name":"新編「第二航空戦隊」を編成せよ","cat":"E: Z1 入手","kind":"task","type":"formation","prev":["t045"],"next":["t052"],"require_ships":["飛龍","蒼龍"],"info":["旗艦「飛龍改二」「蒼龍」他｢駆逐｣2"],"content":"「飛龍改二」(※旗艦)及び「蒼龍」を基幹とした二航戦(要駆逐艦2隻)を編成せよ！","unlock":"『「第六戦隊」を編成せよ！』達成後","reward_text":"開発資材x2 戦略P:700"},{"id":"t049","name":"「川内」型軽巡姉妹の全3艦を編成せよ","cat":"主線/支線","kind":"task","type":"formation","prev":["t021","t046"],"next":["t053","t054","t056"],"require_ships":["川内","神通","那珂"],"info":["｢川内｣｢神通｣｢那珂｣","第5艦隊開放"],"content":"第五艦隊2","unlock":"『南方連絡航路対潜哨戒を実施せよ！』及び『「砲撃演習」を継続実施せよ！』達成後(要確認)","reward_text":"川内型軽巡洋艦「川内」「神通」「那珂」を同一艦隊に配属せよ！ / 第5艦隊の開放 戦略P200"},{"id":"t050","name":"「西村艦隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t047"],"next":["t057","t058"],"require_ships":["扶桑","山城","最上","時雨"],"info":["「扶桑」「山城」「最上」「時雨」"],"content":"「扶桑」「山城」「最上」「時雨」を基幹とした西村艦隊を編成せよ！","unlock":"『「第四戦隊」を編成せよ！』達成後","reward_text":"給糧艦間宮 戦略P500"},{"id":"t051","name":"潜水艦隊を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t047"],"next":["t059"],"info":["｢潜水｣2"],"content":"伊号潜水艦2隻からなる潜水艦隊を編成せよ！","unlock":"『「第四戦隊」を編成せよ！』達成後","reward_text":"応急修理要員x1 戦略P200"},{"id":"t052","name":"新編「第二航空戦隊」出撃せよ！","cat":"E: Z1 入手","kind":"task","type":"sortie","prev":["t048"],"next":["t060","t061"],"require_ships":["飛龍","蒼龍"],"info":["南方2　旗艦 「飛龍改二」「蒼龍」「駆逐」2"],"content":"「新編「二航戦」を基幹とした艦隊で、珊瑚諸島沖に出撃、敵機動部隊を撃滅せよ！ ※飛龍改二旗艦+蒼龍の他に編成時と同じで「駆逐2」が条件","unlock":"『新編「第二航空戦隊」を編成せよ』達成後","reward_text":"給糧艦「間宮」 家具箱（大）x1"},{"id":"t053","name":"第十六戦隊(第一次)」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t049"],"next":["t062"],"require_ships":["足柄","球磨","長良"],"info":["旗艦「足柄」「球磨」「長良」"]},{"id":"t054","name":"「妙高」型重巡姉妹の全4隻を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t049"],"next":["t063"],"require_ships":["妙高","那智","足柄","羽黒"],"info":["「妙高」「那智」「足柄」「羽黒」"],"content":"第七艦隊1","unlock":"『「川内」型軽巡洋艦を全て編成せよ』達成後","reward_text":"妙高型重巡洋艦「妙高」「那智」「足柄」「羽黒」を同一艦隊に配属せよ / 高速修復材x1 開発資材x2"},{"id":"t055","name":"※Bから","cat":"主線/支線","kind":"note"},{"id":"t056","name":"北方海峡の警備を実施せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t049"],"next":["t064","t065"],"info":["北方2　3回"],"content":"第六艦隊1","unlock":"川内型編成任務後出現、他条件の有無は未確認","reward_text":"※「北方泊地海域」の2エリア目。ボス3回S勝利で達成。 / 22号対水上電探 戦略P150"},{"id":"t057","name":"第五航空戦隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t050"],"next":["t007","t067"],"require_ships":["翔鶴","瑞鶴"],"info":["「翔鶴」「瑞鶴」｢駆逐｣2","同時受託任務数1上昇"],"content":"「翔鶴」「瑞鶴」を基幹とし、駆逐艦2隻を加えた第五航空戦隊を編成せよ！","unlock":"『「西村艦隊」を編成せよ！』達成後","reward_text":"同時受託任務数1上昇 戦略P700"},{"id":"t058","name":"西村艦隊出撃せよ","cat":"D: Littorio 入手","kind":"task","type":"sortie","prev":["t050"],"next":["t007","t067"],"require_ships":["扶桑","山城","最上","時雨"],"info":["「扶桑」「山城」「最上」「時雨」南方連絡4","同時受託任務数1上昇"]},{"id":"t059","name":"「第八駆逐隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t051"],"next":["t068"],"require_ships":["朝潮","満潮","大潮","荒潮"],"info":["「朝潮」「満潮」「大潮」「荒潮」"],"content":"「朝潮」「満潮」「大潮」「荒潮」4隻による第八駆逐隊を編成せよ！ ※表記4隻「のみ」の艦隊を作ると達成","unlock":"『潜水艦隊を編成せよ！』達成後","reward_text":"戦闘糧食x1 戦略P:200"},{"id":"t060","name":"再編成「第二航空戦隊」を強化せよ！","cat":"E: Z1 入手","kind":"task","type":"formation","prev":["t052"],"next":["t068"],"require_ships":["蒼龍","飛龍"],"info":["旗艦「蒼龍改二」「飛龍改二」他｢駆逐｣2"],"content":"「蒼龍改二」(※旗艦)及び「飛龍改二」を基幹とした二航戦(要駆逐艦2隻)を編成せよ！","unlock":"新編「第二航空戦隊」出撃せよ！達成後","reward_text":"開発資材x4 戦略P:800"},{"id":"t061","name":"機種転換","cat":"主線/支線","kind":"task","type":"factory","prev":["t052","t081","t099","t110"],"next":["t123"],"rewards":["天山一二型(村田隊)","烈風(六〇一空)"],"require_ships":["翔鶴"],"info":["｢第一艦隊旗艦｣+「九九式艦爆(江草隊)」で｢彗星｣2廃棄","彗星(江草隊)","｢第一艦隊旗艦｣+｢零戦52型丙(六〇一空)｣で｢烈風｣2廃棄","烈風(六〇一空)","第一艦隊旗艦｢翔鶴｣+｢九七式艦攻(村田隊)｣で｢天山｣2廃棄","天山一二型(村田隊)"],"content":"工廠2(終点)","unlock":"*年初初期表示","reward_text":"「零戦21型(熟練)」搭載空母を第一艦隊旗艦に配備した状態で、新たに「零戦52型」を２つ廃棄せよ！ / 装備改修(変化)「零式艦戦21型(熟練)」→ 「零式艦戦52型(熟練)」"},{"id":"t062","name":"第十六戦隊(第一次)出撃せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t053"],"next":["t071"],"require_ships":["足柄","球磨","長良"],"info":["北方泊地3 旗艦「足柄」「球磨」「長良」"]},{"id":"t063","name":"「金剛」型による高速戦艦部隊を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t054"],"next":["t072"],"require_ships":["金剛","比叡","榛名","霧島"],"info":["「金剛」「比叡」「榛名」「霧島」","第7艦隊開放"],"content":"第七艦隊2","unlock":"『「妙高」型重巡姉妹の全4隻を編成せよ！』及び『オリョール海西部に進出せよ！』達成(第6艦隊開放後)後","reward_text":"金剛型戦艦「金剛」「比叡」「榛名」「霧島」全4隻の高速戦艦を集中配備せよ！ / 第7艦隊の開放"},{"id":"t064","name":"北方海域の哨戒を実施せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t056"],"next":["t073"],"info":["北方1"],"content":"艦隊を北方海域に展開、モーレイ海の哨戒を実施せよ！","unlock":"『北方海峡の警備を実施せよ！』達成後","reward_text":"高速建造材x3 戦略P:300"},{"id":"t065","name":"オリョール海西部に進出せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t056"],"next":["t075","t077","t079"],"info":["中部西2","第6艦隊開放"],"content":"第六艦隊2","unlock":"『北方海峡の警備を実施せよ！』達成後","reward_text":"有力な艦隊を中部海域に展開、オリョール海進出を図れ！※「中部西海域」の2エリア目。ボスS勝利で達成(要確認) [甲]A勝利で達成[丁][丙]B勝利で達成 / 第6艦隊の開放"},{"id":"t066","name":"ろ号","cat":"主線/支線","kind":"task","type":"sortie","prev":[],"next":["t080"],"info":["マンスリー"],"recurrence":"monthly"},{"id":"t067","name":"「新型正規空母」を配備せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t057","t058"],"next":["t081"],"require_ships":["雲龍","天城","葛城"],"info":["「雲龍」「天城」「葛城」いずれか"],"content":"新型正規空母、雲龍型航空母艦を第一艦隊旗艦に配備せよ ※「雲龍」「天城」「葛城」:3隻ともドロップ限定","unlock":"『「第五航空戦隊」を編成せよ！』達成後","reward_text":"高速建材x？"},{"id":"t068","name":"「第三十駆逐隊(第一次)」を編成せよ！","cat":"E: Z1 入手","kind":"task","type":"formation","prev":["t059","t060"],"next":["t082"],"rewards":["天山一二型(友永隊)","彗星(江草隊)"],"require_ships":["睦月","如月","弥生","望月"],"info":["「睦月」「如月」「弥生」「望月」"],"content":"「睦月」「如月」「弥生」「望月」4隻による第三十駆逐隊(第一次)を編成せよ！","unlock":"『「第八駆逐隊」を編成せよ！』達成後","reward_text":"戦闘糧食x1 戦略P:200"},{"id":"t069","name":"天山一二型(友永隊)","cat":"E: Z1 入手","kind":"reward"},{"id":"t070","name":"彗星(江草隊)","cat":"E: Z1 入手","kind":"reward"},{"id":"t071","name":"「第十六戦隊(第二次)」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t062"],"next":["t083"],"require_ships":["名取","五十鈴","鬼怒"],"info":["旗艦「名取」「五十鈴」「鬼怒」"],"content":"「名取」を旗艦として「五十鈴」「鬼怒」を擁する、第十六戦隊(第二次)を編成せよ！","unlock":"『第十六戦隊(第一次)出撃せよ！』達成後","reward_text":"高速修復材x3 開発資材x3"},{"id":"t072","name":"「南雲機動部隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t063"],"next":[],"require_ships":["赤城","加賀","飛龍","蒼龍"],"info":["「赤城」「加賀」「飛龍」「蒼龍」","第8艦隊開放"],"content":"第八艦隊1","unlock":"『「金剛」型による高速戦艦部隊を編成せよ！』達成後","reward_text":"一航戦「赤城」「加賀」二航戦「飛龍」「蒼龍」からなる第一機動部隊を編成せよ！ / 第8艦隊の開放"},{"id":"t073","name":"陽動作戦「AL作戦」を実施せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t064"],"next":["t084"],"info":["AL2、AL3"],"content":"北方AL海域において、「AL作戦」を実施せよ！ ※北方AL海域沖(AL海域-2)と北方AL海域中心部(AL海域-3)両方ボスS勝利で達成(難易度乙でA勝利可、難易度丁B勝利可)","unlock":"『北方海域の哨戒を実施せよ！！』達成後","reward_text":"勲章x1 戦略P:800"},{"id":"t074","name":"※B　艦隊開放ルートへ","cat":"主線/支線","kind":"note"},{"id":"t075","name":"「第十八駆逐隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t065"],"next":["t085"],"rewards":["53cm艦首(酸素)魚雷"],"require_ships":["霞","霰","陽炎","不知火"],"info":["「霞」「霰」「陽炎」「不知火」"],"content":"「霞」「霰」「陽炎」「不知火」全4隻による第十八駆逐隊を編成せよ！","unlock":"『オリョール海西部に進出せよ！』達成後","reward_text":"戦闘糧食x1 戦略P200"},{"id":"t076","name":"53cm艦首(酸素)魚雷","cat":"主線/支線","kind":"reward"},{"id":"t077","name":"精強な「潜水艦隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t009","t065"],"next":[],"info":["旗艦｢潜水(Lv80以上)｣｢潜水(Lv40以上)｣3","53cm艦首(酸素)魚雷"],"content":"旗艦に練度80以上、僚艦も全て練度40以上の精鋭潜水艦隊を編成せよ！ ※旗艦Lv80(改造後の潜水空母可)、僚艦Lv40の3隻で達成可能。","unlock":"『オリョール海西部に進出せよ！』+ 『中規模潜水艦隊を編成せよ！』達成後","reward_text":"開発資材x3 53cm艦首(酸素)魚雷"},{"id":"t078","name":"※E　Z1入手任務群へ","cat":"主線/支線","kind":"note"},{"id":"t079","name":"潜水艦隊「第六艦隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t009","t065"],"next":["t008"],"require_ships":["大鯨"],"info":["旗艦｢大鯨｣｢潜水｣4"],"content":"「潜水母艦」と複数の潜水艦(4隻以上)からなる潜水艦隊「第六艦隊」を編成せよ！ ※大鯨(旗艦必須)+潜水艦4隻で達成。","unlock":"『中規模潜水艦隊を編成せよ！』達成後","reward_text":"伊良湖x1 戦略P400"},{"id":"t080","name":"「空母機動部隊」西へ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t066"],"next":["t007","t097"],"info":["西方1 ｢空母系｣(軽込み)2｢駆逐｣2","※空母機動部隊「第三艦隊」を編成せよ！にも必要","※「第五航空戦隊」を再編成せよ！にも必要"],"content":"出撃","unlock":"『ろ号作戦』達成後","reward_text":"航空母艦2隻(随伴駆逐艦2隻)を基幹とする機動部隊で、カレー洋の敵艦隊を撃滅せよ！ ※西方海域1。軽空母でも可 / 改修資材x4 家具箱(大)x2"},{"id":"t081","name":"「第六〇一航空隊」発艦せよ！","cat":"D: Littorio 入手","kind":"task","type":"sortie","prev":["t067"],"next":["t061"],"require_ships":["雲龍","天城","葛城"],"info":["南方泊地3旗艦「雲龍」「天城」「葛城」いずれか","熟練艦載機整備員","熟練搭乗員"],"content":"雲龍型航空母艦旗艦の機動部隊で南方泊地沖で敵機動部隊を迎撃、これを撃滅せよ！ ※南方泊地海域の第3海域トラック泊地沖S勝利。 編成任務と異なり、第一艦隊でなくても可。 ブラウザ版と異なり、改装前の雲龍型でも可。","unlock":"「新型正規空母」を配備せよ！","reward_text":"熟練艦載機整備員 熟練搭乗員x1"},{"id":"t082","name":"「第三十駆逐隊(第ニ次)」を編成せよ！","cat":"E: Z1 入手","kind":"task","type":"formation","prev":["t068"],"next":["t088"],"require_ships":["睦月","弥生","卯月","望月"],"info":["「睦月」「弥生」「卯月」「望月」"]},{"id":"t083","name":"第十六戦隊(第二次)出撃","cat":"主線/支線","kind":"task","type":"sortie","prev":["t071"],"next":[],"require_ships":["名取","五十鈴","鬼怒"],"info":["西方2 旗艦「名取」「五十鈴」「鬼怒」"]},{"id":"t084","name":"発動！「MI作戦」","cat":"主線/支線","kind":"task","type":"sortie","prev":["t073"],"next":["t090","t107","t109"],"info":["MI1,MI2,MI3,MI4"],"content":"MI海域において「MI作戦」を実施、同作戦を完遂せよ！ MI海域の全ての海域のボスに勝利、一部B勝利込みでも達成確認したので全てB勝利以上でもOKと思われる。","unlock":"『陽動作戦「AL作戦」を実施せよ！』及び『西南要塞を攻略せよ！』達成後","reward_text":"勲章x1 戦略P:2000"},{"id":"t085","name":"主力戦艦部隊「第二戦隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t075"],"next":["t091"],"require_ships":["長門","陸奥","扶桑","山城"],"info":["｢長門｣｢陸奥｣｢扶桑｣｢山城｣"],"content":"長門型2隻及び扶桑型2隻の計4隻の主力戦艦からなる第二戦隊を編成せよ！","unlock":"『「第十八駆逐隊」を編成せよ！』達成後","reward_text":"高速修復剤x3 戦略P800"},{"id":"t086","name":"潜水艦53cm艦首魚雷(8門)","cat":"主線/支線","kind":"reward"},{"id":"t087","name":"烈風(六〇一空)","cat":"D: Littorio 入手","kind":"reward"},{"id":"t088","name":"「第三十駆逐隊」対潜哨戒！","cat":"E: Z1 入手","kind":"task","type":"sortie","prev":["t082"],"next":["t096"],"require_ships":["睦月","弥生","卯月","望月"],"info":["南方泊地1「睦月」「弥生」「卯月」「望月」"],"content":"出撃","unlock":"「第三十駆逐隊(第二次)」を編成せよ！","reward_text":"「第三十駆逐隊（第二次）」は直ちに抜錨！南方トラック泊地の対潜哨戒を実施せよ！ ※南方泊地海域1トラック泊地周辺部「睦月」「弥生」「卯月」「望月」+｢出撃可能艦種の2隻｣A勝利以上でクリア / 特注家具職人x1 家具箱(大)x1"},{"id":"t089","name":"※A 瑞雲12(六三四)ルートへ","cat":"主線/支線","kind":"note"},{"id":"t090","name":"西部方面派遣艦隊、出撃せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t084"],"next":["t097"],"info":["西部いずれか　4回"],"content":"西方海域に西部方面派遣艦隊を派遣し、同方面の再集結中の敵増援艦隊を叩け！ ※西方海域のどこでも良いのでボスに4回勝利する。A勝利可。","unlock":"『発動！「MI作戦」』達成後","reward_text":"家具箱(大)x3 戦略P:1000"},{"id":"t091","name":"「第二戦隊」抜錨！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t085"],"next":["t098"],"require_ships":["長門","陸奥","扶桑","山城"],"info":["西方1  2回 ｢長門｣｢陸奥｣｢扶桑｣｢山城｣","一式徹甲弾"],"content":"「第二戦隊」を基幹とした艦隊でカレー洋に進出、反復出撃により敵海上兵力を激撃せよ！ ※長門、陸奥、扶桑、山城を含む艦隊で西方海域第1作戦海域のボスに2回勝利、S勝利2回で達成確認、A未確認","unlock":"主力戦艦部隊「第二戦隊」を編成せよ！達成後","reward_text":"一式徹甲弾"},{"id":"t092","name":"遠洋潜水艦作戦を実施せよ！","cat":"主線/支線","kind":"task","type":"expedition","prev":["t007","t008"],"next":["t099"],"info":["FS遠征｢遠洋潜水艦作戦｣","潜水艦53cm艦首魚雷(8門)"],"content":"「遠洋潜水艦作戦」を反復実施し、潜水艦隊による敵艦隊漸減に努めよ！（FS海域の遠征\"遠洋潜水艦作戦\"2回成功で達成）","unlock":"中部西海域潜水艦哨戒を実施せよ！","reward_text":"潜水艦53cm艦首魚雷(8門)"},{"id":"t093","name":"※D Littorio入手任務群へ","cat":"未分類","kind":"note"},{"id":"t094","name":"「第五航空戦隊」珊瑚諸島沖に出撃せよ","cat":"未分類","kind":"task","type":"sortie","prev":["t007","t008"],"next":["t099","t101"],"require_ships":["翔鶴","瑞鶴","朧","秋雲"],"info":["南方2 「翔鶴」「瑞鶴」「朧」「秋雲」"],"content":"再編成した「第五航空戦隊」(「翔鶴」「瑞鶴」「朧」「秋雲」)を珊瑚諸島沖に展開、敵機動部隊を捕捉撃滅せよ！ ※南方海域2南方海域珊瑚諸島沖をS勝利で達成、A不可","unlock":"「第五航空戦隊」を再編成せよ！達成後","reward_text":"勲章x1 戦略P500"},{"id":"t095","name":"※Aから","cat":"D: Littorio 入手","kind":"note"},{"id":"t096","name":"「第五戦隊」編成せよ","cat":"E: Z1 入手","kind":"task","type":"formation","prev":["t088"],"next":["t103","t104"],"require_ships":["妙高","那智","羽黒"],"info":["「妙高」「那智」「羽黒」"],"content":"編成(分岐)","unlock":"「第三十駆逐隊」対潜哨戒！","reward_text":"「妙高」「那智」「羽黒」を基幹とした第五戦隊を編成せよ！ / 開発資材x4 戦略P400"},{"id":"t097","name":"空母機動部隊「第三艦隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t080","t090"],"next":["t105","t106"],"require_ships":["翔鶴","瑞鶴","瑞鳳"],"info":["旗艦「翔鶴」「瑞鶴」「瑞鳳」｢駆逐｣2"],"content":"「翔鶴」を旗艦として、「瑞鶴」「瑞鳳」及び随伴艦を配備した第三艦隊を編成せよ！ 上記三隻に適当な駆逐×3を編成で達成確認","unlock":"『西部方面派遣艦隊、出撃せよ！』達成後","reward_text":"改修資材x4 戦略P1000"},{"id":"t098","name":"戦艦を主力とした水上打撃部隊を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t091"],"next":["t107","t109"],"require_ships":["大和","武蔵","長門","陸奥","伊勢","日向","扶桑","山城"],"info":["｢大和｣｢武蔵｣｢長門｣｢陸奥｣｢伊勢｣｢日向｣｢扶桑｣｢山城｣いずれか3｢軽巡｣1"],"content":"大和型・長門型・伊勢型・扶桑型のいずれか3隻と軽巡1隻他の水上打撃部隊を配備せよ！","unlock":"「第二戦隊」抜錨！達成後","reward_text":"開発資材x3 戦略P400"},{"id":"t099","name":"精鋭「九七式艦攻」部隊の編成","cat":"主線/支線","kind":"task","type":"factory","prev":["t092","t094"],"next":["t061"],"rewards":["九七式艦攻(村田隊)"],"require_ships":["翔鶴","赤城"],"info":["｢第一艦隊旗艦｣+｢翔鶴｣か｢赤城｣で｢九七式艦攻｣3廃棄","九七式艦攻(村田隊)"],"content":"「翔鶴」または「赤城」を第一艦隊旗艦にした状態で、新たに「九七式艦攻」を３つ廃棄せよ！","unlock":"「第五航空戦隊」珊瑚諸島沖に出撃せよ達成後","reward_text":"九七式艦攻(村田隊)"},{"id":"t100","name":"九七式艦攻(村田隊)","cat":"主線/支線","kind":"reward"},{"id":"t101","name":"「新編成航空戦隊」を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t094"],"next":["t111"],"info":["｢空母｣2｢駆逐｣2+｢航戦｣1か｢航巡｣2"],"content":"空母２隻＋航空戦艦/航空巡洋艦２隻＋駆逐艦２隻の新航空戦隊を編成せよ！ 第一艦隊で空母２隻駆逐艦２隻+航空戦艦１隻又は航空巡洋艦２隻を編成する","unlock":"『「第五航空戦隊」珊瑚諸島沖に出撃せよ』達成後 &「第十六戦隊(第二次)」出撃せよ！","reward_text":"開発資材x3 改修資材x3"},{"id":"t102","name":"22号対水上電探改四","cat":"D: Littorio 入手","kind":"reward"},{"id":"t103","name":"新型電探を配備せよ！","cat":"E: Z1 入手","kind":"task","type":"formation","prev":["t096"],"next":[],"rewards":["22号対水上電探改四"],"require_ships":["妙高"],"info":["第一艦隊旗艦｢妙高改二｣","22号対水上電探改四"],"content":"編成(終点)","unlock":"「第五戦隊」編成せよ！","reward_text":"新型電探運用試験のため、第一艦隊の旗艦に「妙高改二」を配備せよ！ / 22号対水上電探改四"},{"id":"t104","name":"観艦式予行を実施せよ！","cat":"E: Z1 入手","kind":"task","type":"expedition","prev":["t096"],"next":["t112"],"info":["鎮守府遠征「観艦式予行」2"],"content":"遠征1","unlock":"「第五戦隊」編成せよ！","reward_text":"観艦式を実施する。準備として「観艦式予行」を実施、これを２回成功させよ！ / 開発資材x3"},{"id":"t105","name":"精鋭「艦戦」隊の新編","cat":"主線/支線","kind":"task","type":"factory","prev":["t097"],"next":["t113"],"require_ships":["鳳翔"],"info":["｢第一艦隊旗艦｣+｢鳳翔｣+｢錬度MAX零戦21型｣で｢零戦21型｣2｢九六式艦戦｣1廃棄","零式艦戦21型(熟練)","要「熟練搭乗員」","イヤリー"],"recurrence":"yearly"},{"id":"t106","name":"「第三航空戦隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t097"],"next":["t114"],"require_ships":["瑞鶴","瑞鳳","千歳","千代田"],"info":["旗艦｢瑞鶴改｣(改二、改二甲も可)｢瑞鳳｣｢千歳｣｢千代田｣(千歳千代田は軽空のみ)","熟練搭乗員","「熟練搭乗員」はすぐ←の任務で使う"],"content":"「瑞鶴改」を旗艦とし、航空母艦「瑞鳳」「千歳」「千代田」を加えた4隻の空母部隊を編成せよ！ 千歳と千代田は軽空母のみ、水母不可","unlock":"『空母機動部隊「第三艦隊」を編成せよ！』達成後","reward_text":"開発資材x3 熟練搭乗員x1"},{"id":"t107","name":"艦隊旗艦、戦艦「大和」出撃せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t084","t098"],"next":[],"rewards":["試製51cm連装砲"],"require_ships":["大和"],"info":["MI3 旗艦｢大和｣","試製51cm連装砲"],"content":"旗艦「大和」出撃する！MI諸島近海に展開し、その巨砲で敵MI島基地守備隊を粉砕せよ！ 大和旗艦でMI海域3面をS勝利で達成。A勝利は不可。","unlock":"『発動！「MI作戦」』 『戦艦を主力とした水上打撃部隊を編成せよ！』達成後","reward_text":"試製51cm連装砲 戦略P:300"},{"id":"t108","name":"試製51cm連装砲","cat":"主線/支線","kind":"reward"},{"id":"t109","name":"「水上打撃部隊」南方へ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t084","t098"],"next":["t115","t117"],"info":["南方1 ｢戦艦｣(高速不可)3｢軽巡｣1","イヤリー"],"recurrence":"yearly","content":"出撃","unlock":"*年初初期表示","reward_text":"戦艦３隻軽巡１隻他の艦隊で南方海域の第１海域勝利 高速戦艦は不可 航空戦艦はOK / 高速修復剤x2"},{"id":"t110","name":"い号作戦","cat":"主線/支線","kind":"task","type":"sortie","prev":[],"next":["t061"],"info":["マンスリー"],"recurrence":"monthly","content":"出撃5","unlock":"『敵補給ラインを寸断せよ！』達成後","reward_text":"空母6～8隻撃破する / 高速修復剤x3"},{"id":"t111","name":"新編成航空戦隊、北方へ進出せよ！","cat":"D: Littorio 入手","kind":"task","type":"sortie","prev":["t101"],"next":["t119"],"info":["北方4 ｢空母｣2｢駆逐｣2+｢航戦｣1か｢航巡｣2"],"content":"「新編成航空部隊」を北方アルフォンシーノ列島沖へ展開、同海域の敵艦隊を撃滅せよ！ ※北方海域4。空母２隻+航空戦艦１隻又は航空巡洋艦２隻＋駆逐艦２隻の艦隊。第一艦隊でなくてよい。S勝利達成確認。A勝利要検証","unlock":"「新編成航空戦隊」を編成せよ！","reward_text":"勲章x1 戦略P700"},{"id":"t112","name":"観艦式を敢行せよ！","cat":"E: Z1 入手","kind":"task","type":"expedition","prev":["t104"],"next":["t120"],"info":["鎮守府遠征「観艦式」","同時受託任務数1上昇"],"content":"遠征2","unlock":"演習を強化、艦隊の練度向上に努めよ！","reward_text":"練度の高い艦隊で「観艦式」本番を実施する。「観艦式」を成功させよ！ / 改修資材x3 同時受託任務数1上昇"},{"id":"t113","name":"機種転換(零戦52)","cat":"主線/支線","kind":"task","type":"factory","prev":["t105"],"next":["t128"],"info":["｢第一艦隊旗艦｣+｢零式艦戦21型(熟練)｣で｢零戦52型｣2廃棄","イヤリー","鳳翔も練度も熟練搭乗員も不要"],"recurrence":"yearly"},{"id":"t114","name":"「第三航空戦隊」近海諸島防衛線に出撃！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t106"],"next":["t122"],"require_ships":["瑞鶴","瑞鳳","千歳","千代田"],"info":["鎮守府4 旗艦｢瑞鶴改｣(改二、改二甲も可)｢瑞鳳｣｢千歳｣｢千代田｣(千歳千代田は軽空のみ)"],"content":"編成した「第三航空戦隊」を近海諸島防衛線に展開、敵進攻艦隊を補足撃滅せよ！ ※旗艦「瑞鶴改」+「瑞鳳」「千歳」「千代田」+自由枠2、「千歳」「千代田」は軽母 「鎮守府海域:第四海域(近海諸島防衛線)」をS勝利(A勝利不可)","unlock":"「第三航空戦隊」を編成せよ！","reward_text":"高速修復材x4 給糧艦「伊良湖」x3"},{"id":"t115","name":"「戦艦部隊」北方海域に突入せよ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t109"],"next":[],"rewards":["一式徹甲弾"],"info":["北方3 ｢戦艦｣2｢軽空｣1(航戦、高戦、空母不可、該当艦種の隻数もこれ以上増やすとアウト)","一式徹甲弾"],"content":"戦艦２隻と直援軽空母１隻(正規空母無し)基幹の艦隊で、北方キス島後方海域に突入せよ！ ※S勝利で達成、A不可 航空戦艦、高速戦艦は不可 正規空母1隻以上、戦艦3隻以上、軽空母2隻以上は達成不可","unlock":"「水上打撃部隊」南方へ！達成後","reward_text":"開発資材x4 一式徹甲弾"},{"id":"t116","name":"一式徹甲弾","cat":"主線/支線","kind":"reward"},{"id":"t117","name":"南方海域珊瑚諸島沖の制空権を握れ！","cat":"主線/支線","kind":"task","type":"sortie","prev":["t109"],"next":["t123"],"info":["南方2 2回","イヤリー"],"recurrence":"yearly","content":"出撃2","unlock":"「水上打撃部隊」南方へ！達成後 他任務も条件？","reward_text":"南方海域珊瑚諸島沖に反復出撃し、敵機動部隊本体を補足撃滅、制海権を確保せよ！ 南方海域第2作戦海域のボスに2回S勝利。A勝利は不可。 / 開発資材x5 改修資材x5"},{"id":"t118","name":"天山一二型(村田隊)","cat":"主線/支線","kind":"reward"},{"id":"t119","name":"精強な「水上反撃部隊」を再編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t111"],"next":["t125"],"require_ships":["霞","足柄","大淀","朝霜","清霜"],"info":["旗艦「霞」「足柄」「大淀」「朝霜」「清霜」"],"content":"駆逐艦「霞」旗艦、「足柄」「大淀」「朝霜」「清霜」他の水上反撃部隊を再編成せよ！","unlock":"軽快な「水上反撃部隊」を編成せよ！ &新編成航空戦隊、北方へ進出せよ！","reward_text":"高速修復材x3 戦闘糧食x3"},{"id":"t120","name":"遠洋練習航海を実施せよ！","cat":"E: Z1 入手","kind":"task","type":"expedition","prev":["t112"],"next":[],"rewards":["鹿島"],"info":["中部海域遠征「遠洋練習航海」及びFS海域遠征「南洋方面遠洋練習航海」","鹿島","難易度甲・史のみ"],"content":"遠征3(終点)","unlock":"観艦式を敢行せよ！","reward_text":"「遠洋練習航海」及び「南洋方面遠洋練習航海」を実施、これを成功させよ！ ※中部海域の遠征「遠洋練習航海」及びFS海域の遠征「南洋方面遠洋練習航海」 / 練習巡洋艦「鹿島」 難易度 史/甲向けのみ"},{"id":"t121","name":"鹿島","cat":"E: Z1 入手","kind":"reward"},{"id":"t122","name":"「第四航空戦隊」を編成せよ！","cat":"主線/支線","kind":"task","type":"formation","prev":["t114"],"next":["t126"],"require_ships":["伊勢","日向"],"info":["｢伊勢改｣｢日向改｣","瑞雲(六三四空)"],"content":"航空戦艦「伊勢改」及び「日向改」を基幹戦力とした第四航空戦隊を編成せよ！","unlock":"「第三航空戦隊」近海諸島防衛線に出撃！","reward_text":"改修資材x3 瑞雲(六三四空)"},{"id":"t123","name":"新型「艦戦」の改良","cat":"主線/支線","kind":"task","type":"factory","prev":["t061","t117"],"next":["t126"],"rewards":["烈風改"],"info":["第一艦隊旗艦+｢錬度MAX烈風｣で｢烈風｣1｢零戦52型｣1廃棄","烈風改","イヤリー","条件となるイヤリー任務をこなすと毎年出現"],"recurrence":"yearly","content":"工廠(終点)","unlock":"機種転換(村田)及び南方海域珊瑚諸島沖の制空権を握れ！達成後","reward_text":"第一艦隊旗艦に練度max「烈風」搭載空母を配備した状態で、「烈風」x1「零戦52型」x1を廃棄せよ！ / 装備改修(変化)「烈風」→ 「烈風改」"},{"id":"t124","name":"烈風改","cat":"主線/支線","kind":"reward"},{"id":"t125","name":"「礼号作戦」実施せよ！","cat":"D: Littorio 入手","kind":"task","type":"sortie","prev":["t119"],"next":["t126"],"require_ships":["霞","足柄","大淀","朝霜","清霜"],"info":["中部西2 旗艦「霞」「足柄」「大淀」「朝霜」「清霜」"],"content":"精強な「水上反撃部隊」で、中部西海域オリョール海西部に突入！敵艦隊を撃滅せよ！ ※旗艦「霞」+「足柄」「大淀」「朝霜」「清霜」","unlock":"精強な「水上反撃部隊」を再編成せよ！","reward_text":"勲章x1 戦略P700"},{"id":"t126","name":"精強「航空戦艦」戦隊を編成せよ！","cat":"D: Littorio 入手","kind":"task","type":"formation","prev":["t122","t123","t125"],"next":["t128"],"rewards":["瑞雲12型"],"require_ships":["伊勢","日向","扶桑","山城"],"info":["「伊勢改」「日向改」「扶桑改二」「山城改二」｢駆逐｣2","瑞雲12型"],"content":"「伊勢改」「日向改」「扶桑改二」「山城改二」と直衛駆逐艦２隻の精強航空戦艦戦隊を編成せよ！","unlock":"「礼号作戦」実施せよ！ &「第四航空戦隊」を編成せよ！","reward_text":"開発資材x3 瑞雲12型"},{"id":"t127","name":"瑞雲12型","cat":"D: Littorio 入手","kind":"reward"},{"id":"t128","name":"精鋭「新型瑞雲」部隊の編成","cat":"D: Littorio 入手","kind":"task","type":"factory","prev":["t113","t126"],"next":[],"rewards":["瑞雲12型(六三四空)"],"info":["｢第一艦隊旗艦｣+｢錬度MAX瑞雲(六三四空)｣で｢瑞雲12型｣1｢瑞雲｣2廃棄","瑞雲12型(六三四空)"],"content":"第一艦隊旗艦に練度max「瑞雲(六三四空)」搭載艦を配備した状態で、「瑞雲12型」x1「瑞雲」x2を廃棄せよ！","unlock":"精強「航空戦艦」戦隊を編成せよ！&機種転換(零式艦戦21型(熟練)→零式艦戦52型(熟練))","reward_text":"装備改修(変化)「瑞雲(六三四空)」→ 「瑞雲12型(六三四空)」"},{"id":"t129","name":"瑞雲12型(六三四空)","cat":"D: Littorio 入手","kind":"reward"}];
 const STORAGE_KEY = 'kc_quest_state_v2';
 
 const TASKS_BY_ID = Object.fromEntries(TASKS.map(t => [t.id, t]));
@@ -726,9 +956,11 @@ const ui = {
   vwFocus: document.getElementById('vw-focus'),
   vwAll: document.getElementById('vw-all'),
   vwPlanner: document.getElementById('vw-planner'),
+  vwShips: document.getElementById('vw-ships'),
   planner: document.getElementById('planner'),
   plannerSelect: document.getElementById('planner-select'),
   plannerBody: document.getElementById('planner-body'),
+  shipsPanel: document.getElementById('ships-panel'),
 };
 
 let viewMode = 'focus';
@@ -891,9 +1123,24 @@ function renderAll() {
   });
 }
 
+// Ship-requirement helpers used by task card rendering
+function missingShipsFor(t) {
+  if (!t || !t.require_ships || !t.require_ships.length) return [];
+  if (typeof shipsState === 'undefined') return [];
+  const missing = [];
+  t.require_ships.forEach(name => {
+    const base = shipBaseFromName(name);
+    if (!base) { missing.push(name); return; }
+    if (!shipsState.owned[base]) missing.push(name);
+  });
+  return missing;
+}
+
 function renderTask(t, query, kindClass) {
   const el = document.createElement('div');
-  el.className = 'task ' + (kindClass || '') + (t.kind === 'note' ? ' note' : '');
+  const missingShips = (t.kind === 'task' && !state.done[t.id]) ? missingShipsFor(t) : [];
+  const blocked = missingShips.length > 0;
+  el.className = 'task ' + (kindClass || '') + (t.kind === 'note' ? ' note' : '') + (blocked ? ' ship-blocked' : '');
   el.dataset.id = t.id;
 
   const row = document.createElement('div');
@@ -1013,6 +1260,34 @@ function renderTask(t, query, kindClass) {
       badgesDiv.appendChild(jumpLink);
       el.appendChild(badgesDiv);
     }
+  }
+
+  // Ship requirement warning list (always shown when blocked)
+  if (blocked) {
+    const warnDiv = document.createElement('div');
+    warnDiv.className = 'ship-warning-list';
+    missingShips.slice(0, 8).forEach(name => {
+      const w = document.createElement('span');
+      w.className = 'ship-warning';
+      w.textContent = '⚠ ' + name;
+      w.onclick = (e) => {
+        e.stopPropagation();
+        viewMode = 'ships';
+        setView();
+        shipsSearch = name;
+        const sb = document.getElementById('ships-search');
+        if (sb) sb.value = name;
+        renderShipsPanel();
+      };
+      warnDiv.appendChild(w);
+    });
+    if (missingShips.length > 8) {
+      const more = document.createElement('span');
+      more.className = 'ship-warning';
+      more.textContent = `+${missingShips.length - 8}`;
+      warnDiv.appendChild(more);
+    }
+    el.appendChild(warnDiv);
   }
 
   if (t.kind === 'task') {
@@ -1365,20 +1640,518 @@ function populatePlannerSelect() {
   });
 }
 
+// === Stage E: Ship roster ===
+// Each entry = one ship lineage. forms = upgrade chain (改, 改二, etc.).
+// alsoIn = secondary 艦種 if ship changes type after remodel.
+// 艦種顯示順序
+const SHIP_TYPE_ORDER = [
+  '戰艦', '高速戰艦', '航空戰艦',
+  '正規空母', '裝甲空母', '輕空母',
+  '水上機母艦',
+  '重巡洋艦', '航空巡洋艦',
+  '輕巡洋艦', '重雷裝巡洋艦', '練習巡洋艦',
+  '驅逐艦',
+  '潛水艦', '潛水空母',
+  '潛水母艦', '補給艦', '工作艦', '揚陸艦',
+];
+
+const SHIPS = [
+  // 戰艦 / 高速戰艦 / 航空戰艦
+  { base: '扶桑', cls: '扶桑型', type: '戰艦', forms: ['扶桑', '扶桑改', '扶桑改二'], alsoIn: { from: '扶桑改二', type: '航空戰艦' } },
+  { base: '山城', cls: '扶桑型', type: '戰艦', forms: ['山城', '山城改', '山城改二'], alsoIn: { from: '山城改二', type: '航空戰艦' } },
+  { base: '伊勢', cls: '伊勢型', type: '戰艦', forms: ['伊勢', '伊勢改'], alsoIn: { from: '伊勢改', type: '航空戰艦' } },
+  { base: '日向', cls: '伊勢型', type: '戰艦', forms: ['日向', '日向改'], alsoIn: { from: '日向改', type: '航空戰艦' } },
+  { base: '長門', cls: '長門型', type: '戰艦', forms: ['長門', '長門改'] },
+  { base: '陸奥', cls: '長門型', type: '戰艦', forms: ['陸奥', '陸奥改'] },
+  { base: '大和', cls: '大和型', type: '戰艦', forms: ['大和', '大和改'] },
+  { base: '武蔵', cls: '大和型', type: '戰艦', forms: ['武蔵', '武蔵改'] },
+  { base: 'Bismarck', cls: 'Bismarck級', type: '戰艦', forms: ['Bismarck', 'Bismarck改'] },
+  { base: '金剛', cls: '金剛型', type: '高速戰艦', forms: ['金剛', '金剛改', '金剛改二'] },
+  { base: '比叡', cls: '金剛型', type: '高速戰艦', forms: ['比叡', '比叡改', '比叡改二'] },
+  { base: '榛名', cls: '金剛型', type: '高速戰艦', forms: ['榛名', '榛名改', '榛名改二'] },
+  { base: '霧島', cls: '金剛型', type: '高速戰艦', forms: ['霧島', '霧島改', '霧島改二'] },
+  { base: 'Littorio', cls: 'Littorio級', type: '高速戰艦', forms: ['Littorio', 'Italia'] },
+  { base: 'Roma', cls: 'Littorio級', type: '高速戰艦', forms: ['Roma', 'Roma改'] },
+  { base: 'Iowa', cls: 'Iowa級', type: '高速戰艦', forms: ['Iowa', 'Iowa改'] },
+
+  // 正規空母 / 裝甲空母 / 輕空母
+  { base: '赤城', cls: '赤城型', type: '正規空母', forms: ['赤城', '赤城改'] },
+  { base: '加賀', cls: '加賀型', type: '正規空母', forms: ['加賀', '加賀改'] },
+  { base: '蒼龍', cls: '蒼龍型', type: '正規空母', forms: ['蒼龍', '蒼龍改', '蒼龍改二'] },
+  { base: '飛龍', cls: '飛龍型', type: '正規空母', forms: ['飛龍', '飛龍改', '飛龍改二'] },
+  { base: '翔鶴', cls: '翔鶴型', type: '正規空母', forms: ['翔鶴', '翔鶴改', '翔鶴改二', '翔鶴改二甲'] },
+  { base: '瑞鶴', cls: '翔鶴型', type: '正規空母', forms: ['瑞鶴', '瑞鶴改', '瑞鶴改二', '瑞鶴改二甲'] },
+  { base: '雲龍', cls: '雲龍型', type: '正規空母', forms: ['雲龍', '雲龍改'] },
+  { base: '天城', cls: '雲龍型', type: '正規空母', forms: ['天城', '天城改'] },
+  { base: '葛城', cls: '雲龍型', type: '正規空母', forms: ['葛城', '葛城改'] },
+  { base: 'Graf Zeppelin', cls: 'Graf Zeppelin級', type: '正規空母', forms: ['Graf Zeppelin', 'Graf Zeppelin改'] },
+  { base: '大鳳', cls: '大鳳型', type: '裝甲空母', forms: ['大鳳', '大鳳改'] },
+  { base: '鳳翔', cls: '鳳翔型', type: '輕空母', forms: ['鳳翔', '鳳翔改'] },
+  { base: '龍驤', cls: '龍驤型', type: '輕空母', forms: ['龍驤', '龍驤改', '龍驤改二'] },
+  { base: '祥鳳', cls: '祥鳳型', type: '輕空母', forms: ['祥鳳', '祥鳳改'] },
+  { base: '瑞鳳', cls: '祥鳳型', type: '輕空母', forms: ['瑞鳳', '瑞鳳改', '瑞鳳改二'] },
+  { base: '飛鷹', cls: '飛鷹型', type: '輕空母', forms: ['飛鷹', '飛鷹改'] },
+  { base: '隼鷹', cls: '飛鷹型', type: '輕空母', forms: ['隼鷹', '隼鷹改', '隼鷹改二'] },
+  { base: '龍鳳', cls: '龍鳳型', type: '輕空母', forms: ['大鯨', '龍鳳', '龍鳳改'], alsoIn: { from: '大鯨', type: '潛水母艦' } },
+
+  // 水上機母艦
+  { base: '千歳', cls: '千歳型', type: '水上機母艦', forms: ['千歳', '千歳改', '千歳甲', '千歳航'], alsoIn: { from: '千歳航', type: '輕空母' } },
+  { base: '千代田', cls: '千歳型', type: '水上機母艦', forms: ['千代田', '千代田改', '千代田甲', '千代田航'], alsoIn: { from: '千代田航', type: '輕空母' } },
+  { base: '瑞穂', cls: '瑞穂型', type: '水上機母艦', forms: ['瑞穂', '瑞穂改'] },
+  { base: '秋津洲', cls: '秋津洲型', type: '水上機母艦', forms: ['秋津洲', '秋津洲改'] },
+
+  // 重巡洋艦 / 航空巡洋艦
+  { base: '古鷹', cls: '古鷹型', type: '重巡洋艦', forms: ['古鷹', '古鷹改'] },
+  { base: '加古', cls: '古鷹型', type: '重巡洋艦', forms: ['加古', '加古改'] },
+  { base: '青葉', cls: '青葉型', type: '重巡洋艦', forms: ['青葉', '青葉改'] },
+  { base: '衣笠', cls: '青葉型', type: '重巡洋艦', forms: ['衣笠', '衣笠改', '衣笠改二'] },
+  { base: '妙高', cls: '妙高型', type: '重巡洋艦', forms: ['妙高', '妙高改', '妙高改二'] },
+  { base: '那智', cls: '妙高型', type: '重巡洋艦', forms: ['那智', '那智改'] },
+  { base: '足柄', cls: '妙高型', type: '重巡洋艦', forms: ['足柄', '足柄改'] },
+  { base: '羽黒', cls: '妙高型', type: '重巡洋艦', forms: ['羽黒', '羽黒改'] },
+  { base: '高雄', cls: '高雄型', type: '重巡洋艦', forms: ['高雄', '高雄改'] },
+  { base: '愛宕', cls: '高雄型', type: '重巡洋艦', forms: ['愛宕', '愛宕改'] },
+  { base: '摩耶', cls: '高雄型', type: '重巡洋艦', forms: ['摩耶', '摩耶改'] },
+  { base: '鳥海', cls: '高雄型', type: '重巡洋艦', forms: ['鳥海', '鳥海改'] },
+  { base: '利根', cls: '利根型', type: '重巡洋艦', forms: ['利根', '利根改'], alsoIn: { from: '利根改', type: '航空巡洋艦' } },
+  { base: '筑摩', cls: '利根型', type: '重巡洋艦', forms: ['筑摩', '筑摩改'], alsoIn: { from: '筑摩改', type: '航空巡洋艦' } },
+  { base: 'Prinz Eugen', cls: 'Admiral Hipper級', type: '重巡洋艦', forms: ['Prinz Eugen', 'Prinz Eugen改'] },
+  { base: '最上', cls: '最上型', type: '重巡洋艦', forms: ['最上', '最上改'], alsoIn: { from: '最上改', type: '航空巡洋艦' } },
+  { base: '三隈', cls: '最上型', type: '重巡洋艦', forms: ['三隈', '三隈改'], alsoIn: { from: '三隈改', type: '航空巡洋艦' } },
+  { base: '鈴谷', cls: '最上型', type: '重巡洋艦', forms: ['鈴谷', '鈴谷改'], alsoIn: { from: '鈴谷改', type: '航空巡洋艦' } },
+  { base: '熊野', cls: '最上型', type: '重巡洋艦', forms: ['熊野', '熊野改'], alsoIn: { from: '熊野改', type: '航空巡洋艦' } },
+
+  // 輕巡 / 重雷裝巡洋艦 / 練習巡洋艦
+  { base: '天龍', cls: '天龍型', type: '輕巡洋艦', forms: ['天龍', '天龍改'] },
+  { base: '龍田', cls: '天龍型', type: '輕巡洋艦', forms: ['龍田', '龍田改'] },
+  { base: '球磨', cls: '球磨型', type: '輕巡洋艦', forms: ['球磨', '球磨改'] },
+  { base: '多摩', cls: '球磨型', type: '輕巡洋艦', forms: ['多摩', '多摩改'] },
+  { base: '北上', cls: '球磨型', type: '輕巡洋艦', forms: ['北上', '北上改', '北上改二'], alsoIn: { from: '北上改二', type: '重雷裝巡洋艦' } },
+  { base: '大井', cls: '球磨型', type: '輕巡洋艦', forms: ['大井', '大井改', '大井改二'], alsoIn: { from: '大井改二', type: '重雷裝巡洋艦' } },
+  { base: '木曾', cls: '球磨型', type: '輕巡洋艦', forms: ['木曾', '木曾改'] },
+  { base: '長良', cls: '長良型', type: '輕巡洋艦', forms: ['長良', '長良改'] },
+  { base: '五十鈴', cls: '長良型', type: '輕巡洋艦', forms: ['五十鈴', '五十鈴改', '五十鈴改二'] },
+  { base: '名取', cls: '長良型', type: '輕巡洋艦', forms: ['名取', '名取改'] },
+  { base: '由良', cls: '長良型', type: '輕巡洋艦', forms: ['由良', '由良改'] },
+  { base: '鬼怒', cls: '長良型', type: '輕巡洋艦', forms: ['鬼怒', '鬼怒改'] },
+  { base: '阿武隈', cls: '長良型', type: '輕巡洋艦', forms: ['阿武隈', '阿武隈改', '阿武隈改二'] },
+  { base: '川内', cls: '川内型', type: '輕巡洋艦', forms: ['川内', '川内改'] },
+  { base: '神通', cls: '川内型', type: '輕巡洋艦', forms: ['神通', '神通改'] },
+  { base: '那珂', cls: '川内型', type: '輕巡洋艦', forms: ['那珂', '那珂改', '那珂改二'] },
+  { base: '夕張', cls: '夕張型', type: '輕巡洋艦', forms: ['夕張', '夕張改'] },
+  { base: '阿賀野', cls: '阿賀野型', type: '輕巡洋艦', forms: ['阿賀野', '阿賀野改'] },
+  { base: '能代', cls: '阿賀野型', type: '輕巡洋艦', forms: ['能代', '能代改'] },
+  { base: '矢矧', cls: '阿賀野型', type: '輕巡洋艦', forms: ['矢矧', '矢矧改'] },
+  { base: '酒匂', cls: '阿賀野型', type: '輕巡洋艦', forms: ['酒匂', '酒匂改'] },
+  { base: '大淀', cls: '大淀型', type: '輕巡洋艦', forms: ['大淀', '大淀改'] },
+  { base: '香取', cls: '香取型', type: '練習巡洋艦', forms: ['香取', '香取改'] },
+  { base: '鹿島', cls: '香取型', type: '練習巡洋艦', forms: ['鹿島', '鹿島改'] },
+
+  // 驅逐艦
+  { base: '睦月', cls: '睦月型', type: '驅逐艦', forms: ['睦月', '睦月改'] },
+  { base: '如月', cls: '睦月型', type: '驅逐艦', forms: ['如月', '如月改'] },
+  { base: '弥生', cls: '睦月型', type: '驅逐艦', forms: ['弥生', '弥生改'] },
+  { base: '卯月', cls: '睦月型', type: '驅逐艦', forms: ['卯月', '卯月改'] },
+  { base: '皐月', cls: '睦月型', type: '驅逐艦', forms: ['皐月', '皐月改'] },
+  { base: '水無月', cls: '睦月型', type: '驅逐艦', forms: ['水無月', '水無月改'] },
+  { base: '文月', cls: '睦月型', type: '驅逐艦', forms: ['文月', '文月改'] },
+  { base: '長月', cls: '睦月型', type: '驅逐艦', forms: ['長月', '長月改'] },
+  { base: '菊月', cls: '睦月型', type: '驅逐艦', forms: ['菊月', '菊月改'] },
+  { base: '望月', cls: '睦月型', type: '驅逐艦', forms: ['望月', '望月改'] },
+  { base: '吹雪', cls: '吹雪型', type: '驅逐艦', forms: ['吹雪', '吹雪改', '吹雪改二'] },
+  { base: '白雪', cls: '吹雪型', type: '驅逐艦', forms: ['白雪', '白雪改'] },
+  { base: '初雪', cls: '吹雪型', type: '驅逐艦', forms: ['初雪', '初雪改'] },
+  { base: '深雪', cls: '吹雪型', type: '驅逐艦', forms: ['深雪', '深雪改'] },
+  { base: '叢雲', cls: '吹雪型', type: '驅逐艦', forms: ['叢雲', '叢雲改', '叢雲改二'] },
+  { base: '磯波', cls: '吹雪型', type: '驅逐艦', forms: ['磯波', '磯波改'] },
+  { base: '綾波', cls: '綾波型', type: '驅逐艦', forms: ['綾波', '綾波改', '綾波改二'] },
+  { base: '敷波', cls: '綾波型', type: '驅逐艦', forms: ['敷波', '敷波改'] },
+  { base: '朧', cls: '綾波型', type: '驅逐艦', forms: ['朧', '朧改'] },
+  { base: '曙', cls: '綾波型', type: '驅逐艦', forms: ['曙', '曙改'] },
+  { base: '漣', cls: '綾波型', type: '驅逐艦', forms: ['漣', '漣改'] },
+  { base: '潮', cls: '綾波型', type: '驅逐艦', forms: ['潮', '潮改', '潮改二'] },
+  { base: '暁', cls: '暁型', type: '驅逐艦', forms: ['暁', '暁改', '暁改二'] },
+  { base: '響', cls: '暁型', type: '驅逐艦', forms: ['響', '響改', 'Верный'] },
+  { base: '雷', cls: '暁型', type: '驅逐艦', forms: ['雷', '雷改'] },
+  { base: '電', cls: '暁型', type: '驅逐艦', forms: ['電', '電改'] },
+  { base: '初春', cls: '初春型', type: '驅逐艦', forms: ['初春', '初春改', '初春改二'] },
+  { base: '子日', cls: '初春型', type: '驅逐艦', forms: ['子日', '子日改'] },
+  { base: '若葉', cls: '初春型', type: '驅逐艦', forms: ['若葉', '若葉改'] },
+  { base: '初霜', cls: '初春型', type: '驅逐艦', forms: ['初霜', '初霜改', '初霜改二'] },
+  { base: '白露', cls: '白露型', type: '驅逐艦', forms: ['白露', '白露改'] },
+  { base: '時雨', cls: '白露型', type: '驅逐艦', forms: ['時雨', '時雨改', '時雨改二'] },
+  { base: '村雨', cls: '白露型', type: '驅逐艦', forms: ['村雨', '村雨改'] },
+  { base: '夕立', cls: '白露型', type: '驅逐艦', forms: ['夕立', '夕立改', '夕立改二'] },
+  { base: '五月雨', cls: '白露型', type: '驅逐艦', forms: ['五月雨', '五月雨改'] },
+  { base: '春雨', cls: '白露型', type: '驅逐艦', forms: ['春雨', '春雨改'] },
+  { base: '海風', cls: '白露型', type: '驅逐艦', forms: ['海風', '海風改'] },
+  { base: '江風', cls: '白露型', type: '驅逐艦', forms: ['江風', '江風改', '江風改二'] },
+  { base: '涼風', cls: '白露型', type: '驅逐艦', forms: ['涼風', '涼風改'] },
+  { base: '朝潮', cls: '朝潮型', type: '驅逐艦', forms: ['朝潮', '朝潮改', '朝潮改二'] },
+  { base: '大潮', cls: '朝潮型', type: '驅逐艦', forms: ['大潮', '大潮改', '大潮改二'] },
+  { base: '満潮', cls: '朝潮型', type: '驅逐艦', forms: ['満潮', '満潮改', '満潮改二'] },
+  { base: '荒潮', cls: '朝潮型', type: '驅逐艦', forms: ['荒潮', '荒潮改'] },
+  { base: '朝雲', cls: '朝潮型', type: '驅逐艦', forms: ['朝雲', '朝雲改'] },
+  { base: '山雲', cls: '朝潮型', type: '驅逐艦', forms: ['山雲', '山雲改'] },
+  { base: '霰', cls: '朝潮型', type: '驅逐艦', forms: ['霰', '霰改'] },
+  { base: '霞', cls: '朝潮型', type: '驅逐艦', forms: ['霞', '霞改', '霞改二'] },
+  { base: '陽炎', cls: '陽炎型', type: '驅逐艦', forms: ['陽炎', '陽炎改'] },
+  { base: '不知火', cls: '陽炎型', type: '驅逐艦', forms: ['不知火', '不知火改'] },
+  { base: '黒潮', cls: '陽炎型', type: '驅逐艦', forms: ['黒潮', '黒潮改'] },
+  { base: '親潮', cls: '陽炎型', type: '驅逐艦', forms: ['親潮', '親潮改'] },
+  { base: '初風', cls: '陽炎型', type: '驅逐艦', forms: ['初風', '初風改'] },
+  { base: '雪風', cls: '陽炎型', type: '驅逐艦', forms: ['雪風', '雪風改'] },
+  { base: '天津風', cls: '陽炎型', type: '驅逐艦', forms: ['天津風', '天津風改'] },
+  { base: '時津風', cls: '陽炎型', type: '驅逐艦', forms: ['時津風', '時津風改'] },
+  { base: '浦風', cls: '陽炎型', type: '驅逐艦', forms: ['浦風', '浦風改'] },
+  { base: '磯風', cls: '陽炎型', type: '驅逐艦', forms: ['磯風', '磯風改'] },
+  { base: '浜風', cls: '陽炎型', type: '驅逐艦', forms: ['浜風', '浜風改'] },
+  { base: '谷風', cls: '陽炎型', type: '驅逐艦', forms: ['谷風', '谷風改'] },
+  { base: '野分', cls: '陽炎型', type: '驅逐艦', forms: ['野分', '野分改'] },
+  { base: '舞風', cls: '陽炎型', type: '驅逐艦', forms: ['舞風', '舞風改'] },
+  { base: '萩風', cls: '陽炎型', type: '驅逐艦', forms: ['萩風', '萩風改'] },
+  { base: '嵐', cls: '陽炎型', type: '驅逐艦', forms: ['嵐', '嵐改'] },
+  { base: '夕雲', cls: '夕雲型', type: '驅逐艦', forms: ['夕雲', '夕雲改'] },
+  { base: '巻雲', cls: '夕雲型', type: '驅逐艦', forms: ['巻雲', '巻雲改'] },
+  { base: '長波', cls: '夕雲型', type: '驅逐艦', forms: ['長波', '長波改'] },
+  { base: '高波', cls: '夕雲型', type: '驅逐艦', forms: ['高波', '高波改'] },
+  { base: '沖波', cls: '夕雲型', type: '驅逐艦', forms: ['沖波', '沖波改'] },
+  { base: '朝霜', cls: '夕雲型', type: '驅逐艦', forms: ['朝霜', '朝霜改'] },
+  { base: '清霜', cls: '夕雲型', type: '驅逐艦', forms: ['清霜', '清霜改'] },
+  { base: '岸波', cls: '夕雲型', type: '驅逐艦', forms: ['岸波', '岸波改'] },
+  { base: '秋月', cls: '秋月型', type: '驅逐艦', forms: ['秋月', '秋月改'] },
+  { base: '照月', cls: '秋月型', type: '驅逐艦', forms: ['照月', '照月改'] },
+  { base: '島風', cls: '島風型', type: '驅逐艦', forms: ['島風', '島風改'] },
+  { base: '秋雲', cls: '陽炎型', type: '驅逐艦', forms: ['秋雲', '秋雲改'] },
+  { base: 'Z1', cls: 'Z1級', type: '驅逐艦', forms: ['Z1', 'Z1改'] },
+  { base: 'Z3', cls: 'Z1級', type: '驅逐艦', forms: ['Z3', 'Z3改'] },
+  { base: 'Maestrale', cls: 'Maestrale級', type: '驅逐艦', forms: ['Maestrale', 'Maestrale改'] },
+
+  // 潛水艦 / 潛水空母
+  { base: '伊168', cls: '海大型', type: '潛水艦', forms: ['伊168', '伊168改'] },
+  { base: '伊8', cls: '巡潜型', type: '潛水艦', forms: ['伊8', '伊8改'] },
+  { base: '伊19', cls: '巡潜型', type: '潛水艦', forms: ['伊19', '伊19改'] },
+  { base: '伊58', cls: '巡潜型', type: '潛水艦', forms: ['伊58', '伊58改'] },
+  { base: '伊26', cls: '巡潜型', type: '潛水艦', forms: ['伊26', '伊26改'] },
+  { base: 'まるゆ', cls: '丸輸型', type: '潛水艦', forms: ['まるゆ', 'まるゆ改'] },
+  { base: 'U-511', cls: 'U級', type: '潛水艦', forms: ['U-511', '呂500'] },
+  { base: '伊401', cls: '伊四百型', type: '潛水空母', forms: ['伊401', '伊401改'] },
+
+  // 潛水母艦 / 補給艦 / 工作艦 / 揚陸艦
+  { base: '速吸', cls: '速吸型', type: '補給艦', forms: ['速吸', '速吸改'] },
+  { base: '明石', cls: '明石型', type: '工作艦', forms: ['明石', '明石改'] },
+  { base: 'あきつ丸', cls: 'あきつ丸型', type: '揚陸艦', forms: ['あきつ丸', 'あきつ丸改'] },
+];
+
+// Build lookup maps
+const SHIPS_BY_BASE = Object.fromEntries(SHIPS.map(s => [s.base, s]));
+// Map: any name (base or any form) -> base ship object
+const SHIPS_BY_ANY_NAME = (() => {
+  const m = {};
+  SHIPS.forEach(s => {
+    m[s.base] = s;
+    s.forms.forEach(f => { m[f] = s; });
+  });
+  return m;
+})();
+
+// LocalStorage for ships
+const SHIPS_STORAGE_KEY = 'kc_ships_v1';
+const shipsState = (() => {
+  try {
+    const s = JSON.parse(localStorage.getItem(SHIPS_STORAGE_KEY)) || {};
+    return {
+      owned: s.owned || {},     // { base: timestamp }
+      pinned: s.pinned || {},   // { base: timestamp }
+      foldedTypes: s.foldedTypes || {}, // { typeName: true }
+    };
+  } catch { return { owned: {}, pinned: {}, foldedTypes: {} }; }
+})();
+function saveShips() { localStorage.setItem(SHIPS_STORAGE_KEY, JSON.stringify(shipsState)); }
+
+// ship base lookup by any form name
+function shipBaseFromName(name) {
+  const s = SHIPS_BY_ANY_NAME[name];
+  return s ? s.base : null;
+}
+
+// Compute set of bases needed by any incomplete task with require_ships
+function computeRequiredShipBases() {
+  const needed = new Set();
+  REAL_TASKS.forEach(t => {
+    if (state.done[t.id]) return;
+    if (!t.require_ships || !t.require_ships.length) return;
+    t.require_ships.forEach(name => {
+      const base = shipBaseFromName(name);
+      if (base) needed.add(base);
+    });
+  });
+  return needed;
+}
+
+// Bucket ships by display 艦種 (handles alsoIn cross-type display)
+function shipsByType() {
+  const map = {};
+  SHIPS_TYPE_LIST().forEach(t => { map[t] = []; });
+  SHIPS.forEach(s => {
+    (map[s.type] = map[s.type] || []).push({ ship: s, primary: true });
+    if (s.alsoIn) {
+      (map[s.alsoIn.type] = map[s.alsoIn.type] || []).push({ ship: s, primary: false });
+    }
+  });
+  return map;
+}
+
+function SHIPS_TYPE_LIST() {
+  // Use SHIP_TYPE_ORDER order, skip empty
+  const present = new Set();
+  SHIPS.forEach(s => {
+    present.add(s.type);
+    if (s.alsoIn) present.add(s.alsoIn.type);
+  });
+  return SHIP_TYPE_ORDER.filter(t => present.has(t));
+}
+
+let shipsSearch = '';
+let shipsFilter = 'all';
+
+function renderShipsPanel() {
+  const list = document.getElementById('ships-list');
+  const summaryEl = document.getElementById('ships-summary');
+  if (!list || !summaryEl) return;
+
+  const ownedCount = Object.keys(shipsState.owned).length;
+  const pinnedCount = Object.keys(shipsState.pinned).length;
+  const totalCount = SHIPS.length;
+  const neededBases = computeRequiredShipBases();
+  const missingNeeded = [...neededBases].filter(b => !shipsState.owned[b]).length;
+
+  summaryEl.innerHTML = `
+    <span>持有: <b>${ownedCount}</b> / ${totalCount}</span>
+    <span>釘選: <b>${pinnedCount}</b></span>
+    <span>任務需要: <b>${neededBases.size}</b> (缺 ${missingNeeded})</span>
+  `;
+
+  const q = shipsSearch.trim().toLowerCase();
+  const buckets = shipsByType();
+  list.innerHTML = '';
+
+  let totalShownInAll = 0;
+
+  SHIPS_TYPE_LIST().forEach(typeName => {
+    const entries = buckets[typeName] || [];
+    if (!entries.length) return;
+
+    // Apply filter & search
+    const filtered = entries.filter(({ ship, primary }) => {
+      const owned = !!shipsState.owned[ship.base];
+      const pinned = !!shipsState.pinned[ship.base];
+      const isNeeded = neededBases.has(ship.base);
+
+      if (shipsFilter === 'owned' && !owned) return false;
+      if (shipsFilter === 'missing' && owned) return false;
+      if (shipsFilter === 'pinned' && !pinned) return false;
+      if (shipsFilter === 'needed' && !isNeeded) return false;
+      if (q) {
+        const haystack = (ship.base + ' ' + ship.cls + ' ' + ship.forms.join(' ')).toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      return true;
+    });
+    if (!filtered.length) return;
+
+    totalShownInAll += filtered.length;
+
+    const bucket = document.createElement('div');
+    bucket.className = 'ship-type-bucket';
+    bucket.dataset.type = typeName;
+
+    const folded = !!shipsState.foldedTypes[typeName];
+    const ownedInType = filtered.filter(e => shipsState.owned[e.ship.base]).length;
+
+    const header = document.createElement('div');
+    header.className = 'ship-type-header';
+    header.dataset.action = 'toggle-fold';
+    header.innerHTML = `
+      <span class="fold-icon">${folded ? '▶' : '▼'}</span>
+      <span class="ship-type-name">${typeName}</span>
+      <span class="ship-type-count">${ownedInType} / ${filtered.length}</span>
+    `;
+    bucket.appendChild(header);
+
+    if (!folded) {
+      const body = document.createElement('div');
+      body.className = 'ship-type-body';
+
+      // Group by class within the type
+      const byClass = {};
+      filtered.forEach(e => {
+        (byClass[e.ship.cls] = byClass[e.ship.cls] || []).push(e);
+      });
+      // preserve original SHIPS order within each class
+      Object.keys(byClass).forEach(cls => {
+        const label = document.createElement('div');
+        label.className = 'ship-class-label';
+        label.textContent = cls;
+        body.appendChild(label);
+        byClass[cls].forEach(({ ship, primary }) => {
+          body.appendChild(renderShipRow(ship, primary, neededBases));
+        });
+      });
+
+      bucket.appendChild(body);
+    }
+
+    list.appendChild(bucket);
+  });
+
+  if (totalShownInAll === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'ships-empty';
+    empty.textContent = q || shipsFilter !== 'all' ? '無符合條件的艦娘' : '艦娘清單為空';
+    list.appendChild(empty);
+  }
+}
+
+function renderShipRow(ship, primary, neededBases) {
+  const owned = !!shipsState.owned[ship.base];
+  const pinned = !!shipsState.pinned[ship.base];
+  const isNeeded = neededBases && neededBases.has(ship.base);
+
+  const row = document.createElement('div');
+  row.className = 'ship-row' + (owned ? ' owned' : '');
+  if (!owned) row.classList.add('disabled-pin');
+  row.dataset.base = ship.base;
+
+  // checkbox
+  const cb = document.createElement('label');
+  cb.className = 'ship-checkbox';
+  cb.innerHTML = `<input type="checkbox" data-action="toggle-own" ${owned ? 'checked' : ''}>`;
+  row.appendChild(cb);
+
+  // name + forms
+  const nameWrap = document.createElement('div');
+  nameWrap.className = 'ship-name-wrap';
+  const nameEl = document.createElement('div');
+  nameEl.className = 'ship-name';
+  let nameHtml = ship.base;
+  if (!primary) {
+    nameHtml += `<span class="ship-cross">改後 ${ship.type}</span>`;
+  }
+  if (isNeeded) nameHtml += ' <span class="ship-warning">任務需要</span>';
+  nameEl.innerHTML = nameHtml;
+  nameWrap.appendChild(nameEl);
+
+  if (ship.forms.length > 1) {
+    const forms = document.createElement('div');
+    forms.className = 'ship-forms';
+    forms.textContent = ship.forms.join(' → ');
+    nameWrap.appendChild(forms);
+  }
+  row.appendChild(nameWrap);
+
+  // pin button
+  const pinBtn = document.createElement('button');
+  pinBtn.className = 'ship-pin-btn' + (pinned ? ' active' : '');
+  pinBtn.dataset.action = 'toggle-pin';
+  pinBtn.title = '釘選帶到下一輪';
+  pinBtn.textContent = pinned ? '📌' : '📍';
+  row.appendChild(pinBtn);
+
+  return row;
+}
+
+// Event delegation for ships list
+function wireShipsEvents() {
+  const panel = document.getElementById('ships-panel');
+  panel.addEventListener('click', e => {
+    const tgt = e.target;
+    const action = tgt.dataset.action || tgt.closest('[data-action]')?.dataset.action;
+    if (!action) return;
+
+    if (action === 'toggle-fold') {
+      const bucket = tgt.closest('.ship-type-bucket');
+      if (!bucket) return;
+      const type = bucket.dataset.type;
+      if (shipsState.foldedTypes[type]) delete shipsState.foldedTypes[type];
+      else shipsState.foldedTypes[type] = true;
+      saveShips();
+      renderShipsPanel();
+    } else if (action === 'toggle-own') {
+      const row = tgt.closest('.ship-row');
+      if (!row) return;
+      const base = row.dataset.base;
+      if (shipsState.owned[base]) {
+        delete shipsState.owned[base];
+        // un-owning auto un-pins
+        delete shipsState.pinned[base];
+      } else {
+        shipsState.owned[base] = Date.now();
+      }
+      saveShips();
+      renderShipsPanel();
+      // Re-render task list to update warnings
+      if (viewMode !== 'ships') render();
+    } else if (action === 'toggle-pin') {
+      const row = tgt.closest('.ship-row');
+      if (!row) return;
+      const base = row.dataset.base;
+      if (!shipsState.owned[base]) return; // can't pin unowned
+      if (shipsState.pinned[base]) delete shipsState.pinned[base];
+      else shipsState.pinned[base] = Date.now();
+      saveShips();
+      renderShipsPanel();
+    }
+  });
+
+  document.getElementById('ships-search').addEventListener('input', e => {
+    shipsSearch = e.target.value;
+    renderShipsPanel();
+  });
+  document.getElementById('ships-filter').addEventListener('change', e => {
+    shipsFilter = e.target.value;
+    renderShipsPanel();
+  });
+  document.getElementById('ships-expand-all').onclick = () => {
+    shipsState.foldedTypes = {};
+    saveShips();
+    renderShipsPanel();
+  };
+  document.getElementById('ships-collapse-all').onclick = () => {
+    SHIPS_TYPE_LIST().forEach(t => { shipsState.foldedTypes[t] = true; });
+    saveShips();
+    renderShipsPanel();
+  };
+  document.getElementById('ships-new-run').onclick = () => {
+    const pinnedCount = Object.keys(shipsState.pinned).length;
+    if (!confirm(`開始新一輪？\n所有「持有」狀態將被清除，僅保留 ${pinnedCount} 艘已釘選艦娘為新一輪初始艦娘。\n(任務勾選不會被影響)`)) return;
+    const keep = { ...shipsState.pinned };
+    shipsState.owned = {};
+    Object.keys(keep).forEach(base => { shipsState.owned[base] = Date.now(); });
+    // pinned remains as-is for next-next-run hints
+    saveShips();
+    renderShipsPanel();
+    if (viewMode !== 'ships') render();
+  };
+}
+
 function setView() {
   ui.vwFocus.classList.toggle('active', viewMode === 'focus');
   ui.vwAll.classList.toggle('active', viewMode === 'all');
   ui.vwPlanner.classList.toggle('active', viewMode === 'planner');
+  ui.vwShips.classList.toggle('active', viewMode === 'ships');
   ui.allControls.style.display = viewMode === 'all' ? 'flex' : 'none';
   ui.tabs.style.display = viewMode === 'all' ? 'flex' : 'none';
   ui.typeTabs.style.display = viewMode === 'all' ? 'flex' : 'none';
-  ui.list.style.display = viewMode === 'planner' ? 'none' : '';
+  ui.list.style.display = (viewMode === 'planner' || viewMode === 'ships') ? 'none' : '';
   ui.planner.style.display = viewMode === 'planner' ? '' : 'none';
+  ui.shipsPanel.style.display = viewMode === 'ships' ? '' : 'none';
 }
 
 ui.vwFocus.onclick = () => { viewMode = 'focus'; setView(); render(); };
 ui.vwAll.onclick = () => { viewMode = 'all'; setView(); render(); };
 ui.vwPlanner.onclick = () => { viewMode = 'planner'; setView(); render(); };
+ui.vwShips.onclick = () => { viewMode = 'ships'; setView(); renderShipsPanel(); };
 ui.search.addEventListener('input', () => render());
 ui.filter.addEventListener('change', () => render());
 ui.plannerSelect.addEventListener('change', () => render());
@@ -1440,6 +2213,7 @@ dlgOk.onclick = () => {
 renderTabs();
 renderTypeTabs();
 populatePlannerSelect();
+wireShipsEvents();
 setView();
 render();
 </script>

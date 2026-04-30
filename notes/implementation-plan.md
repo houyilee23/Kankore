@@ -1,8 +1,24 @@
 # 艦これ改 任務追蹤器 — 實作計畫（本輪）
 
 > 撰寫日期：2026-04-29  
+> 最後更新：2026-04-30（Stage A~D 完成）  
 > 適用版本：guide.html（目前 TASKS t001~t129）  
 > 參考：`notes/feature-ideas.md`（A-1、C-1、C-2、E-1、D-2、F-1）
+
+---
+
+## 目前完成狀態
+
+| Stage | 功能             | 狀態      | Commit    | 實際行數增量 |
+|-------|-----------------|-----------|-----------|------------|
+| A     | type badge + 篩選 | ✅ 已完成 | `be9f531` | 約 +160 行  |
+| B     | 進度條           | ✅ 已完成 | `75c271c` | 約 +55 行   |
+| C     | 路線規劃器       | ✅ 已完成 | `9b730aa` | 約 +150 行  |
+| D     | 前置跳轉 badge   | ✅ 已完成 | `fd9b787` | +101 行     |
+| E     | 艦娘需求清單     | ⏳ 待實作 | —         | 預估 +205 行 |
+
+> guide.html 目前 **1447 行**（2026-04-30 量測，已含 Stage A~D）。  
+> 所有變更已合併至 `main` 並部署到 GitHub Pages。
 
 ---
 
@@ -19,7 +35,9 @@ Stage A → Stage B → Stage C → Stage D → Stage E
 
 ---
 
-## Stage A：任務種類 `type` 欄位 + 彩色 Badge + 種類篩選 Tab
+## ✅ Stage A：任務種類 `type` 欄位 + 彩色 Badge + 種類篩選 Tab
+
+> **完成**：commit `be9f531` `feat: add task type badges and category filter tabs`
 
 ### 1. 目標 / 範圍
 
@@ -54,7 +72,7 @@ type: 'formation'    // 編成
 
 無。`type` 是靜態資料，不需存 localStorage。
 
-篩選狀態（目前選了哪個 type tab）建議用 JS 變數 `currentTypeFilter` 維持，不持久化（重整後回到「全部」即可）。
+篩選狀態（目前選了哪個 type tab）用 JS 變數 `currentTypeFilter` 維持，不持久化（重整後回到「全部」即可）。
 
 ### 5. UI 草稿
 
@@ -68,7 +86,7 @@ type: 'formation'    // 編成
 
 Badge 用 `<span class="type-badge type-sortie">⚓ 出撃</span>` 格式，圓角小膠囊樣式。
 
-**Badge 色票（新增至 `:root`）**：
+**Badge 色票（已加入 `:root`）**：
 
 ```css
 --type-sortie: #e05555;       /* 出撃：紅 */
@@ -89,31 +107,22 @@ Badge 用 `<span class="type-badge type-sortie">⚓ 出撃</span>` 格式，圓�
 
 ### 6. 驗收標準
 
-- [ ] 每個 `kind:'task'` 節點在卡片名稱旁顯示對應顏色 badge
-- [ ] `kind:'note'` 和 `kind:'reward'` 節點不顯示 badge
-- [ ] 種類篩選 Tab 存在，點擊「出撃」後只顯示 `type:'sortie'` 的任務
-- [ ] 故事線 Tab + 種類 Tab 同時有效（AND 邏輯）
-- [ ] 點「全部」種類 Tab 時，行為與原本一致
-- [ ] 手機觸控 badge 不會觸發 checkbox 勾選（badge 僅展示，不可點擊）
+- [x] 每個 `kind:'task'` 節點在卡片名稱旁顯示對應顏色 badge
+- [x] `kind:'note'` 和 `kind:'reward'` 節點不顯示 badge
+- [x] 種類篩選 Tab 存在，點擊「出撃」後只顯示 `type:'sortie'` 的任務
+- [x] 故事線 Tab + 種類 Tab 同時有效（AND 邏輯）
+- [x] 點「全部」種類 Tab 時，行為與原本一致
+- [x] 手機觸控 badge 不會觸發 checkbox 勾選（badge 僅展示，不可點擊）
 
-**手機驗收**：在 iOS Safari 打開 guide.html，點頂部「出撃」Tab，確認只剩出擊任務，每張卡片都有紅色「⚓ 出撃」badge。
+### 7. 實際行數
 
-### 7. 預估
-
-- 資料補標（`type` 欄位）：約 +80 行 JSON 修改（分散在 TASKS 陣列）
-- CSS（badge 樣式 + tab 樣式）：約 +40 行
-- HTML（Tab 列）：約 +10 行
-- JS（渲染 + 篩選邏輯）：約 +30 行
-- **總計：約 +160 行**，預估工時 1.5 小時
-
-### 8. 依賴關係
-
-- 無前置依賴，Stage A 可獨立開始
-- Stage C-1（種類篩選 Tab）依賴本 Stage 的 `type` 欄位
+約 +160 行（含 TASKS type 欄位補標 + CSS + JS）
 
 ---
 
-## Stage B：進度條（全域 + 各路線）
+## ✅ Stage B：進度條（全域 + 各路線）
+
+> **完成**：commit `75c271c` `feat: add progress bars for global and per-route completion`
 
 ### 1. 目標 / 範圍
 
@@ -123,10 +132,10 @@ Badge 用 `<span class="type-badge type-sortie">⚓ 出撃</span>` 格式，圓�
 
 | 區塊         | 修改內容                                                                         |
 |-------------|----------------------------------------------------------------------------------|
-| `<style>`   | 新增 `.progress-bar`（全域）和 `.bucket-progress`（各路線）的樣式                   |
-| HTML header | 在 `.progress` span 旁插入 `<div class="progress-bar"><div class="progress-fill"></div></div>` |
-| HTML main   | 在 `.bucket-header` 的 `.count` 旁加入 `<span class="bucket-progress">X/Y</span>` |
-| JS 渲染     | 更新 `renderAll()` 或等效函數，計算各 bucket 的完成比例，用 `style.width` 動態設定  |
+| `<style>`   | 新增 `.progress-bar-wrap`（全域）和 `.count-progress`（各路線）的樣式               |
+| HTML header | 在 `h1` 下方插入 `<div class="progress-bar-wrap"><div class="progress-fill"></div></div>` |
+| HTML main   | 在 `.bucket-header` 的 `.count` 改為 `.count-progress` 顯示 `X / Y` 格式          |
+| JS 渲染     | `updateProgress()` 更新 `progress-fill` 寬度；`renderAll()` 計算各 cat 完成比例    |
 
 ### 3. 新增 / 修改的資料欄位
 
@@ -138,198 +147,121 @@ Badge 用 `<span class="type-badge type-sortie">⚓ 出撃</span>` 格式，圓�
 
 ### 5. UI 草稿
 
-**全域進度條**（header 內，`h1` 下方）：
+**全域進度條**（header 內，`h1` 下方）：4px 細條，完成部分 `--done` 綠色，transition 平滑更新。
 
-```
-艦これ 任務追蹤                              43 / 86 完成
-[============================--------]   50%
-```
-
-細長條（高度 4px），完成部分用 `--done`（綠色），未完成部分用 `--border`（暗灰）。
-
-**各路線進度**（bucket-header 右側，取代或補充現有 count badge）：
-
-```
-主線/支線                                    23 / 45
-D: Littorio 入手                              8 / 14
-E: Z1 入手                                    5 / 11
-```
-
-count badge 保留原有樣式，旁邊不加進度條（手機空間不夠），僅更新數字格式為 `完成數 / 總數`。
+**各路線進度**（bucket-header 右側）：數字格式 `完成數 / 總數`（class `.count-progress`）。
 
 ### 6. 驗收標準
 
-- [ ] Header 顯示全域進度條，完成 0 任務時進度條為空，全部完成時為全滿
-- [ ] 進度條隨勾選/取消動作即時更新（不需重整頁面）
-- [ ] 每個故事線 bucket-header 顯示「X / Y」格式的各路線進度
-- [ ] 切換故事線 Tab 時，各路線進度顯示正確（篩選不影響計算基準，計算基準永遠是全部任務）
-- [ ] 手機上進度條不會因為 safe-area 或字型差異而跑版
+- [x] Header 顯示全域進度條，完成 0 任務時進度條為空，全部完成時為全滿
+- [x] 進度條隨勾選/取消動作即時更新（不需重整頁面）
+- [x] 每個故事線 bucket-header 顯示「X / Y」格式的各路線進度
+- [x] 切換故事線 Tab 時，各路線進度顯示正確（計算基準永遠是全部任務）
+- [x] 手機上進度條不會因為 safe-area 或字型差異而跑版
 
-**手機驗收**：在 iOS Safari 打開 guide.html，勾選幾個任務，觀察 header 進度條增長，再看各 bucket-header 的數字對應正確。
+### 7. 實際行數
 
-### 7. 預估
-
-- CSS（進度條樣式）：約 +25 行
-- HTML（進度條 + bucket 數字）：約 +10 行
-- JS（計算 + 更新邏輯）：約 +20 行
-- **總計：約 +55 行**，預估工時 1 小時
-
-### 8. 依賴關係
-
-- 無前置依賴，Stage B 可獨立開始，與 Stage A 不衝突
-- 建議在 Stage A 完成後才做，避免同一份 TASKS 陣列同時被多處修改
+約 +55 行
 
 ---
 
-## Stage C：最短完成路徑規劃器
+## ✅ Stage C：最短完成路徑規劃器
+
+> **完成**：commit `9b730aa` `feat: add shortest-path quest planner`
 
 ### 1. 目標 / 範圍
 
-加入「路線規劃」功能：使用者從下拉選單（或搜尋）選定一個目標任務（如 t017「Littorio」），系統計算出所有尚未完成的前置任務，用拓撲排序排列，顯示為「建議完成順序」清單。
+加入「路線規劃」功能：使用者從下拉選單選定一個目標任務（如 t017「Littorio」），系統計算出所有尚未完成的前置任務，用拓撲排序排列，顯示為「建議完成順序」清單。
 
 ### 2. 涉及修改的檔案區塊
 
 | 區塊         | 修改內容                                                                              |
 |-------------|--------------------------------------------------------------------------------------|
-| `<style>`   | 新增 `#planner` 面板樣式（overlay 或獨立 section）；新增 `.planner-step` 樣式           |
-| HTML header | 在 view-switch 按鈕列加入「🗺 規劃」按鈕，切換顯示規劃面板                               |
-| HTML main   | 新增 `<section id="planner">` 面板，含目標選擇 `<select>` 和結果列表 `<ol id="planner-steps">` |
-| JS          | 新增 `buildAncestors(targetId)`（BFS 反向遍歷）、`topoSort(nodeSet)`（拓撲排序）、`renderPlanner()` 函數 |
+| `<style>`   | 新增 `#planner` 面板樣式；新增 `.planner-step`、`.planner-check`、`.step-*` 等樣式     |
+| HTML header | 在 view-switch 按鈕列加入「🗺 規劃」按鈕                                               |
+| HTML main   | 新增 `<section id="planner">` 面板，含目標 `<select>` 和結果 `<div id="planner-body">` |
+| JS          | 新增 `buildAncestors()`、`topoSort()`、`plannerStepStatus()`、`renderPlanner()`、`populatePlannerSelect()` |
 
 ### 3. 新增 / 修改的資料欄位
 
-無。使用現有 `prev`/`next` 建立反向 adjacency map。
-
-需要在 JS 初始化時建立：
-```js
-const PREV_MAP = Object.fromEntries(TASKS.map(t => [t.id, t.prev ?? []]));
-```
-（`TASKS_BY_ID` 已存在可複用）
+無。使用現有 `prev`/`next` 欄位，透過 `effPrereqs()` 計算有效前置。
 
 ### 4. 新增 / 修改的 localStorage key
 
 無。規劃結果是即時計算，不需持久化。
 
-### 5. UI 草稿
+### 5. 實作細節（實際與規劃的差異）
 
-**觸發入口**：在頂部 view-switch 按鈕列（`[ 清單 ] [ DAG ]`）加入第三個按鈕 `[ 🗺 規劃 ]`。
-
-**規劃面板**（替換 `<main>` 的內容顯示，或 overlay）：
-
-```
-──── 路線規劃 ────────────────────────
-
-目標任務：[  Littorio（t017）      ▼ ]
-
-建議完成順序（還差 6 步）：
-
-  1. ✅ t010  はじめての「編成」！          已完成
-  2. ✅ t027  「駆逐隊」を編成せよ！        已完成
-  3. 🔵 t030  「水雷戦隊」を編成せよ！      可進行  ← 今天從這裡開始
-  4. 🟡 t035  大規模艦隊を編成せよ！        待解鎖
-  5. 🟡 t040  「水上機母艦」を配備せよ！    待解鎖
-  6. 🟡 t042  「第六駆逐隊」を編成せよ！   待解鎖
-  ...
-
-──── 共需完成 N 個前置任務 ────────────
-```
-
-顏色規則：
-- ✅ 綠色：已完成（劃線或 dim）
-- 🔵 藍色（`--avail`）：當前可進行（所有 prev 均已完成）
-- 🟡 橘色（`--upcoming`）：尚有未完成的前置
-
-目標選單只列出 `kind:'task'` 且 `kind:'reward'` 的節點（reward 節點作為里程碑目標很直覺，如「Littorio」、「Z1」）。
-
-**「從這裡開始」箭頭**：高亮第一個狀態為「可進行」（`--avail`）的任務，旁邊顯示「← 今天從這裡開始」提示文字。
+- `buildAncestors(targetId)`：BFS 反向遍歷，支援 reward 節點（反查 `rewards` 欄位找 grantor task）
+- `topoSort(nodeSet)`：Kahn's algorithm，未排到的節點 fallback 附加在末尾
+- 規劃面板內 checkbox 可直接勾選，即時更新清單（透過 `plannerBody` 的 `change` 事件代理）
+- 目標已達成時顯示「✅ 目標已達成」
 
 ### 6. 驗收標準
 
-- [ ] 頁面頂部有「規劃」按鈕，點擊後切換到規劃面板
-- [ ] 目標選單包含所有 `kind:'task'` 和 `kind:'reward'` 節點，可搜尋/捲動
-- [ ] 選定目標後，清單顯示所有前置任務（含已完成的，以劃線標示）
-- [ ] 清單依「可先做的排前面」的拓撲順序排列
-- [ ] 清單中「可進行」任務高亮標示，是目前沒有任何未完成前置的任務
-- [ ] 完成某個任務後（勾選 checkbox），規劃清單即時更新（不需重開規劃面板）
-- [ ] 若目標任務已完成，顯示「✅ 目標已達成」提示
-- [ ] 切換回「清單」模式時，規劃面板隱藏
+- [x] 頁面頂部有「規劃」按鈕，點擊後切換到規劃面板
+- [x] 目標選單包含所有 `kind:'task'` 和 `kind:'reward'` 節點
+- [x] 選定目標後，清單顯示所有前置任務（含已完成的，以劃線標示）
+- [x] 清單依拓撲順序排列（可先做的排前面）
+- [x] 清單中「可進行」任務高亮標示，旁邊顯示「← 從這裡開始」
+- [x] 完成某個任務後（勾選 checkbox），規劃清單即時更新
+- [x] 若目標任務已完成，顯示「✅ 目標已達成」提示
+- [x] 切換回「清單」模式時，規劃面板隱藏
 
-**手機驗收**：在 iOS Safari 打開，點「規劃」，選擇「Littorio」，確認列出的任務順序合理，第一個可進行的任務與目前 DAG 狀態吻合。
+### 7. 實際行數
 
-### 7. 預估
-
-- CSS（面板樣式）：約 +50 行
-- HTML（面板結構）：約 +20 行
-- JS（BFS + 拓撲排序 + 渲染）：約 +80 行
-- **總計：約 +150 行**，預估工時 2 小時
-
-### 8. 依賴關係
-
-- 技術上不依賴 Stage A 或 B，但建議在 A、B 完成後做
-- Stage D（前置任務跳轉 badge）建議在本 Stage 完成後實作，可複用 `buildAncestors()` 邏輯
+約 +150 行
 
 ---
 
-## Stage D：前置任務跳轉 Badge（依賴 Stage C 完成後）
+## ✅ Stage D：前置任務跳轉 Badge
+
+> **完成**：commit `fd9b787` `feat: add prerequisite jump badges on locked tasks`
 
 ### 1. 目標 / 範圍
 
-強化現有的 `upcoming`（前置未完成）任務卡片：在卡片底部顯示「還需完成前置：[任務名稱]」的可點擊 badge，點擊後畫面滑動到該前置任務。
+強化現有的 `upcoming`（前置未完成）任務卡片：在卡片底部顯示可點擊的「🔒 [前置任務名稱]」badge，點擊後畫面滑動到該前置任務並高亮閃爍。
 
 ### 2. 涉及修改的檔案區塊
 
-| 區塊       | 修改內容                                                                          |
-|-----------|-----------------------------------------------------------------------------------|
-| `<style>` | 新增 `.prereq-badge`（可點擊跳轉樣式，底線或箭頭圖示）                              |
-| JS 渲染   | 在 `renderTask()` 中，當任務狀態為 `upcoming` 時，插入 `.prereq-badge` 列表；加入點擊跳轉邏輯 |
+| 區塊       | 修改內容                                                                           |
+|-----------|------------------------------------------------------------------------------------|
+| `<style>` | 新增 `.prereq-badges`、`.prereq-badge`、`.prereq-more`、`.planner-jump`、`@keyframes task-flash`、`.task.flash` |
+| JS 渲染   | 在 `renderTask()` 中，`kindClass === 'upcoming'` 時插入 `.prereq-badges` 區塊       |
+| JS 函數   | 新增 `scrollToTaskFlash(id)`（scrollIntoView + flash animation）                    |
 
 ### 3. 新增 / 修改的資料欄位
 
-無。使用現有 `prev` 欄位和 localStorage 完成狀態。
+無。使用現有 `prev` 欄位和 localStorage 完成狀態（透過 `effPrereqs()` 取有效前置）。
 
 ### 4. 新增 / 修改的 localStorage key
 
 無。
 
-### 5. UI 草稿
+### 5. 實作細節
 
-在 `upcoming` 任務卡片的展開區域（或即使未展開的卡片底部），插入：
-
-```
-[ 🔒 需先完成：「水雷戦隊」を編成せよ！ (t030) → ]
-[ 🔒 需先完成：「砲撃演習」を継続実施せよ！ (t021) → ]
-```
-
-Badge 樣式：橘色文字（`--upcoming`）、底線、手形 cursor、點擊後 `scrollIntoView` 到對應任務卡片，並短暫高亮（0.5s flash animation）。
-
-只顯示**直接前置**（`prev` 陣列中尚未完成的任務），不遞迴顯示全部祖先（避免資訊爆炸）。
-
-Stage C 完成後，可在這裡加一個「📋 查看完整路線」連結，直接跳到規劃面板並自動帶入此任務為目標。
+- badge 只顯示 `kind:'task'` 且未完成的直接前置（排除 `note` 節點）
+- 最多顯示 3 個，超過顯示 `+N 個前置`（class `.prereq-more`）
+- 右側「📋 查看完整路線」（class `.planner-jump`）：`margin-left: auto` 靠右，點擊切換規劃面板並帶入該任務為目標
+- `scrollToTaskFlash()`：切到 all 模式 → render → `setTimeout 50ms` → `scrollIntoView` → `void el.offsetWidth`（強制 reflow）→ 加 `.flash` → `setTimeout 1900ms` 後移除
+- Flash animation：1.8s ease-out，從橘色底漸變回 `--panel`
 
 ### 6. 驗收標準
 
-- [ ] `upcoming` 狀態任務顯示未完成的直接前置 badge
-- [ ] `avail` 和 `done` 狀態任務不顯示前置 badge
-- [ ] 點擊 badge 後，頁面滑動到對應前置任務，且該任務卡片短暫高亮
-- [ ] 若有多個未完成前置，全部列出（最多顯示 3 個，超過顯示「+N 個前置」）
-- [ ] 勾選某個前置任務後，對應的前置 badge 從 upcoming 任務卡片消失
+- [x] `upcoming` 狀態任務顯示未完成的直接前置 badge
+- [x] `avail` 和 `done` 狀態任務不顯示前置 badge
+- [x] 點擊 badge 後，頁面滑動到對應前置任務，且該任務卡片短暫高亮
+- [x] 若有多個未完成前置，全部列出（最多 3 個，超過顯示「+N 個前置」）
+- [x] 勾選某個前置任務後，對應的前置 badge 從 upcoming 任務卡片消失
+- [x] 「📋 查看完整路線」連結跳規劃面板並自動帶入目標
 
-**手機驗收**：在 iOS Safari 打開，找到一個 `upcoming`（橘色）任務，確認底部有前置跳轉 badge，點擊後畫面跳到對應任務並閃爍。
+### 7. 實際行數
 
-### 7. 預估
-
-- CSS（badge + flash animation）：約 +25 行
-- JS（渲染 + scrollIntoView + flash）：約 +30 行
-- **總計：約 +55 行**，預估工時 45 分鐘
-
-### 8. 依賴關係
-
-- 建議在 Stage C 完成後進行（可複用 Stage C 的「前置計算」概念，並加入「查看完整路線」連結）
-- 技術上可在 Stage A/B 完成後就獨立做，不強制依賴 C
++101 行（CSS ~48 行 + JS badge 渲染 ~37 行 + `scrollToTaskFlash` ~16 行）
 
 ---
 
-## Stage E：艦娘需求清單
+## ⏳ Stage E：艦娘需求清單（待實作）
 
 ### 1. 目標 / 範圍
 
@@ -417,35 +349,42 @@ localStorage.setItem('kc_ships_v1', JSON.stringify({ '翔鶴': true, '瑞鶴': t
 ### 8. 依賴關係
 
 - 技術上不依賴其他 Stage，但資料補標工作量大，建議放最後
-- 若要求 `require_ships` 資料完整才啟動 UI，可先做 UI 骨架（從 `info` 文字 fallback 解析），之後補上結構化欄位
+- 可先做 UI 骨架（view-switch 按鈕 + 空面板），之後補 `require_ships` 欄位
+
+### 9. 下個 session 的起點
+
+1. 閱讀 `CLAUDE.md`（架構約束）和本文件（目前完成狀態）
+2. 確認 `guide.html` 當前行數（目前 1447 行，Stage E 完成後預估 ~1650 行）
+3. 從補標 `require_ships` 資料開始，或先搭 UI 骨架再回來補資料
 
 ---
 
-## 整體規模估算
+## 整體規模（更新）
 
-| Stage | 功能             | 預估行數增量 | 預估工時 | 依賴       |
-|-------|-----------------|------------|---------|------------|
-| A     | type badge + 篩選 | +160 行    | 1.5 小時 | 無         |
-| B     | 進度條           | +55 行     | 1 小時   | 無         |
-| C     | 路線規劃器       | +150 行    | 2 小時   | 無（建議 A 後）|
-| D     | 前置跳轉 badge   | +55 行     | 45 分鐘  | 建議 C 後  |
-| E     | 艦娘需求清單     | +205 行    | 3 小時   | 無（建議最後）|
-| **合計** |              | **+625 行** | **約 8.25 小時** | |
+| Stage | 功能             | 狀態      | 實際行數增量 | Commit    |
+|-------|-----------------|-----------|------------|-----------|
+| A     | type badge + 篩選 | ✅ 完成  | 約 +160 行 | `be9f531` |
+| B     | 進度條           | ✅ 完成  | 約 +55 行  | `75c271c` |
+| C     | 路線規劃器       | ✅ 完成  | 約 +150 行 | `9b730aa` |
+| D     | 前置跳轉 badge   | ✅ 完成  | +101 行    | `fd9b787` |
+| E     | 艦娘需求清單     | ⏳ 待實作 | 預估 +205 行 | —       |
 
-> 目前 guide.html 約 951 行（2026-04-29 量測）。完成五個 Stage 後預估增加約 625 行，最終約 1576 行。
+> guide.html 目前 **1447 行**（Stage A~D 完成後）。Stage E 完成後預估約 **1650 行**。  
+> 所有已完成的變更均在 `main` 分支，已部署至 GitHub Pages（repo: `houyilee23/Kankore`）。
 
 ---
 
-## 各 Stage 完成後的 Commit 建議
+## Commit 記錄
 
 ```
-feat: add task type badges and filter tabs            ← Stage A
-feat: add per-category progress bars                  ← Stage B
-feat: add quest path planner with topological sort    ← Stage C
-feat: add prerequisite jump badges                    ← Stage D
-feat: add ship requirements panel                     ← Stage E
+fd9b787  feat: add prerequisite jump badges on locked tasks   ← Stage D
+9b730aa  feat: add shortest-path quest planner               ← Stage C
+75c271c  feat: add per-category progress bars                ← Stage B
+be9f531  feat: add task type badges and category filter tabs  ← Stage A
+9876ff4  docs: add CLAUDE.md and implementation plan
+00a875a  Initial commit: Kankore quest tracker guide.html
 ```
 
 ---
 
-*本文件僅供實作規劃用，實際工作開始前請確認 guide.html 當前行數，並在每個 Stage 完成後更新驗收狀態。*
+*本文件供 Claude Code session 自動讀取，記錄實作進度與技術細節。*

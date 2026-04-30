@@ -483,16 +483,20 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
   padding: 0;
 }
 .planner-step {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 12px;
+  display: block;
   background: var(--panel);
   border: 1px solid var(--border);
   border-left: 3px solid var(--border);
   border-radius: 8px;
   margin-bottom: 5px;
   font-size: 13px;
+  overflow: hidden;
+}
+.planner-step-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
   min-height: 44px;
 }
 .planner-step.done {
@@ -512,6 +516,18 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
   background: rgba(94, 160, 239, 0.07);
   font-weight: 600;
 }
+.planner-step .toggle {
+  margin-left: auto;
+}
+.planner-step.expanded .toggle { transform: rotate(180deg); }
+.planner-step .details {
+  display: none;
+  padding: 6px 12px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--panel-2);
+  font-size: 13px;
+}
+.planner-step.expanded .details { display: block; }
 .planner-check {
   display: flex;
   align-items: center;
@@ -1769,9 +1785,14 @@ function renderPlanner() {
     return t && t.kind === 'task' && !state.done[id];
   }).length;
 
-  const parts = [];
-  parts.push(`<div class="planner-summary">建議完成順序（還差 ${incompleteCount} 步）</div>`);
-  parts.push('<ol class="planner-steps">');
+  ui.plannerBody.innerHTML = '';
+  const summary = document.createElement('div');
+  summary.className = 'planner-summary';
+  summary.textContent = `建議完成順序（還差 ${incompleteCount} 步）`;
+  ui.plannerBody.appendChild(summary);
+
+  const ol = document.createElement('ol');
+  ol.className = 'planner-steps';
 
   let firstAvail = true;
   displayNodes.forEach(id => {
@@ -1780,7 +1801,7 @@ function renderPlanner() {
     const isDone = !!state.done[id];
     const isTarget = id === targetId;
 
-    let icon, cls, hint = '';
+    let icon, cls, isFirstAvail = false;
     if (t.kind === 'reward') {
       icon = '🎁'; cls = 'planner-step planner-target';
     } else {
@@ -1789,23 +1810,92 @@ function renderPlanner() {
         icon = '✅'; cls = 'planner-step done';
       } else if (status === 'avail') {
         icon = '🔵'; cls = 'planner-step avail';
-        if (firstAvail) { firstAvail = false; hint = '<span class="planner-start-hint">← 從這裡開始</span>'; }
+        if (firstAvail) { firstAvail = false; isFirstAvail = true; }
       } else {
         icon = '🟡'; cls = 'planner-step upcoming';
       }
       if (isTarget) cls += ' planner-target';
     }
 
+    const li = document.createElement('li');
+    li.className = cls;
+    li.dataset.id = id;
+
+    const headerRow = document.createElement('div');
+    headerRow.className = 'planner-step-row';
+
+    if (t.kind === 'task') {
+      const ck = document.createElement('label');
+      ck.className = 'planner-check';
+      ck.onclick = e => e.stopPropagation();
+      const inp = document.createElement('input');
+      inp.type = 'checkbox';
+      inp.dataset.id = id;
+      inp.checked = isDone;
+      ck.appendChild(inp);
+      headerRow.appendChild(ck);
+    }
+
+    const iconEl = document.createElement('span');
+    iconEl.className = 'step-icon';
+    iconEl.textContent = icon;
+    headerRow.appendChild(iconEl);
+
+    const idEl = document.createElement('span');
+    idEl.className = 'step-id';
+    idEl.textContent = id;
+    headerRow.appendChild(idEl);
+
+    const nameEl = document.createElement('span');
+    nameEl.className = 'step-name';
     const rawName = t.kind === 'reward' ? `${t.name}（目標）` : t.name;
-    const dispName = isDone ? `<s>${rawName}</s>` : rawName;
-    const ckbox = t.kind === 'task'
-      ? `<label class="planner-check"><input type="checkbox" data-id="${id}"${isDone ? ' checked' : ''}></label>`
-      : '';
-    parts.push(`<li class="${cls}">${ckbox}<span class="step-icon">${icon}</span><span class="step-id">${id}</span><span class="step-name">${dispName}</span>${hint}</li>`);
+    if (isDone) {
+      const s = document.createElement('s');
+      s.textContent = rawName;
+      nameEl.appendChild(s);
+    } else {
+      nameEl.textContent = rawName;
+    }
+    headerRow.appendChild(nameEl);
+
+    if (isFirstAvail) {
+      const hintEl = document.createElement('span');
+      hintEl.className = 'planner-start-hint';
+      hintEl.textContent = '← 從這裡開始';
+      headerRow.appendChild(hintEl);
+    }
+
+    if (t.kind === 'task') {
+      const tg = document.createElement('button');
+      tg.className = 'toggle';
+      tg.type = 'button';
+      tg.textContent = '▾';
+      tg.onclick = e => {
+        e.stopPropagation();
+        if (li.classList.contains('expanded')) {
+          li.classList.remove('expanded');
+          return;
+        }
+        // 延遲建立 details，避免每一步都先建一次（首次展開才建）
+        if (!li.querySelector('.details')) {
+          const det = document.createElement('div');
+          det.className = 'details';
+          det.appendChild(makeWikiInfo(t));
+          det.appendChild(makePrereqEditor(t));
+          det.appendChild(makeNextList(t));
+          det.appendChild(makeNotesEditor(t));
+          li.appendChild(det);
+        }
+        li.classList.add('expanded');
+      };
+      headerRow.appendChild(tg);
+    }
+
+    li.appendChild(headerRow);
+    ol.appendChild(li);
   });
 
-  parts.push('</ol>');
-  ui.plannerBody.innerHTML = parts.join('');
+  ui.plannerBody.appendChild(ol);
 }
 
 function populatePlannerSelect() {

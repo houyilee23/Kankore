@@ -1824,9 +1824,14 @@ function renderFocus() {
         return at && at.kind === 'task';
       });
       const total = taskAncestors.length;
-      const done = taskAncestors.filter(aid => state.done[aid]).length;
-      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+      const rawDone = taskAncestors.filter(aid => state.done[aid]).length;
       const achieved = isTargetAchieved(id);
+      // When the goal is achieved (e.g. reward target's granting task is done, or
+      // the target task itself is checked), force the bar full. This keeps the focus
+      // view consistent with the planner, which short-circuits to "目標已達成" on the
+      // same condition rather than tallying every ancestor.
+      const done = achieved ? total : rawDone;
+      const pct = total > 0 ? Math.round((done / total) * 100) : (achieved ? 100 : 0);
       const row = document.createElement('div');
       row.className = 'goal-progress' + (achieved ? ' achieved' : '');
       const escName = String(t.name).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));

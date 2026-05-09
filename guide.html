@@ -1019,6 +1019,144 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
 }
 .ship-warning-list .ship-warning { font-size: 11px; padding: 3px 8px; }
 .task.ship-blocked { border-left-color: #e05555; }
+
+/* === 改修工廠 (Improvements view) === */
+#improvements-panel {
+  padding: 8px 12px calc(80px + env(safe-area-inset-bottom));
+}
+.imp-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.imp-controls input[type="search"] {
+  flex: 1;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 16px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  -webkit-appearance: none;
+}
+.imp-cat-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  margin: 4px -12px 8px;
+  padding: 2px 12px;
+  scrollbar-width: none;
+}
+.imp-cat-tabs::-webkit-scrollbar { display: none; }
+.imp-cat-tabs .imp-tab {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 32px;
+}
+.imp-cat-tabs .imp-tab.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.imp-note {
+  font-size: 11px;
+  color: var(--text-dim);
+  background: rgba(200, 155, 60, 0.08);
+  border: 1px dashed var(--upcoming);
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+.imp-cat-section {
+  margin-bottom: 16px;
+}
+.imp-cat-header {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  padding: 6px 0 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.imp-cat-count {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-weight: normal;
+}
+.imp-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--type-remodel);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  padding: 8px 10px;
+}
+.imp-card.terminal { border-left-color: var(--text-dim); opacity: 0.85; }
+.imp-card-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.imp-card-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+  margin-top: 3px;
+  flex-wrap: wrap;
+}
+.imp-card-label {
+  color: var(--text-dim);
+  font-size: 11px;
+  flex-shrink: 0;
+  min-width: 64px;
+}
+.imp-card-value {
+  color: var(--text);
+  flex: 1;
+  word-break: break-word;
+}
+.imp-secretary-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1;
+}
+.imp-sec-chip {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.imp-arrow {
+  color: var(--type-remodel);
+  font-weight: 600;
+}
+.imp-updates-to {
+  color: var(--accent);
+  font-weight: 500;
+}
+.imp-updates-to.terminal { color: var(--text-dim); font-style: italic; font-weight: normal; }
+.imp-empty {
+  text-align: center;
+  color: var(--text-dim);
+  padding: 24px 12px;
+  font-size: 13px;
+}
 </style>
 </head>
 <body>
@@ -1035,6 +1173,7 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
     <button id="vw-all">全部清單</button>
     <button id="vw-planner">🗺 規劃</button>
     <button id="vw-ships">⚓ 艦娘</button>
+    <button id="vw-improvements">🛠 改修</button>
   </div>
   <div class="controls" id="all-controls" style="display:none">
     <input type="search" id="search" placeholder="搜尋編號/名稱/備註（如 t007 或 大和）...">
@@ -1079,6 +1218,15 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
     <button id="ships-new-run">🔄 新一輪</button>
   </div>
   <div id="ships-list"></div>
+</section>
+
+<section id="improvements-panel" style="display:none">
+  <div class="imp-controls">
+    <input type="search" id="imp-search" placeholder="搜尋裝備名 / 秘書艦...">
+  </div>
+  <div class="imp-cat-tabs" id="imp-cat-tabs"></div>
+  <div class="imp-note" id="imp-note"></div>
+  <div id="imp-list"></div>
 </section>
 
 <div class="bottom-bar">
@@ -1509,12 +1657,18 @@ const ui = {
   vwAll: document.getElementById('vw-all'),
   vwPlanner: document.getElementById('vw-planner'),
   vwShips: document.getElementById('vw-ships'),
+  vwImprovements: document.getElementById('vw-improvements'),
   planner: document.getElementById('planner'),
   plannerSelect: document.getElementById('planner-select'),
   plannerBody: document.getElementById('planner-body'),
   plannerPins: document.getElementById('planner-pins'),
   plannerPinBtn: document.getElementById('planner-pin-btn'),
   shipsPanel: document.getElementById('ships-panel'),
+  improvementsPanel: document.getElementById('improvements-panel'),
+  impSearch: document.getElementById('imp-search'),
+  impCatTabs: document.getElementById('imp-cat-tabs'),
+  impNote: document.getElementById('imp-note'),
+  impList: document.getElementById('imp-list'),
 };
 
 let viewMode = 'focus';
@@ -3191,19 +3345,23 @@ function setView() {
   ui.vwAll.classList.toggle('active', viewMode === 'all');
   ui.vwPlanner.classList.toggle('active', viewMode === 'planner');
   ui.vwShips.classList.toggle('active', viewMode === 'ships');
+  ui.vwImprovements.classList.toggle('active', viewMode === 'improvements');
+  const isList = (viewMode === 'focus' || viewMode === 'all');
   ui.allControls.style.display = viewMode === 'all' ? 'flex' : 'none';
   ui.tabs.style.display = viewMode === 'all' ? 'flex' : 'none';
   ui.typeTabs.style.display = viewMode === 'all' ? 'flex' : 'none';
   if (ui.tagTabs) ui.tagTabs.style.display = viewMode === 'all' ? 'flex' : 'none';
-  ui.list.style.display = (viewMode === 'planner' || viewMode === 'ships') ? 'none' : '';
+  ui.list.style.display = isList ? '' : 'none';
   ui.planner.style.display = viewMode === 'planner' ? '' : 'none';
   ui.shipsPanel.style.display = viewMode === 'ships' ? '' : 'none';
+  ui.improvementsPanel.style.display = viewMode === 'improvements' ? '' : 'none';
 }
 
 ui.vwFocus.onclick = () => { viewMode = 'focus'; setView(); render(); };
 ui.vwAll.onclick = () => { viewMode = 'all'; setView(); render(); };
 ui.vwPlanner.onclick = () => { viewMode = 'planner'; setView(); render(); };
 ui.vwShips.onclick = () => { viewMode = 'ships'; setView(); renderShipsPanel(); };
+ui.vwImprovements.onclick = () => { viewMode = 'improvements'; setView(); renderImprovements(); };
 ui.search.addEventListener('input', () => render());
 ui.filter.addEventListener('change', () => render());
 ui.plannerSelect.addEventListener('change', () => render());
@@ -3292,11 +3450,126 @@ dlgOk.onclick = () => {
   dlg.close();
 };
 
+// === 改修工廠 (Improvements view) ===
+let activeImpCategory = 'all';
+
+function getImprovementCategories() {
+  const seen = new Set();
+  const order = [];
+  for (const it of (IMPROVEMENTS && IMPROVEMENTS.items ? IMPROVEMENTS.items : [])) {
+    if (!seen.has(it.category)) { seen.add(it.category); order.push(it.category); }
+  }
+  return order;
+}
+
+function renderImprovementsCatTabs() {
+  const cats = getImprovementCategories();
+  const total = (IMPROVEMENTS && IMPROVEMENTS.items) ? IMPROVEMENTS.items.length : 0;
+  const tabs = [{ key: 'all', label: '全部', count: total }];
+  for (const c of cats) {
+    const count = IMPROVEMENTS.items.filter(it => it.category === c).length;
+    tabs.push({ key: c, label: c, count });
+  }
+  ui.impCatTabs.innerHTML = tabs.map(t => {
+    const active = t.key === activeImpCategory ? ' active' : '';
+    return `<button class="imp-tab${active}" data-cat="${t.key}">${t.label} <span style="opacity:0.65">${t.count}</span></button>`;
+  }).join('');
+}
+
+function renderImprovements() {
+  if (!IMPROVEMENTS || !Array.isArray(IMPROVEMENTS.items)) {
+    ui.impList.innerHTML = '<div class="imp-empty">改修資料未載入</div>';
+    return;
+  }
+  // Note message (data source + review reminder)
+  if (IMPROVEMENTS.note) {
+    ui.impNote.textContent = IMPROVEMENTS.note;
+    ui.impNote.style.display = '';
+  } else {
+    ui.impNote.style.display = 'none';
+  }
+
+  const q = (ui.impSearch.value || '').trim().toLowerCase();
+  const items = IMPROVEMENTS.items.filter(it => {
+    if (activeImpCategory !== 'all' && it.category !== activeImpCategory) return false;
+    if (!q) return true;
+    if (it.name && it.name.toLowerCase().includes(q)) return true;
+    if (it.updates_to && it.updates_to.toLowerCase().includes(q)) return true;
+    if (Array.isArray(it.secretary)) {
+      for (const s of it.secretary) {
+        if (s && s.toLowerCase().includes(q)) return true;
+      }
+    }
+    if (it.required_equipment && it.required_equipment.toLowerCase().includes(q)) return true;
+    return false;
+  });
+
+  if (items.length === 0) {
+    ui.impList.innerHTML = '<div class="imp-empty">沒有符合條件的裝備</div>';
+    return;
+  }
+
+  // Group by category preserving order from IMPROVEMENTS.items.
+  const groups = new Map();
+  for (const it of items) {
+    if (!groups.has(it.category)) groups.set(it.category, []);
+    groups.get(it.category).push(it);
+  }
+
+  const escape = s => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+  const html = [];
+  for (const [cat, list] of groups.entries()) {
+    html.push(`<div class="imp-cat-section">`);
+    html.push(`<div class="imp-cat-header"><span>${escape(cat)}</span><span class="imp-cat-count">${list.length} 項</span></div>`);
+    for (const it of list) {
+      const terminal = it.updates_to === '更新不可' || !it.updates_to;
+      const cardClass = 'imp-card' + (terminal ? ' terminal' : '');
+      const updatesClass = 'imp-updates-to' + (terminal ? ' terminal' : '');
+      const secretaryHtml = (Array.isArray(it.secretary) && it.secretary.length)
+        ? it.secretary.map(s => `<span class="imp-sec-chip">${escape(s)}</span>`).join('')
+        : '<span class="imp-card-value" style="color:var(--text-dim)">なし</span>';
+      const reqHtml = it.required_equipment
+        ? escape(it.required_equipment)
+        : '<span style="color:var(--text-dim)">なし</span>';
+      const updatesHtml = terminal
+        ? '更新不可'
+        : escape(it.updates_to);
+      const notesHtml = it.notes
+        ? `<div class="imp-card-row"><span class="imp-card-label">備考</span><span class="imp-card-value">${escape(it.notes)}</span></div>`
+        : '';
+      html.push(`<div class="${cardClass}">`);
+      html.push(`<div class="imp-card-name">${escape(it.name)}</div>`);
+      html.push(`<div class="imp-card-row"><span class="imp-card-label">秘書艦</span><div class="imp-secretary-list">${secretaryHtml}</div></div>`);
+      html.push(`<div class="imp-card-row"><span class="imp-card-label">必要装備</span><span class="imp-card-value">${reqHtml}</span></div>`);
+      html.push(`<div class="imp-card-row"><span class="imp-card-label">改修後</span><span class="imp-card-value"><span class="imp-arrow">→</span> <span class="${updatesClass}">${updatesHtml}</span></span></div>`);
+      html.push(notesHtml);
+      html.push(`</div>`);
+    }
+    html.push(`</div>`);
+  }
+  ui.impList.innerHTML = html.join('');
+}
+
+ui.impSearch.addEventListener('input', () => renderImprovements());
+ui.impCatTabs.addEventListener('click', e => {
+  const btn = e.target.closest('.imp-tab');
+  if (!btn) return;
+  const cat = btn.dataset.cat;
+  if (!cat || cat === activeImpCategory) return;
+  activeImpCategory = cat;
+  renderImprovementsCatTabs();
+  renderImprovements();
+});
+
 renderTabs();
 renderTypeTabs();
 renderTagTabs();
 populatePlannerSelect();
 wireShipsEvents();
+renderImprovementsCatTabs();
 setView();
 render();
 </script>

@@ -60,9 +60,33 @@
 
 ## 資料模型
 
+### 資料同步管線（JSON ↔ guide.html）
+
+**Source of truth 是 `data/*.json`，不是 `guide.html`。**
+
+- `data/tasks.json` → `const TASKS = [...]`（包夾於 `// <TASKS_START>` / `// <TASKS_END>`）
+- `data/improvements.json` → `const IMPROVEMENTS = {...}`（包夾於 `// <IMPROVEMENTS_START>` / `// <IMPROVEMENTS_END>`）
+
+**修改流程**：
+1. 編輯 `data/tasks.json` 或 `data/improvements.json`（UTF-8 no BOM、每筆一行、易 diff）
+2. 跑對應 sync 腳本把 JSON inline 回 `guide.html`：
+   ```bash
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts/sync_tasks.ps1
+   powershell -NoProfile -ExecutionPolicy Bypass -File scripts/sync_improvements.ps1
+   ```
+3. 跑 `scripts/verify_synced.ps1` 確認 HTML 與 JSON 語意等價
+4. commit 時 **同時** 包含 `data/*.json` 與 `guide.html` 的變更（兩者必須一致）
+
+**規則**：
+- **不可** 直接編輯 `guide.html` 內 sentinel 包夾的區塊（會被下次 sync 蓋掉）
+- sync 腳本是 idempotent 的，跑兩次結果一致
+- 首次 bootstrap 時 sync 會自動建立 sentinel；之後就 always sentinel-replace
+- 若 `data/tasks.json` 不慎遺失，可用 `scripts/extract_tasks.ps1` 從 `guide.html` 反向重建
+
 ### TASKS 陣列
 
-`guide.html` 內有一個全域 `const TASKS = [...]`，每筆為一個任務物件。
+**Source of truth**：`data/tasks.json`（每筆 task 一行 JSON、按 id 排序、欄位順序由 sync 腳本固定）。
+`guide.html` 內的 `const TASKS = [...]` 是 sync 產物，不可手改。
 
 #### 現有欄位
 
@@ -146,6 +170,37 @@
 - **同名任務**：同一 `name` 可有多個任務，用 `content` 欄位區分。UI 透過 id 唯一性區分。目前同名群組：
   - 「潜水艦隊」出撃せよ！: t201 基礎 / t202 月刊
   - 「機種転換」系列: t061（零式艦戦52型(熟練)）/ t113 機種転換(零戦52)（yearly）/ t263 友永隊 / t264 江草隊 / t267 村田隊 / t279 六〇一空
+
+### IMPROVEMENTS（改修工廠裝備資料）
+
+**Source of truth**：`data/improvements.json`。`guide.html` 內 `const IMPROVEMENTS = {...}` 為 sync 產物，不可手改。
+
+來源：wikiwiki.jp/kancollekai/改修工廠 的「装備名逆引き」表，初版用 WebFetch 自動抽取（52 項裝備、6 大分類），可能有資料誤差，**屬已知狀態**，要修正請編輯 JSON 後跑 sync。
+
+#### Schema（頂層）
+
+```json
+{
+  "version": 1,
+  "source": "<wiki url>",
+  "fetched_at": "YYYY-MM-DD",
+  "note": "...",
+  "items": [ /* 每筆一行的 item 物件 */ ]
+}
+```
+
+#### Item 欄位
+
+| 欄位                  | 類型              | 說明                                                       |
+|-----------------------|-------------------|------------------------------------------------------------|
+| `category`            | `string`          | 分類（主砲/副砲/機銃/魚雷/電探/その他）                     |
+| `name`                | `string`          | 裝備名（日文）                                              |
+| `secretary`           | `string[]`        | 必要秘書艦清單，無要求則為 `[]`                              |
+| `required_equipment`  | `string｜null`    | 必要裝備（含數量，例：`"22号対水上電探×3"`），無則 `null` |
+| `updates_to`          | `string`          | 改修後更新對象；終端裝備寫 `"更新不可"`                     |
+| `notes`               | `string｜null`    | 備考（區分多路徑時使用）                                    |
+
+同一 `name` 可以有多筆 item（例：`94式高射装置` 因秘書艦不同而有兩條改修路徑），用 `(category, name, secretary, updates_to)` 元組唯一識別。
 
 ---
 
@@ -233,6 +288,11 @@
 
 ## 工作流程
 
+0. **改資料時**（TASKS / IMPROVEMENTS）：
+   - 編輯 `data/tasks.json` 或 `data/improvements.json`
+   - 跑對應 `scripts/sync_*.ps1` 把 JSON inline 回 `guide.html`
+   - 跑 `scripts/verify_synced.ps1` 確認等價
+   - commit 時 **同時** 包含 `data/*.json` 與 `guide.html`（兩者必須一致）
 1. 每次改動完成後，先**回報變更摘要**給使用者 review
 2. 使用者確認後才執行 `git add` + `git commit` + `git push`
 3. **Commit message 格式**（英文）：
@@ -291,5 +351,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File migrate.ps1
 
 | 檔案                              | 說明                                           |
 |----------------------------------|------------------------------------------------|
+| `data/tasks.json`                | TASKS source of truth（每筆 task 一行）           |
+| `data/improvements.json`         | IMPROVEMENTS source of truth（裝備改修資料）       |
+| `scripts/sync_tasks.ps1`         | `data/tasks.json` → `guide.html` inline 同步       |
+| `scripts/sync_improvements.ps1`  | `data/improvements.json` → `guide.html` inline 同步 |
+| `scripts/verify_synced.ps1`      | 驗證 HTML 內 inline 資料 ≡ JSON source             |
+| `scripts/extract_tasks.ps1`      | `guide.html` → `data/tasks.json`（recovery 工具）   |
 | `notes/feature-ideas.md`         | 完整功能規劃比較研究（差距分析、候選功能清單）    |
 | `notes/implementation-plan.md`   | 目前這一輪的分階段實作計畫（Stage A～E）          |

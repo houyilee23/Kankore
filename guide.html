@@ -1157,6 +1157,128 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
   padding: 24px 12px;
   font-size: 13px;
 }
+
+/* === 海域 (Areas view) === */
+#areas-panel {
+  padding: 8px 12px calc(80px + env(safe-area-inset-bottom));
+}
+.area-controls {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.area-controls input[type="search"] {
+  flex: 1;
+  min-width: 160px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 16px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  -webkit-appearance: none;
+}
+.area-controls button {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  min-height: 36px;
+}
+.area-controls button:active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.area-note {
+  font-size: 11px;
+  color: var(--text-dim);
+  background: rgba(94, 160, 239, 0.06);
+  border: 1px dashed var(--accent);
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+.area-group {
+  margin-bottom: 6px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.area-group-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  cursor: pointer;
+  user-select: none;
+  background: var(--panel-2);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.area-group-head:active { background: rgba(94, 160, 239, 0.15); }
+.area-group-head .area-toggle {
+  color: var(--text-dim);
+  transition: transform 0.15s ease;
+  font-size: 12px;
+}
+.area-group.expanded .area-toggle { transform: rotate(180deg); }
+.area-group-body {
+  display: none;
+  padding: 4px 8px 8px;
+}
+.area-group.expanded .area-group-body { display: block; }
+.area-node {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--type-expedition);
+  border-radius: 6px;
+  margin-top: 6px;
+  padding: 6px 10px;
+}
+.area-node-head {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.area-row {
+  display: flex;
+  gap: 6px;
+  font-size: 12px;
+  margin-top: 3px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.area-row-label {
+  color: var(--text-dim);
+  font-size: 11px;
+  flex-shrink: 0;
+  min-width: 64px;
+}
+.area-row-value {
+  color: var(--text);
+  flex: 1;
+  word-break: break-word;
+}
+.area-fleet-flag { color: var(--type-remodel); font-weight: 600; }
+.area-fleet-escort { color: var(--text); }
+.area-restricted { color: #e07b30; }
+.area-recon { color: #c89b3c; }
+.area-notes { color: var(--text-dim); font-style: italic; }
+.area-task-chip {
+  display: inline-block;
+  background: rgba(94, 160, 239, 0.15);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  margin: 2px 4px 0 0;
+}
 </style>
 </head>
 <body>
@@ -1174,6 +1296,7 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
     <button id="vw-planner">🗺 規劃</button>
     <button id="vw-ships">⚓ 艦娘</button>
     <button id="vw-improvements">🛠 改修</button>
+    <button id="vw-areas">🧭 海域</button>
   </div>
   <div class="controls" id="all-controls" style="display:none">
     <input type="search" id="search" placeholder="搜尋編號/名稱/備註（如 t007 或 大和）...">
@@ -1227,6 +1350,16 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
   <div class="imp-cat-tabs" id="imp-cat-tabs"></div>
   <div class="imp-note" id="imp-note"></div>
   <div id="imp-list"></div>
+</section>
+
+<section id="areas-panel" style="display:none">
+  <div class="area-controls">
+    <input type="search" id="area-search" placeholder="搜尋海域 / 編成 / 任務...">
+    <button id="area-expand-all" type="button">全部展開</button>
+    <button id="area-collapse-all" type="button">全部摺疊</button>
+  </div>
+  <div class="area-note" id="area-note"></div>
+  <div id="area-list"></div>
 </section>
 
 <div class="bottom-bar">
@@ -1580,6 +1713,84 @@ const IMPROVEMENTS = {
   ]
 };
 // <IMPROVEMENTS_END>
+
+// <AREAS_START> generated from data/areas.json by scripts/sync_areas.ps1; do not edit by hand
+const AREAS = {
+  "version": 1,
+  "source": "D:\\待整理\\games\\艦これ\\psv版\\導航.xlsx (sheet: 導航)",
+  "note": "艦これ改 海域導航資料 — 建議編成 / 必要導航艦 / 注意事項 / 索敵裝備 / 出擊不可 / 任務相關",
+  "areas": ["鎮守府海域","南方連絡海域","中部西海域","南西諸島海域","西南海域","西方海域","北方泊地海域","北方海域","南方泊地海域","南方海域","中部海域","AL海域","MI海域","FS海域","深海後方海域","深海運河海域","深海中枢海域"],
+  "items": [
+    {"area":"鎮守府海域","node":1,"fleet_flag":"","fleet_escort":"輕巡1+驅逐3+潛水2","nav_flag":"","nav_escort":"輕巡1 驅逐3","notes":"","recon":"","restricted":"","tasks":[]},
+    {"area":"鎮守府海域","node":2,"fleet_flag":"","fleet_escort":"輕巡1+驅逐4+輕空母1","nav_flag":"","nav_escort":"輕巡1 驅逐4","notes":"","recon":"","restricted":"","tasks":[]},
+    {"area":"鎮守府海域","node":3,"fleet_flag":"","fleet_escort":"輕巡1+驅逐5","nav_flag":"","nav_escort":"輕巡1 驅逐4","notes":"","recon":"","restricted":"","tasks":[]},
+    {"area":"鎮守府海域","node":4,"fleet_flag":"重巡","fleet_escort":"輕巡1+驅逐4","nav_flag":"","nav_escort":"輕巡1 驅逐3","notes":"","recon":"","restricted":"","tasks":[]},
+    {"area":"南方連絡海域","node":1,"fleet_flag":"高戰","fleet_escort":"輕空3+驅逐2","nav_flag":"","nav_escort":"空母系3","notes":"","recon":"","restricted":"","tasks":[]},
+    {"area":"南方連絡海域","node":2,"fleet_flag":"","fleet_escort":"あきつ丸+驅逐3","nav_flag":"","nav_escort":"4隻以下","notes":"全對潛圖","recon":"","restricted":"","tasks":["[南方連絡航路対潜哨戒を実施せよ！]"]},
+    {"area":"南方連絡海域","node":3,"fleet_flag":"輕巡","fleet_escort":"驅逐5","nav_flag":"","nav_escort":"","notes":"","recon":"","restricted":"雷巡,高戦,戦,航,潜,潜母,装母","tasks":[]},
+    {"area":"南方連絡海域","node":4,"fleet_flag":"輕空母","fleet_escort":"高戰+あきつ丸+輕巡1+驅逐2","nav_flag":"","nav_escort":"あきつ丸+輕巡1+驅逐2","notes":"大型艦3以上會繞遠路","recon":"必進","restricted":"","tasks":["[南方連絡線制海権を確保せよ！] clear","[「西村艦隊」出撃せよ！] A勝"]},
+    {"area":"中部西海域","node":1,"fleet_flag":"","fleet_escort":"輕空母1~2+輕巡1+驅逐3~4","nav_flag":"","nav_escort":"","notes":"","recon":"","restricted":"","tasks":["[バシー島]系列 S勝"]},
+    {"area":"中部西海域","node":2,"fleet_flag":"","fleet_escort":"潛水5","nav_flag":"","nav_escort":"","notes":"","recon":"","restricted":"","tasks":[]},
+    {"area":"中部西海域","node":3,"fleet_flag":"","fleet_escort":"潛水5","nav_flag":"","nav_escort":"","notes":"","recon":"水爆2+紫雲2+水偵1","restricted":"","tasks":[]},
+    {"area":"中部西海域","node":4,"fleet_flag":"","fleet_escort":"重巡3+輕巡1+軽空母2","nav_flag":"","nav_escort":"","notes":"","recon":"水爆3+紫雲2+艦偵3+電探3(以下)","restricted":"","tasks":[]},
+    {"area":"南西諸島海域","node":1,"fleet_flag":"","fleet_escort":"航巡4+輕空母2","nav_flag":"","nav_escort":"","notes":"","recon":"","restricted":"","tasks":[]},
+    {"area":"南西諸島海域","node":2,"fleet_flag":"","fleet_escort":"航巡4+輕空母2","nav_flag":"","nav_escort":"","notes":"","recon":"","restricted":"高戦,戦,航戦,航,装母","tasks":[]},
+    {"area":"南西諸島海域","node":3,"fleet_flag":"","fleet_escort":"航巡4+輕空母2","nav_flag":"","nav_escort":"戰艦+空母5以下,至少航巡1","notes":"","recon":"","restricted":"","tasks":["[資源地帯の制海権を確保せよ！] clear"]},
+    {"area":"南西諸島海域","node":4,"fleet_flag":"","fleet_escort":"航巡4+輕空母2","nav_flag":"","nav_escort":"","notes":"港灣棲姬","recon":"","restricted":"","tasks":["[機動部隊出撃！ポートワインを痛打せよ！]"]},
+    {"area":"西南海域","node":1,"fleet_flag":"","fleet_escort":"航巡2+輕空母1+輕巡1+驅逐2","nav_flag":"","nav_escort":"輕巡1+驅逐2","notes":"不歪, 配導航可打商船,道中選D","recon":"","restricted":"戦,航戦,航,装母","tasks":[]},
+    {"area":"西南海域","node":2,"fleet_flag":"","fleet_escort":"戰艦1+航巡3+輕巡1+空母1","nav_flag":"","nav_escort":"","notes":"道中選A","recon":"","restricted":"","tasks":[]},
+    {"area":"西南海域","node":3,"fleet_flag":"","fleet_escort":"戰艦1+航巡3+輕巡1+空母1","nav_flag":"","nav_escort":"","notes":"高制空","recon":"","restricted":"","tasks":["[西南要塞を攻略せよ！]"]},
+    {"area":"西南海域","node":4,"fleet_flag":"","fleet_escort":"戰艦1+航巡3+輕巡1+空母1","nav_flag":"","nav_escort":"","notes":"高索敵值, 道中選D","recon":"艦偵1+紫雲2+水偵1+水爆5+電探3","restricted":"","tasks":[]},
+    {"area":"西方海域","node":1,"fleet_flag":"","fleet_escort":"高戰1+航巡3+輕巡1+空母1","nav_flag":"","nav_escort":"","notes":"道中選E,高索敵值","recon":"艦偵1+紫雲2+水偵1+水爆5+電探3","restricted":"","tasks":["[カレー洋作戦、開始せよ！]","[「航空戦艦」抜錨せよ！]","「空母機動部隊」西へ！","[「第二戦隊」抜錨！] 2次"]},
+    {"area":"西方海域","node":2,"fleet_flag":"輕巡","fleet_escort":"重巡4+航巡1","nav_flag":"輕巡","nav_escort":"重巡2+航巡1","notes":"道中選D","recon":"紫雲5+水爆3+電探5 以上","restricted":"戦,航戦,航,装母","tasks":[]},
+    {"area":"西方海域","node":3,"fleet_flag":"","fleet_escort":"重巡2+航巡1+輕巡1+空母2","nav_flag":"","nav_escort":"","notes":"道中別選C,高索敵值","recon":"彩雲4+紫雲3+電探2","restricted":"","tasks":["[リランカ島] S勝"]},
+    {"area":"西方海域","node":4,"fleet_flag":"","fleet_escort":"重巡2+航巡1+輕巡1+空母2","nav_flag":"","nav_escort":"戦艦＋正規空母6以下","notes":"道中選F","recon":"艦偵2+紫雲3+水偵1+水爆2+電探3","restricted":"","tasks":["[トラック泊地を防衛せよ！]A勝3次"]},
+    {"area":"北方泊地海域","node":1,"fleet_flag":"","fleet_escort":"航巡4+輕巡2","nav_flag":"","nav_escort":"","notes":"","recon":"","restricted":"","tasks":[]},
+    {"area":"北方泊地海域","node":2,"fleet_flag":"","fleet_escort":"航巡4+輕巡2","nav_flag":"","nav_escort":"","notes":"","recon":"","restricted":"","tasks":["[北方海峡の警備を実施せよ！] S勝3次"]},
+    {"area":"北方泊地海域","node":3,"fleet_flag":"","fleet_escort":"航巡4+輕巡2","nav_flag":"","nav_escort":"","notes":"","recon":"","restricted":"","tasks":["[「第十六戦隊(第一次)」出撃せよ！] clear"]},
+    {"area":"北方泊地海域","node":4,"fleet_flag":"","fleet_escort":"高戰2+重巡2+空母2","nav_flag":"","nav_escort":"","notes":"中部西海域:第二作戦海域クリアで出撃可能","recon":"","restricted":"","tasks":[]},
+    {"area":"北方海域","node":1,"fleet_flag":"","fleet_escort":"航巡1+驅逐5","nav_flag":"","nav_escort":"","notes":"","recon":"","restricted":"","tasks":["[北方海域の哨戒を実施せよ！]"]},
+    {"area":"北方海域","node":2,"fleet_flag":"","fleet_escort":"驅逐6","nav_flag":"","nav_escort":"驅逐6","notes":"","recon":"","restricted":"","tasks":[]},
+    {"area":"北方海域","node":3,"fleet_flag":"","fleet_escort":"戰1+重巡3+空母2","nav_flag":"","nav_escort":"空母系2以下","notes":"","recon":"","restricted":"","tasks":["[敵北方艦隊主力を撃滅せよ！] S勝"]},
+    {"area":"北方海域","node":4,"fleet_flag":"","fleet_escort":"戰1+航巡3+空母2","nav_flag":"","nav_escort":"","notes":"道中對潛,選G點","recon":"","restricted":"","tasks":["[敵北方艦隊主力を撃滅せよ！] S勝"]},
+    {"area":"南方泊地海域","node":1,"fleet_flag":"","fleet_escort":"輕巡2+驅逐3+輕空母1","nav_flag":"","nav_escort":"驅逐3","notes":"對潛圖為主, 高索敵值","recon":"艦偵2+紫雲4+電探4","restricted":"駆逐,軽巡,軽母,練巡 以外不可","tasks":["[トラック泊地周辺の対潜哨戒を実施せよ！]"]},
+    {"area":"南方泊地海域","node":2,"fleet_flag":"摩耶改二","fleet_escort":"輕巡1+驅逐3+空母1","nav_flag":"","nav_escort":"","notes":"高索敵值","recon":"彩雲2+紫雲4+電探5","restricted":"","tasks":["[南方連絡海域の制海権を確立せよ！] S勝4次","[トラック泊地周辺警備を実施せよ！] clear","[「改装防空重巡」出撃せよ！] A勝"]},
+    {"area":"南方泊地海域","node":3,"fleet_flag":"","fleet_escort":"高戰2+重巡2+空母1+輕巡1","nav_flag":"","nav_escort":"","notes":"","recon":"彩雲2+紫雲3+水偵2+水爆3+電探4(以下)","restricted":"","tasks":[]},
+    {"area":"南方泊地海域","node":4,"fleet_flag":"","fleet_escort":"高戰2+重巡2+空母1+輕巡1","nav_flag":"","nav_escort":"","notes":"高索敵值","recon":"彩雲2+紫雲3+水偵2+水爆3+電探4(以下) ~ (艦偵1+水偵6+電探3)","restricted":"","tasks":[]},
+    {"area":"南方海域","node":1,"fleet_flag":"","fleet_escort":"重巡2+輕巡2+空母1+輕空母1","nav_flag":"","nav_escort":"","notes":"","recon":"","restricted":"","tasks":[]},
+    {"area":"南方海域","node":2,"fleet_flag":"正母","fleet_escort":"重巡2+輕巡2+輕空母1","nav_flag":"正母","nav_escort":"重巡2+輕巡2+輕空母1","notes":"","recon":"(彩雲4+夜偵3+紫雲2+電探1)以下","restricted":"","tasks":[]},
+    {"area":"南方海域","node":3,"fleet_flag":"","fleet_escort":"重巡2+輕巡1+驅逐3","nav_flag":"","nav_escort":"驅逐2+空母系0","notes":"道中全夜戰","recon":"","restricted":"","tasks":[]},
+    {"area":"南方海域","node":4,"fleet_flag":"","fleet_escort":"最上+罐巡+驅逐2+空母2","nav_flag":"","nav_escort":"空母2以上+驅逐2+ドラム缶3以上","notes":"高索敵值","recon":"","restricted":"","tasks":[]},
+    {"area":"中部海域","node":1,"fleet_flag":"","fleet_escort":"潛水3+大淀+輕空母2","nav_flag":"","nav_escort":"潛水3+輕空母2+輕巡1 or 航巡1+驅逐3+輕巡1+輕空母1","notes":"","recon":"","restricted":"","tasks":["[「潜水艦隊」出撃せよ！] S勝3次"]},
+    {"area":"中部海域","node":2,"fleet_flag":"","fleet_escort":"輕巡1+驅逐2+最上+輕空母2","nav_flag":"","nav_escort":"輕巡1+驅逐2","notes":"","recon":"","restricted":"","tasks":[]},
+    {"area":"中部海域","node":3,"fleet_flag":"","fleet_escort":"戰艦1+航巡2+輕巡1+空母2","nav_flag":"","nav_escort":"","notes":"道中選C","recon":"","restricted":"","tasks":[]},
+    {"area":"中部海域","node":4,"fleet_flag":"","fleet_escort":"戰艦1+航巡2+輕巡1+空母2","nav_flag":"","nav_escort":"","notes":"","recon":"","restricted":"","tasks":[]},
+    {"area":"AL海域","node":1,"fleet_flag":"","fleet_escort":"輕巡2+驅逐3+輕空母1","nav_flag":"","nav_escort":"驅逐3","notes":"高索敵值,道中選B","recon":"","restricted":"重巡,航巡,高戦,戦,航戦,航,装母","tasks":[]},
+    {"area":"AL海域","node":2,"fleet_flag":"","fleet_escort":"航巡1+輕巡2+驅逐2+輕空母1","nav_flag":"","nav_escort":"","notes":"","recon":"","restricted":"高戦,戦,航戦,航,装母","tasks":["[陽動作戦「AL作戦」を実施せよ！] A勝"]},
+    {"area":"AL海域","node":3,"fleet_flag":"","fleet_escort":"航巡1+重巡1+輕巡1+空母2+輕空母1","nav_flag":"","nav_escort":"輕巡1+驅逐2+(戰艦+空母)1以下+輕母2以下","notes":"MI海域:第二作戦海域クリアで出撃可能","recon":"紫雲4+彩雲4+電探3","restricted":"","tasks":["[陽動作戦「AL作戦」を実施せよ！] S勝"]},
+    {"area":"AL海域","node":4,"fleet_flag":"","fleet_escort":"戰艦1+航巡1+輕巡1+驅逐2+輕空母1","nav_flag":"","nav_escort":"輕巡1+驅逐2+(戰艦+空母)1以下","notes":"","recon":"","restricted":"","tasks":[]},
+    {"area":"MI海域","node":1,"fleet_flag":"","fleet_escort":"潛水4","nav_flag":"","nav_escort":"4隻以下","notes":"道中選C","recon":"","restricted":"駆逐,軽巡,潜,潜母,潜母艦,練巡以外不可","tasks":["[発動！「MI作戦」] A勝"]},
+    {"area":"MI海域","node":2,"fleet_flag":"","fleet_escort":"摩耶+大淀+空母4","nav_flag":"","nav_escort":"","notes":"道中全航空戰","recon":"","restricted":"戦,航戦","tasks":["[発動！「MI作戦」] A勝"]},
+    {"area":"MI海域","node":3,"fleet_flag":"","fleet_escort":"戰艦2+重巡2+空母2","nav_flag":"","nav_escort":"戰艦2以下+(戰艦+空母)4以下","notes":"","recon":"","restricted":"","tasks":["[発動！「MI作戦」] A勝"]},
+    {"area":"MI海域","node":4,"fleet_flag":"","fleet_escort":"戰艦2+重巡2+空母2","nav_flag":"","nav_escort":"","notes":"","recon":"","restricted":"","tasks":["[発動！「MI作戦」] A勝"]},
+    {"area":"FS海域","node":1,"fleet_flag":"","fleet_escort":"航巡3+輕巡1+驅逐2","nav_flag":"","nav_escort":"驅逐2","notes":"道中選C","recon":"","restricted":"軽母,高戦,戦,航戦,航,装母","tasks":[]},
+    {"area":"FS海域","node":2,"fleet_flag":"","fleet_escort":"高戰1+航巡2+輕巡1+輕空母2","nav_flag":"","nav_escort":"","notes":"道中選G,可用夜戰法","recon":"","restricted":"航,装母","tasks":[]},
+    {"area":"FS海域","node":3,"fleet_flag":"","fleet_escort":"戰艦1+航巡2+輕巡1+驅逐1+空母1","nav_flag":"","nav_escort":"驅逐1+空母1以下or輕空母2以下","notes":"道中選B,可用夜戰法","recon":"(紫雲4+水爆4+電探5)以下","restricted":"","tasks":[]},
+    {"area":"FS海域","node":4,"fleet_flag":"","fleet_escort":"戰艦2+航巡2+空母2","nav_flag":"","nav_escort":"","notes":"道中選G,可用夜戰法","recon":"(紫雲4+水爆4+電探5)以下","restricted":"","tasks":["[決戦！「FS作戦」、発動せよ！] A勝"]},
+    {"area":"深海後方海域","node":1,"fleet_flag":"","fleet_escort":"戰艦1+航巡1+輕巡1+驅逐2+輕空母1","nav_flag":"","nav_escort":"輕巡1+驅逐2","notes":"道中選G(B路線)才能解放第二海域","recon":"","restricted":"","tasks":[]},
+    {"area":"深海後方海域","node":2,"fleet_flag":"","fleet_escort":"戰艦2+航巡2+空母2","nav_flag":"","nav_escort":"","notes":"","recon":"","restricted":"","tasks":[]},
+    {"area":"深海後方海域","node":3,"fleet_flag":"","fleet_escort":"戰艦2+航巡2+空母2","nav_flag":"","nav_escort":"","notes":"","recon":"","restricted":"","tasks":[]},
+    {"area":"深海後方海域","node":4,"fleet_flag":"","fleet_escort":"驅逐3+輕巡+航巡+空母1","nav_flag":"","nav_escort":"驅逐3+全高速","notes":"王關須對潛,道中選D","recon":"","restricted":"","tasks":[]},
+    {"area":"深海運河海域","node":1,"fleet_flag":"","fleet_escort":"航巡3+輕巡1+驅逐2","nav_flag":"","nav_escort":"","notes":"","recon":"","restricted":"軽母,高戦,戦,航戦,航,装母","tasks":[]},
+    {"area":"深海運河海域","node":2,"fleet_flag":"","fleet_escort":"戰艦1+航巡3+輕巡1+空母1","nav_flag":"","nav_escort":"","notes":"","recon":"","restricted":"","tasks":[]},
+    {"area":"深海運河海域","node":3,"fleet_flag":"","fleet_escort":"戰艦1+航巡3+輕巡1+輕空母1","nav_flag":"","nav_escort":"","notes":"道中選G","recon":"","restricted":"航,装母","tasks":[]},
+    {"area":"深海運河海域","node":4,"fleet_flag":"","fleet_escort":"戰艦1+航巡3+輕巡1+輕空母1","nav_flag":"","nav_escort":"","notes":"道中選C","recon":"","restricted":"","tasks":[]},
+    {"area":"深海中枢海域","node":1,"fleet_flag":"","fleet_escort":"輕巡1+航巡2+驅逐3","nav_flag":"","nav_escort":"(重巡+航巡)2以下+驅逐3+輕空母0","notes":"道中選D","recon":"","restricted":"高戦,戦,航戦,航,装母","tasks":[]},
+    {"area":"深海中枢海域","node":2,"fleet_flag":"","fleet_escort":"戰艦1+航巡2+輕巡1+空母2","nav_flag":"","nav_escort":"","notes":"","recon":"","restricted":"","tasks":[]},
+    {"area":"深海中枢海域","node":3,"fleet_flag":"","fleet_escort":"速吸+重巡3+空母2","nav_flag":"","nav_escort":"","notes":"女神復活流+支援艦隊,拚B勝","recon":"","restricted":"","tasks":[]}
+  ]
+};
+// <AREAS_END>
 const STORAGE_KEY = 'kc_quest_state_v2';
 
 // 規劃器熱門目標（最常被當成路線終點的 reward / task 節點）
@@ -1657,6 +1868,7 @@ const ui = {
   vwPlanner: document.getElementById('vw-planner'),
   vwShips: document.getElementById('vw-ships'),
   vwImprovements: document.getElementById('vw-improvements'),
+  vwAreas: document.getElementById('vw-areas'),
   planner: document.getElementById('planner'),
   plannerSelect: document.getElementById('planner-select'),
   plannerBody: document.getElementById('planner-body'),
@@ -1668,6 +1880,12 @@ const ui = {
   impCatTabs: document.getElementById('imp-cat-tabs'),
   impNote: document.getElementById('imp-note'),
   impList: document.getElementById('imp-list'),
+  areasPanel: document.getElementById('areas-panel'),
+  areaSearch: document.getElementById('area-search'),
+  areaExpandAll: document.getElementById('area-expand-all'),
+  areaCollapseAll: document.getElementById('area-collapse-all'),
+  areaNote: document.getElementById('area-note'),
+  areaList: document.getElementById('area-list'),
 };
 
 let viewMode = 'focus';
@@ -3350,6 +3568,7 @@ function setView() {
   ui.vwPlanner.classList.toggle('active', viewMode === 'planner');
   ui.vwShips.classList.toggle('active', viewMode === 'ships');
   ui.vwImprovements.classList.toggle('active', viewMode === 'improvements');
+  ui.vwAreas.classList.toggle('active', viewMode === 'areas');
   const isList = (viewMode === 'focus' || viewMode === 'all');
   ui.allControls.style.display = viewMode === 'all' ? 'flex' : 'none';
   ui.tabs.style.display = viewMode === 'all' ? 'flex' : 'none';
@@ -3359,6 +3578,7 @@ function setView() {
   ui.planner.style.display = viewMode === 'planner' ? '' : 'none';
   ui.shipsPanel.style.display = viewMode === 'ships' ? '' : 'none';
   ui.improvementsPanel.style.display = viewMode === 'improvements' ? '' : 'none';
+  ui.areasPanel.style.display = viewMode === 'areas' ? '' : 'none';
 }
 
 ui.vwFocus.onclick = () => { viewMode = 'focus'; setView(); render(); };
@@ -3366,6 +3586,7 @@ ui.vwAll.onclick = () => { viewMode = 'all'; setView(); render(); };
 ui.vwPlanner.onclick = () => { viewMode = 'planner'; setView(); render(); };
 ui.vwShips.onclick = () => { viewMode = 'ships'; setView(); renderShipsPanel(); };
 ui.vwImprovements.onclick = () => { viewMode = 'improvements'; setView(); renderImprovements(); };
+ui.vwAreas.onclick = () => { viewMode = 'areas'; setView(); renderAreas(); };
 ui.search.addEventListener('input', () => render());
 ui.filter.addEventListener('change', () => render());
 ui.plannerSelect.addEventListener('change', () => render());
@@ -3567,6 +3788,119 @@ ui.impCatTabs.addEventListener('click', e => {
   renderImprovementsCatTabs();
   renderImprovements();
 });
+
+// === 海域 (Areas view) ===
+const AREA_EXPANDED = new Set();  // area names currently expanded
+
+function renderAreas() {
+  if (!AREAS || !Array.isArray(AREAS.items)) {
+    ui.areaList.innerHTML = '<div class="imp-empty">海域資料未載入</div>';
+    return;
+  }
+  if (AREAS.note) {
+    ui.areaNote.textContent = AREAS.note;
+    ui.areaNote.style.display = '';
+  } else {
+    ui.areaNote.style.display = 'none';
+  }
+
+  const q = (ui.areaSearch.value || '').trim().toLowerCase();
+  const matches = it => {
+    if (!q) return true;
+    const haystack = [
+      it.area, String(it.node),
+      it.fleet_flag, it.fleet_escort, it.nav_flag, it.nav_escort,
+      it.notes, it.recon, it.restricted,
+      ...(it.tasks || [])
+    ].join(' ').toLowerCase();
+    return haystack.includes(q);
+  };
+
+  const filtered = AREAS.items.filter(matches);
+  // Group by area, preserving the canonical order in AREAS.areas
+  const groups = new Map();
+  for (const a of AREAS.areas) groups.set(a, []);
+  for (const it of filtered) {
+    if (!groups.has(it.area)) groups.set(it.area, []);
+    groups.get(it.area).push(it);
+  }
+
+  const escape = s => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+  // Auto-expand groups when searching (matches make context useful)
+  const autoExpand = !!q;
+
+  const html = [];
+  let renderedAny = false;
+  for (const [area, nodes] of groups.entries()) {
+    if (nodes.length === 0) continue;
+    renderedAny = true;
+    const isExpanded = autoExpand || AREA_EXPANDED.has(area);
+    const cls = 'area-group' + (isExpanded ? ' expanded' : '');
+    html.push(`<div class="${cls}" data-area="${escape(area)}">`);
+    html.push(`<div class="area-group-head" data-toggle="${escape(area)}"><span>${escape(area)} <span style="color:var(--text-dim);font-weight:normal;font-size:11px">(${nodes.length} 個區點)</span></span><span class="area-toggle">▼</span></div>`);
+    html.push(`<div class="area-group-body">`);
+    for (const it of nodes) {
+      html.push(`<div class="area-node">`);
+      html.push(`<div class="area-node-head">第 ${it.node} 區</div>`);
+      // 建議編成
+      if (it.fleet_flag || it.fleet_escort) {
+        const flag = it.fleet_flag ? `<span class="area-fleet-flag">旗艦:${escape(it.fleet_flag)}</span> ` : '';
+        const esc  = it.fleet_escort ? `<span class="area-fleet-escort">${escape(it.fleet_escort)}</span>` : '';
+        html.push(`<div class="area-row"><span class="area-row-label">建議編成</span><span class="area-row-value">${flag}${esc}</span></div>`);
+      }
+      // 必要導航
+      if (it.nav_flag || it.nav_escort) {
+        const flag = it.nav_flag ? `<span class="area-fleet-flag">旗艦:${escape(it.nav_flag)}</span> ` : '';
+        const esc  = it.nav_escort ? `<span class="area-fleet-escort">${escape(it.nav_escort)}</span>` : '';
+        html.push(`<div class="area-row"><span class="area-row-label">必要導航</span><span class="area-row-value">${flag}${esc}</span></div>`);
+      }
+      if (it.notes) {
+        html.push(`<div class="area-row"><span class="area-row-label">注意事項</span><span class="area-row-value area-notes">${escape(it.notes)}</span></div>`);
+      }
+      if (it.recon) {
+        html.push(`<div class="area-row"><span class="area-row-label">索敵裝備</span><span class="area-row-value area-recon">${escape(it.recon)}</span></div>`);
+      }
+      if (it.restricted) {
+        html.push(`<div class="area-row"><span class="area-row-label">出擊不可</span><span class="area-row-value area-restricted">${escape(it.restricted)}</span></div>`);
+      }
+      if (Array.isArray(it.tasks) && it.tasks.length) {
+        const chips = it.tasks.map(t => `<span class="area-task-chip">${escape(t)}</span>`).join('');
+        html.push(`<div class="area-row"><span class="area-row-label">任務相關</span><span class="area-row-value">${chips}</span></div>`);
+      }
+      html.push(`</div>`);
+    }
+    html.push(`</div></div>`);
+  }
+  if (!renderedAny) {
+    ui.areaList.innerHTML = '<div class="imp-empty">沒有符合條件的海域</div>';
+    return;
+  }
+  ui.areaList.innerHTML = html.join('');
+}
+
+ui.areaSearch.addEventListener('input', () => renderAreas());
+ui.areaList.addEventListener('click', e => {
+  const head = e.target.closest('.area-group-head');
+  if (!head) return;
+  const area = head.dataset.toggle;
+  if (!area) return;
+  if (AREA_EXPANDED.has(area)) AREA_EXPANDED.delete(area);
+  else AREA_EXPANDED.add(area);
+  const group = head.closest('.area-group');
+  if (group) group.classList.toggle('expanded');
+});
+ui.areaExpandAll.onclick = () => {
+  for (const a of (AREAS.areas || [])) AREA_EXPANDED.add(a);
+  renderAreas();
+};
+ui.areaCollapseAll.onclick = () => {
+  AREA_EXPANDED.clear();
+  ui.areaSearch.value = '';
+  renderAreas();
+};
 
 renderTabs();
 renderTypeTabs();

@@ -426,11 +426,11 @@ main {
   background: var(--panel);
   border-top: 1px solid var(--border);
   display: flex;
+  flex-direction: column;
   gap: 6px;
   z-index: 10;
 }
 .bottom-bar button {
-  flex: 1;
   background: var(--panel-2);
   border: 1px solid var(--border);
   color: var(--text);
@@ -438,6 +438,36 @@ main {
   border-radius: 8px;
   font-size: 12px;
   cursor: pointer;
+}
+#btn-tray-toggle {
+  /* Cog-only toggle: small, dim, right-aligned to avoid drawing attention. */
+  align-self: flex-end;
+  width: 44px;
+  height: 32px;
+  padding: 0;
+  font-size: 14px;
+  color: var(--text-dim);
+  background: transparent;
+  border: 1px dashed var(--border);
+}
+#btn-tray-toggle[aria-expanded="true"] {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(94, 160, 239, 0.08);
+}
+.bottom-tray {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+.bottom-tray button { flex: 1; }
+.bottom-tray .btn-danger {
+  color: #e07b30;
+  border-color: rgba(224, 123, 48, 0.5);
+  background: rgba(224, 123, 48, 0.06);
+}
+.bottom-tray .btn-danger:active {
+  background: rgba(224, 123, 48, 0.18);
 }
 dialog {
   background: var(--panel);
@@ -1064,6 +1094,17 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
   border-radius: 8px;
   -webkit-appearance: none;
 }
+.imp-controls button {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  min-height: 36px;
+}
+.imp-controls button:active { background: var(--accent); border-color: var(--accent); color: #fff; }
 .imp-cat-tabs {
   display: flex;
   gap: 4px;
@@ -1668,6 +1709,8 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
 <section id="improvements-panel" style="display:none">
   <div class="imp-controls">
     <input type="search" id="imp-search" placeholder="搜尋裝備名 / 秘書艦...">
+    <button id="imp-expand-all" type="button">全部展開</button>
+    <button id="imp-collapse-all" type="button">全部摺疊</button>
   </div>
   <div class="imp-cat-tabs" id="imp-cat-tabs"></div>
   <div class="imp-note" id="imp-note"></div>
@@ -1722,9 +1765,12 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
 </section>
 
 <div class="bottom-bar">
-  <button id="btn-export">匯出備份</button>
-  <button id="btn-import">匯入備份</button>
-  <button id="btn-reset">全部重置</button>
+  <button id="btn-tray-toggle" type="button" aria-expanded="false" title="展開備份 / 重置">⚙</button>
+  <div class="bottom-tray" id="bottom-tray" hidden>
+    <button id="btn-export" type="button">匯出備份</button>
+    <button id="btn-import" type="button">匯入備份</button>
+    <button id="btn-reset" type="button" class="btn-danger">全部重置</button>
+  </div>
 </div>
 
 <dialog id="dlg">
@@ -2396,6 +2442,8 @@ const ui = {
   improvementsPanel: document.getElementById('improvements-panel'),
   impSearch: document.getElementById('imp-search'),
   impCatTabs: document.getElementById('imp-cat-tabs'),
+  impExpandAll: document.getElementById('imp-expand-all'),
+  impCollapseAll: document.getElementById('imp-collapse-all'),
   impNote: document.getElementById('imp-note'),
   impList: document.getElementById('imp-list'),
   areasPanel: document.getElementById('areas-panel'),
@@ -4274,6 +4322,21 @@ function openIO(mode) {
   dlg.showModal();
 }
 
+// Tray toggle: hide 匯出/匯入/重置 behind a small ⚙ button to prevent
+// accidental taps. Clicking the cog flips the tray open; clicking again
+// (or pressing Escape) closes it.
+const trayBtn = document.getElementById('btn-tray-toggle');
+const trayBox = document.getElementById('bottom-tray');
+function setTrayOpen(open) {
+  trayBox.hidden = !open;
+  trayBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  trayBtn.title = open ? '收起備份 / 重置' : '展開備份 / 重置';
+}
+trayBtn.onclick = () => setTrayOpen(trayBox.hidden);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !trayBox.hidden) setTrayOpen(false);
+});
+
 document.getElementById('btn-export').onclick = () => openIO('export');
 document.getElementById('btn-import').onclick = () => openIO('import');
 document.getElementById('btn-reset').onclick = () => {
@@ -4374,10 +4437,16 @@ function renderImprovements() {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 
+  // Auto-expand when: searching, or filtered to a single category, or user expanded it manually.
+  const autoExpand = !!q || activeImpCategory !== 'all';
+
   const html = [];
   for (const [cat, list] of groups.entries()) {
-    html.push(`<div class="imp-cat-section">`);
-    html.push(`<div class="imp-cat-header"><span>${escape(cat)}</span><span class="imp-cat-count">${list.length} 項</span></div>`);
+    const isExpanded = autoExpand || IMP_EXPANDED.has(cat);
+    const sectionCls = 'area-group' + (isExpanded ? ' expanded' : '');
+    html.push(`<div class="${sectionCls}" data-cat="${escape(cat)}">`);
+    html.push(`<div class="area-group-head" data-toggle="${escape(cat)}"><span>${escape(cat)} <span style="color:var(--text-dim);font-weight:normal;font-size:11px">(${list.length} 項)</span></span><span class="area-toggle">▼</span></div>`);
+    html.push(`<div class="area-group-body">`);
     for (const it of list) {
       const terminal = it.updates_to === '更新不可' || !it.updates_to;
       const cardClass = 'imp-card' + (terminal ? ' terminal' : '');
@@ -4402,10 +4471,12 @@ function renderImprovements() {
       html.push(notesHtml);
       html.push(`</div>`);
     }
-    html.push(`</div>`);
+    html.push(`</div></div>`);
   }
   ui.impList.innerHTML = html.join('');
 }
+
+const IMP_EXPANDED = new Set();  // category names currently expanded (only used when activeImpCategory==='all' and no search)
 
 ui.impSearch.addEventListener('input', () => renderImprovements());
 ui.impCatTabs.addEventListener('click', e => {
@@ -4417,6 +4488,30 @@ ui.impCatTabs.addEventListener('click', e => {
   renderImprovementsCatTabs();
   renderImprovements();
 });
+ui.impList.addEventListener('click', e => {
+  const head = e.target.closest('.area-group-head');
+  if (!head) return;
+  const cat = head.dataset.toggle;
+  if (!cat) return;
+  if (IMP_EXPANDED.has(cat)) IMP_EXPANDED.delete(cat);
+  else IMP_EXPANDED.add(cat);
+  const group = head.closest('.area-group');
+  if (group) group.classList.toggle('expanded');
+});
+ui.impExpandAll.onclick = () => {
+  // Add every known category to the expanded set; if cat-filter is active, this is a no-op
+  for (const it of (IMPROVEMENTS && IMPROVEMENTS.items ? IMPROVEMENTS.items : [])) IMP_EXPANDED.add(it.category);
+  renderImprovements();
+};
+ui.impCollapseAll.onclick = () => {
+  IMP_EXPANDED.clear();
+  ui.impSearch.value = '';
+  if (activeImpCategory !== 'all') {
+    activeImpCategory = 'all';
+    renderImprovementsCatTabs();
+  }
+  renderImprovements();
+};
 
 // === 海域 (Areas view) ===
 const AREA_EXPANDED = new Set();  // area names currently expanded

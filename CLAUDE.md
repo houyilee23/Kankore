@@ -211,12 +211,27 @@
 | Key                   | 說明                                                                       |
 |----------------------|----------------------------------------------------------------------------|
 | `kc_quest_state_v2`  | 主要狀態物件，包含子欄位：`done`、`notes`、`prevAdd`、`prevRemove`、`recentLimit`、`pinnedGoals` |
-| `kc_ships_v1`        | 艦娘持有狀態：`owned`（base 級）、`pinned`（base 級）、`foldedTypes`、`ownedForms`（特定型態級，搭配 `require_strict_forms`） |
+| `kc_ships_v1`        | 艦娘持有狀態：`owned`（base 級）、`pinned`（base 級）、`foldedTypes`、`ownedForms`（特定型態級，搭配 `require_strict_forms`）、`pinnedForms` |
+| `kc_areas_v1`        | 海域進度：`cleared`（map of `"<area>::<node>"` → timestamp） |
 
 ### 命名規則
 
 - 格式：`kc_<feature>_v<N>`
 - 版本號（`v<N>`）在資料結構變更時必須 bump，舊版 key 不可直接覆寫（需遷移或清除舊值）
+
+### 匯出/匯入備份格式（envelope）
+
+`buildExportBlob()` 產生 **version 2** envelope，一次包含三個 state：
+```json
+{
+  "version": 2,
+  "exportedAt": "<ISO timestamp>",
+  "quest_state": { ... },
+  "ships_state": { ... },
+  "areas_state": { ... }
+}
+```
+舊版 (version 1 / 沒有 envelope，直接是 quest_state 內容) 透過 `buildImportPatch()` 的 legacy fallback 仍可匯入。
 
 ### 規劃中新增 key
 
@@ -349,13 +364,35 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File migrate.ps1
 
 ## 參考文件
 
+**首先看 `docs/CODEMAP.md`** — 描述 guide.html 內每個模組的 line range / grep anchor / 共用 helper / 「我想做 X」cookbook。維護動作從這份文件開始，能省下大量 token。
+
 | 檔案                              | 說明                                           |
 |----------------------------------|------------------------------------------------|
+| `docs/CODEMAP.md`                | **guide.html 模組地圖** — 維護必查                |
 | `data/tasks.json`                | TASKS source of truth（每筆 task 一行）           |
 | `data/improvements.json`         | IMPROVEMENTS source of truth（裝備改修資料）       |
+| `data/areas.json`                | AREAS source of truth（17 海域 × ~4 區點導航）     |
+| `data/expeditions.json`          | EXPEDITIONS source of truth（76 個遠征報酬）       |
+| `data/builds.json`               | BUILDS source of truth（建造日數 + 各艦種配方）    |
+| `data/developments.json`         | DEVELOPMENTS source of truth（開発配方）           |
 | `scripts/sync_tasks.ps1`         | `data/tasks.json` → `guide.html` inline 同步       |
 | `scripts/sync_improvements.ps1`  | `data/improvements.json` → `guide.html` inline 同步 |
-| `scripts/verify_synced.ps1`      | 驗證 HTML 內 inline 資料 ≡ JSON source             |
+| `scripts/sync_areas.ps1`         | `data/areas.json` → `guide.html` inline 同步       |
+| `scripts/sync_expeditions.ps1`   | `data/expeditions.json` → `guide.html` inline 同步 |
+| `scripts/sync_builds.ps1`        | `data/builds.json` → `guide.html` inline 同步      |
+| `scripts/sync_developments.ps1`  | `data/developments.json` → `guide.html` inline 同步 |
+| `scripts/verify_synced.ps1`      | 一次驗證**所有 6 個** inline block ≡ JSON source   |
 | `scripts/extract_tasks.ps1`      | `guide.html` → `data/tasks.json`（recovery 工具）   |
 | `notes/feature-ideas.md`         | 完整功能規劃比較研究（差距分析、候選功能清單）    |
 | `notes/implementation-plan.md`   | 目前這一輪的分階段實作計畫（Stage A～E）          |
+
+### 編輯前先看 CODEMAP 的常見任務
+
+| 想做的事 | CODEMAP 對應段落 |
+|---|---|
+| 改某個 view 的渲染 | `JS — renderXXX()` (grep anchor `^function renderXXX`) |
+| 加新欄位到 TASKS | "Add a new task field" cookbook |
+| 加新海域 unlock | "Add a new sea area unlock condition" cookbook |
+| 加新 view (頂層或子) | "Add a new top-level view" / "Add a new sub-tab" cookbook |
+| 修 view 內 bug | "Fix a bug in a single view" — 只需讀單一 render 函式 |
+| 編輯共用 helper (escape / resource cell) | 只看 SHARED HELPERS 段, 改一處即可生效於所有 view |

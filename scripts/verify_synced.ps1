@@ -1,22 +1,24 @@
-# Verifies that inlined data in guide.html semantically matches the JSON source files.
-# Checks both:
-#   - const TASKS = [...]        vs data/tasks.json
-#   - const IMPROVEMENTS = {...} vs data/improvements.json
+# Verifies that ALL inlined data blocks in guide.html semantically match their
+# data/*.json source files. Covers six blocks:
+#   const TASKS = [...]            vs data/tasks.json
+#   const IMPROVEMENTS = {...}     vs data/improvements.json
+#   const AREAS = {...}            vs data/areas.json
+#   const EXPEDITIONS = {...}      vs data/expeditions.json
+#   const BUILDS = {...}           vs data/builds.json
+#   const DEVELOPMENTS = {...}     vs data/developments.json
 #
-# Comparison is order-insensitive on object keys, identity by id (tasks) or by
-# (category, name, secretary, updates_to) tuple (improvements, since same equipment
-# can have multiple rows with different secretary requirements).
+# Comparison is order-insensitive on object keys.
 # Exits 0 on success, 1 on any mismatch.
 #
 # Run with: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify_synced.ps1
 
 $ErrorActionPreference = 'Stop'
-
 $root = Split-Path -Parent $PSScriptRoot
 $htmlPath = Join-Path $root 'guide.html'
-$tasksJsonPath = Join-Path $root 'data\tasks.json'
-$improvementsJsonPath = Join-Path $root 'data\improvements.json'
 
+# ----------------------------------------------------------------------------
+# Helpers: canonical normalization (sorts object keys, recurses through arrays)
+# ----------------------------------------------------------------------------
 function Canonicalize($v) {
     if ($null -eq $v) { return $null }
     if ($v -is [string]) { return $v }
@@ -52,128 +54,120 @@ function ToCanonString($v) {
     return $v.ToString()
 }
 
-# ---------------- TASKS check ----------------
-
-$tasksJson = [System.IO.File]::ReadAllText($tasksJsonPath, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+# ----------------------------------------------------------------------------
+# Extracts the inlined literal that follows `const <Name> = ` from guide.html
+# and parses it as JSON. The literal can be either [...] (TASKS) or {...}.
+# ----------------------------------------------------------------------------
 $html = [System.IO.File]::ReadAllText($htmlPath, [System.Text.Encoding]::UTF8)
 
-$tasksLiteralMatch = [regex]::Match($html, '(?s)const TASKS = (\[.*?\]);')
-if (-not $tasksLiteralMatch.Success) {
-    Write-Host "ERROR: could not find 'const TASKS = [...]' in guide.html"
-    exit 1
-}
-$htmlTasks = $tasksLiteralMatch.Groups[1].Value | ConvertFrom-Json
-
-if ($tasksJson.Count -ne $htmlTasks.Count) {
-    Write-Host ("FAIL [tasks]: count differs - JSON {0}, HTML {1}" -f $tasksJson.Count, $htmlTasks.Count)
-    exit 1
+function ExtractInlineLiteral([string]$constName) {
+    $pattern = '(?s)const ' + [regex]::Escape($constName) + ' = (.+?);[\r\n]'
+    $m = [regex]::Match($html, $pattern)
+    if (-not $m.Success) { return $null }
+    return $m.Groups[1].Value | ConvertFrom-Json
 }
 
-$tasksMismatches = @()
-$jsonTaskLookup = @{}
-foreach ($t in $tasksJson) { $jsonTaskLookup[$t.id] = ToCanonString (Canonicalize $t) }
-$htmlTaskLookup = @{}
-foreach ($t in $htmlTasks) { $htmlTaskLookup[$t.id] = ToCanonString (Canonicalize $t) }
+function LoadJson([string]$relPath) {
+    $p = Join-Path $root $relPath
+    if (-not (Test-Path $p)) { return $null }
+    return [System.IO.File]::ReadAllText($p, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
+}
 
-foreach ($id in $jsonTaskLookup.Keys) {
-    if (-not $htmlTaskLookup.ContainsKey($id)) {
-        $tasksMismatches += "missing in HTML: $id"
+# ----------------------------------------------------------------------------
+# Per-block validators. Each returns @{ ok = $true/false; msg = '...' }.
+# Identity key for each item lets us spot missing/added rows precisely.
+# ----------------------------------------------------------------------------
+function Compare-ItemSets($jsonItems, $htmlItems, $keyFn) {
+    if ($jsonItems.Count -ne $htmlItems.Count) {
+        return @{ ok = $false; msg = "count differs - JSON $($jsonItems.Count), HTML $($htmlItems.Count)" }
+    }
+    $jsonMap = @{}
+    foreach ($it in $jsonItems) { $jsonMap[(& $keyFn $it)] = ToCanonString (Canonicalize $it) }
+    $htmlMap = @{}
+    foreach ($it in $htmlItems) { $htmlMap[(& $keyFn $it)] = ToCanonString (Canonicalize $it) }
+    $diffs = @()
+    foreach ($k in $jsonMap.Keys) {
+        if (-not $htmlMap.ContainsKey($k)) { $diffs += "missing in HTML: $k"; continue }
+        if ($jsonMap[$k] -ne $htmlMap[$k]) { $diffs += "differs: $k" }
+    }
+    foreach ($k in $htmlMap.Keys) {
+        if (-not $jsonMap.ContainsKey($k)) { $diffs += "missing in JSON: $k" }
+    }
+    if ($diffs.Count -eq 0) { return @{ ok = $true; msg = "$($jsonItems.Count) items match" } }
+    return @{ ok = $false; msg = "$($diffs.Count) diff(s): " + (($diffs | Select-Object -First 5) -join '; ') }
+}
+
+$blocks = @(
+    @{
+        name = 'tasks'
+        const = 'TASKS'
+        json = 'data\tasks.json'
+        getItems = { param($d) $d }            # tasks.json is bare array
+        keyFn = { param($it) $it.id }
+    },
+    @{
+        name = 'improvements'
+        const = 'IMPROVEMENTS'
+        json = 'data\improvements.json'
+        getItems = { param($d) $d.items }
+        keyFn = { param($it)
+            $sec = if ($null -eq $it.secretary) { '' } else { (($it.secretary | ForEach-Object { $_ }) -join '|') }
+            "$($it.category)::$($it.name)::$sec::$($it.updates_to)"
+        }
+    },
+    @{
+        name = 'areas'
+        const = 'AREAS'
+        json = 'data\areas.json'
+        getItems = { param($d) $d.items }
+        keyFn = { param($it) "$($it.area)::$($it.node)" }
+    },
+    @{
+        name = 'expeditions'
+        const = 'EXPEDITIONS'
+        json = 'data\expeditions.json'
+        getItems = { param($d) $d.items }
+        keyFn = { param($it) "$($it.id)" }
+    },
+    @{
+        name = 'builds'
+        const = 'BUILDS'
+        json = 'data\builds.json'
+        getItems = { param($d) $d.recipes }
+        keyFn = { param($it) "$($it.category)::$($it.fuel)/$($it.ammo)/$($it.steel)/$($it.bauxite)::$($it.target)" }
+    },
+    @{
+        name = 'developments'
+        const = 'DEVELOPMENTS'
+        json = 'data\developments.json'
+        getItems = { param($d) $d.items }
+        keyFn = { param($it) "$($it.category)::$($it.fuel)/$($it.ammo)/$($it.steel)/$($it.bauxite)::$($it.output)" }
+    }
+)
+
+$totalFail = 0
+foreach ($b in $blocks) {
+    $jsonDoc = LoadJson $b.json
+    if (-not $jsonDoc) {
+        Write-Host ("SKIP [$($b.name)]: $($b.json) not present")
         continue
     }
-    if ($jsonTaskLookup[$id] -ne $htmlTaskLookup[$id]) {
-        $tasksMismatches += "differs: $id"
-        $tasksMismatches += "  JSON: $($jsonTaskLookup[$id])"
-        $tasksMismatches += "  HTML: $($htmlTaskLookup[$id])"
+    $htmlDoc = ExtractInlineLiteral $b.const
+    if (-not $htmlDoc) {
+        Write-Host ("FAIL [$($b.name)]: const $($b.const) not found in guide.html")
+        $totalFail++
+        continue
     }
-}
-foreach ($id in $htmlTaskLookup.Keys) {
-    if (-not $jsonTaskLookup.ContainsKey($id)) {
-        $tasksMismatches += "missing in JSON: $id"
-    }
-}
-
-# ---------------- IMPROVEMENTS check ----------------
-
-$improvementsMismatches = @()
-$improvementsCount = 0
-
-if (Test-Path $improvementsJsonPath) {
-    $improvementsJson = [System.IO.File]::ReadAllText($improvementsJsonPath, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
-
-    $impLiteralMatch = [regex]::Match($html, '(?s)const IMPROVEMENTS = (\{.*?\});')
-    if (-not $impLiteralMatch.Success) {
-        $improvementsMismatches += "missing 'const IMPROVEMENTS = {...}' in guide.html"
-    }
-    else {
-        $htmlImprovements = $impLiteralMatch.Groups[1].Value | ConvertFrom-Json
-
-        if ($improvementsJson.items.Count -ne $htmlImprovements.items.Count) {
-            $improvementsMismatches += ("count differs - JSON {0}, HTML {1}" -f $improvementsJson.items.Count, $htmlImprovements.items.Count)
-        }
-        $improvementsCount = $improvementsJson.items.Count
-
-        function ItemKey($it) {
-            $sec = if ($null -eq $it.secretary) { '' } else { (($it.secretary | ForEach-Object { $_ }) -join '|') }
-            return "$($it.category)::$($it.name)::$sec::$($it.updates_to)"
-        }
-
-        $jsonImpLookup = @{}
-        foreach ($it in $improvementsJson.items) { $jsonImpLookup[(ItemKey $it)] = ToCanonString (Canonicalize $it) }
-        $htmlImpLookup = @{}
-        foreach ($it in $htmlImprovements.items) { $htmlImpLookup[(ItemKey $it)] = ToCanonString (Canonicalize $it) }
-
-        foreach ($k in $jsonImpLookup.Keys) {
-            if (-not $htmlImpLookup.ContainsKey($k)) {
-                $improvementsMismatches += "missing in HTML: $k"
-                continue
-            }
-            if ($jsonImpLookup[$k] -ne $htmlImpLookup[$k]) {
-                $improvementsMismatches += "differs: $k"
-                $improvementsMismatches += "  JSON: $($jsonImpLookup[$k])"
-                $improvementsMismatches += "  HTML: $($htmlImpLookup[$k])"
-            }
-        }
-        foreach ($k in $htmlImpLookup.Keys) {
-            if (-not $jsonImpLookup.ContainsKey($k)) {
-                $improvementsMismatches += "missing in JSON: $k"
-            }
-        }
-
-        # Top-level metadata sanity check.
-        foreach ($field in 'version','source','fetched_at','note') {
-            if ($improvementsJson.$field -ne $htmlImprovements.$field) {
-                $improvementsMismatches += ("metadata '$field' differs: JSON='{0}' HTML='{1}'" -f $improvementsJson.$field, $htmlImprovements.$field)
-            }
-        }
-    }
-}
-else {
-    Write-Host "NOTE: data/improvements.json not present; skipping improvements check"
-}
-
-# ---------------- Report ----------------
-
-$totalMismatches = $tasksMismatches.Count + $improvementsMismatches.Count
-
-if ($tasksMismatches.Count -gt 0) {
-    Write-Host "FAIL [tasks]: $($tasksMismatches.Count) issue(s)"
-    foreach ($line in $tasksMismatches | Select-Object -First 30) { Write-Host "  $line" }
-    if ($tasksMismatches.Count -gt 30) { Write-Host "  ... $($tasksMismatches.Count - 30) more" }
-}
-else {
-    Write-Host "OK [tasks]: $($tasksJson.Count) tasks match between data/tasks.json and guide.html"
-}
-
-if (Test-Path $improvementsJsonPath) {
-    if ($improvementsMismatches.Count -gt 0) {
-        Write-Host "FAIL [improvements]: $($improvementsMismatches.Count) issue(s)"
-        foreach ($line in $improvementsMismatches | Select-Object -First 30) { Write-Host "  $line" }
-        if ($improvementsMismatches.Count -gt 30) { Write-Host "  ... $($improvementsMismatches.Count - 30) more" }
-    }
-    else {
-        Write-Host "OK [improvements]: $improvementsCount items match between data/improvements.json and guide.html"
+    $jsonItems = & $b.getItems $jsonDoc
+    $htmlItems = & $b.getItems $htmlDoc
+    $r = Compare-ItemSets $jsonItems $htmlItems $b.keyFn
+    if ($r.ok) {
+        Write-Host ("OK [$($b.name)]: " + $r.msg)
+    } else {
+        Write-Host ("FAIL [$($b.name)]: " + $r.msg)
+        $totalFail++
     }
 }
 
-if ($totalMismatches -gt 0) { exit 1 }
-exit 0
+if ($totalFail -eq 0) { exit 0 }
+exit 1

@@ -2381,6 +2381,34 @@ const state = (() => {
 
 function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
+// ============================================================================
+// SHARED HELPERS
+// All views' render functions should use these instead of redefining locally.
+// Keep this section small and side-effect free — it's the bottom of the
+// dependency graph and gets imported by every view.
+// ============================================================================
+
+// HTML-escape arbitrary text for safe innerHTML insertion. Handles null/undef
+// (returns empty string), and the 5 chars that need escaping inside HTML body.
+function htmlEscape(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Resource cell renderer used by 遠征 / 建造 / 開発 views.
+// label: short JP label ("燃" / "弾" / "鋼" / "ボ" / "戦P")
+// value: numeric resource amount (0 → dimmed)
+// cls:   CSS class for the colored border (exp-res-fuel etc.)
+function resCell(label, value, cls) {
+  const v = Number(value) || 0;
+  return '<span class="exp-res ' + cls + (v === 0 ? ' zero' : '') + '">' + label + ' ' + v + '</span>';
+}
+
 function effPrereqs(t) {
   const base = new Set(t.prev || []);
   (state.prevAdd[t.id] || []).forEach(x => base.add(x));
@@ -3276,7 +3304,7 @@ function renderPlannerPins() {
   const pinnedSet = new Set(pinned);
   const hot = HOT_GOALS.filter(id => TASKS_BY_ID[id] && !pinnedSet.has(id));
 
-  const escape = s => String(s).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+  const escape = htmlEscape; // shared helper (see top-of-script)
 
   const parts = [];
   if (pinned.length) {
@@ -4311,12 +4339,35 @@ const dlgCancel = document.getElementById('dlg-cancel');
 let dlgMode = '';
 let dlgPayload = null;
 
+// Backup envelope (version 2) bundles all three localStorage areas so the user
+// gets a complete snapshot — quest state + ship roster + sea-area progress.
+// Legacy exports (version 1 / no envelope, just the raw quest state object)
+// are still accepted by buildImportPatch() for backward compatibility.
+function buildExportBlob() {
+  return {
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    quest_state: state,
+    ships_state: shipsState,
+    areas_state: areasState,
+  };
+}
+// Returns { quest, ships, areas } objects ready to splice into the live state.
+function buildImportPatch(obj) {
+  // Heuristic: a legacy export has a top-level "done" key (or no "version" envelope).
+  const isLegacy = !obj.version && 'done' in obj;
+  const quest = isLegacy ? obj : (obj.quest_state || {});
+  const ships = isLegacy ? null : (obj.ships_state || null);
+  const areas = isLegacy ? null : (obj.areas_state || null);
+  return { quest, ships, areas };
+}
+
 function openIO(mode) {
   dlgMode = mode;
   document.getElementById('dlg-title').textContent = mode === 'export' ? '匯出備份(複製這段文字)' : '匯入備份(貼上 JSON)';
   dlgBody.innerHTML = '<textarea id="io-text"></textarea>';
   const ta = dlgBody.querySelector('#io-text');
-  if (mode === 'export') { ta.value = JSON.stringify(state, null, 2); ta.readOnly = true; }
+  if (mode === 'export') { ta.value = JSON.stringify(buildExportBlob(), null, 2); ta.readOnly = true; }
   else { ta.value = ''; ta.readOnly = false; }
   dlgOk.style.display = '';
   dlgOk.textContent = mode === 'import' ? '匯入' : '完成';
@@ -4358,12 +4409,33 @@ dlgOk.onclick = () => {
     try {
       const ta = dlgBody.querySelector('#io-text');
       const obj = JSON.parse(ta.value);
-      state.done = obj.done || {};
-      state.notes = obj.notes || {};
-      state.prevAdd = obj.prevAdd || {};
-      state.prevRemove = obj.prevRemove || {};
-      state.pinnedGoals = Array.isArray(obj.pinnedGoals) ? obj.pinnedGoals.filter(id => id) : [];
-      save(); render();
+      const { quest, ships, areas } = buildImportPatch(obj);
+      // Restore quest state (always present, including legacy backups)
+      state.done        = quest.done || {};
+      state.notes       = quest.notes || {};
+      state.prevAdd     = quest.prevAdd || {};
+      state.prevRemove  = quest.prevRemove || {};
+      state.pinnedGoals = Array.isArray(quest.pinnedGoals) ? quest.pinnedGoals.filter(id => id) : [];
+      if (typeof quest.recentLimit === 'number') state.recentLimit = quest.recentLimit;
+      save();
+      // Restore ship roster (only if present — legacy backups won't have it)
+      if (ships) {
+        shipsState.owned       = ships.owned       || {};
+        shipsState.pinned      = ships.pinned      || {};
+        shipsState.foldedTypes = ships.foldedTypes || {};
+        shipsState.ownedForms  = ships.ownedForms  || {};
+        shipsState.pinnedForms = ships.pinnedForms || {};
+        saveShips();
+      }
+      // Restore sea-area progress
+      if (areas) {
+        areasState.cleared = areas.cleared || {};
+        saveAreas();
+      }
+      // Re-render the active view + any cross-cutting indicators
+      if (viewMode === 'areas') renderAreas();
+      if (viewMode === 'ships') renderShipsPanel();
+      render();
     } catch (e) { alert('JSON 格式錯誤: ' + e.message); return; }
   }
   dlg.close();
@@ -4435,9 +4507,7 @@ function renderImprovements() {
     groups.get(it.category).push(it);
   }
 
-  const escape = s => String(s == null ? '' : s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  const escape = htmlEscape; // shared helper (see top-of-script)
 
   // Auto-expand when: searching, or filtered to a single category, or user expanded it manually.
   const autoExpand = !!q || activeImpCategory !== 'all';
@@ -4551,9 +4621,7 @@ function renderAreas() {
     groups.get(it.area).push(it);
   }
 
-  const escape = s => String(s == null ? '' : s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  const escape = htmlEscape; // shared helper (see top-of-script)
 
   // Auto-expand groups when searching (matches make context useful)
   const autoExpand = !!q;
@@ -4700,17 +4768,11 @@ function renderExpeditions() {
   }[sortMode] || ((a, b) => a.id - b.id);
   for (const list of groups.values()) list.sort(sortFn);
 
-  const escape = s => String(s == null ? '' : s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  const escape = htmlEscape; // shared helper (see top-of-script)
 
   const autoExpand = !!q;
 
-  const resCell = (label, value, cls) => {
-    const v = Number(value) || 0;
-    const zero = v === 0 ? ' zero' : '';
-    return `<span class="exp-res ${cls}${zero}">${label} ${v}</span>`;
-  };
+  // resCell is a shared module-level helper (see top-of-script)
 
   // Build one card (used by both the pinned top-5 and the area groups).
   // showArea=true adds an area badge in the head (used for the cross-area pinned list).
@@ -4818,9 +4880,7 @@ function renderBuilds() {
   if (BUILDS.note) { ui.buildNote.textContent = BUILDS.note; ui.buildNote.style.display = ''; }
   else { ui.buildNote.style.display = 'none'; }
 
-  const escape = s => String(s == null ? '' : s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  const escape = htmlEscape; // shared helper (see top-of-script)
 
   // ----- 建造日数 table (top) -----
   const durHtml = [];
@@ -4851,11 +4911,7 @@ function renderBuilds() {
   }
 
   const autoExpand = !!q;
-  const resCell = (label, value, cls) => {
-    const v = Number(value) || 0;
-    const zero = v === 0 ? ' zero' : '';
-    return `<span class="exp-res ${cls}${zero}">${label} ${v}</span>`;
-  };
+  // resCell is a shared module-level helper (see top-of-script)
 
   const html = [];
   let renderedAny = false;
@@ -4917,9 +4973,7 @@ function renderDevelopments() {
   if (DEVELOPMENTS.note) { ui.devNote.textContent = DEVELOPMENTS.note; ui.devNote.style.display = ''; }
   else { ui.devNote.style.display = 'none'; }
 
-  const escape = s => String(s == null ? '' : s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  const escape = htmlEscape; // shared helper (see top-of-script)
 
   const q = (ui.devSearch.value || '').trim().toLowerCase();
   const matches = r => {
@@ -4936,11 +4990,7 @@ function renderDevelopments() {
   }
 
   const autoExpand = !!q;
-  const resCell = (label, value, cls) => {
-    const v = Number(value) || 0;
-    const zero = v === 0 ? ' zero' : '';
-    return `<span class="exp-res ${cls}${zero}">${label} ${v}</span>`;
-  };
+  // resCell is a shared module-level helper (see top-of-script)
 
   const html = [];
   let renderedAny = false;

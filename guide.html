@@ -80,6 +80,31 @@ h1 .progress {
   color: #fff;
   border-color: var(--accent);
 }
+.sub-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+  padding: 2px 4px;
+  background: rgba(94, 160, 239, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.sub-tabs button {
+  flex: 1;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-dim);
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  min-height: 32px;
+}
+.sub-tabs button.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
 .controls {
   display: flex;
   gap: 8px;
@@ -1485,6 +1510,88 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
   border: 1px solid var(--accent);
   margin-right: 4px;
 }
+
+/* === 建造 / 開發 views === */
+#builds-panel, #developments-panel {
+  padding: 8px 12px calc(80px + env(safe-area-inset-bottom));
+}
+.build-duration-table {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+}
+.build-duration-head {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.build-duration-row {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 8px;
+  padding: 4px 0;
+  border-top: 1px dashed var(--border);
+  font-size: 12px;
+}
+.build-duration-row:first-of-type { border-top: none; }
+.build-duration-days {
+  font-weight: 700;
+  color: var(--upcoming);
+  font-family: ui-monospace, monospace;
+  text-align: right;
+}
+.build-duration-ships { color: var(--text); }
+.build-duration-summary { color: var(--text-dim); font-size: 11px; display: block; margin-top: 1px; }
+.recipe-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--type-factory);
+  border-radius: 6px;
+  margin-top: 6px;
+  padding: 6px 10px;
+}
+.recipe-cost {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.recipe-cost .exp-res { font-size: 12px; }
+.recipe-target {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.recipe-secretary {
+  display: inline-block;
+  background: rgba(156, 124, 212, 0.15);
+  border: 1px solid var(--type-factory);
+  color: var(--type-factory);
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  margin-bottom: 4px;
+}
+.recipe-output {
+  font-size: 12px;
+  color: var(--text);
+  margin-top: 3px;
+}
+.recipe-output-label {
+  color: var(--text-dim);
+  font-size: 11px;
+  margin-right: 4px;
+}
+.recipe-notes {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-style: italic;
+  margin-top: 3px;
+}
 </style>
 </head>
 <body>
@@ -1497,13 +1604,21 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
     <div class="progress-fill" id="progress-fill"></div>
   </div>
   <div class="view-switch">
-    <button id="vw-focus" class="active">進度焦點</button>
-    <button id="vw-all">全部清單</button>
-    <button id="vw-planner">🗺 規劃</button>
+    <button id="vw-tasks" class="active">📋 任務</button>
     <button id="vw-ships">⚓ 艦娘</button>
-    <button id="vw-improvements">🛠 改修</button>
+    <button id="vw-factory">🔧 工廠</button>
     <button id="vw-areas">🧭 海域</button>
     <button id="vw-expeditions">🚢 遠征</button>
+  </div>
+  <div class="sub-tabs" id="tasks-subtabs">
+    <button id="vw-focus" class="active">進度焦點</button>
+    <button id="vw-planner">🗺 規劃</button>
+    <button id="vw-all">全部清單</button>
+  </div>
+  <div class="sub-tabs" id="factory-subtabs" style="display:none">
+    <button id="vw-builds">⚙ 建造</button>
+    <button id="vw-developments">🧪 開發</button>
+    <button id="vw-improvements" class="active">🛠 改修</button>
   </div>
   <div class="controls" id="all-controls" style="display:none">
     <input type="search" id="search" placeholder="搜尋編號/名稱/備註（如 t007 或 大和）...">
@@ -1583,6 +1698,27 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
   </div>
   <div class="area-note" id="exp-note"></div>
   <div id="exp-list"></div>
+</section>
+
+<section id="builds-panel" style="display:none">
+  <div class="area-controls">
+    <input type="search" id="build-search" placeholder="搜尋艦種 / 配方 / 目標艦...">
+    <button id="build-expand-all" type="button">全部展開</button>
+    <button id="build-collapse-all" type="button">全部摺疊</button>
+  </div>
+  <div class="area-note" id="build-note"></div>
+  <div id="build-duration-section"></div>
+  <div id="build-list"></div>
+</section>
+
+<section id="developments-panel" style="display:none">
+  <div class="area-controls">
+    <input type="search" id="dev-search" placeholder="搜尋裝備 / 秘書艦 / 配方...">
+    <button id="dev-expand-all" type="button">全部展開</button>
+    <button id="dev-collapse-all" type="button">全部摺疊</button>
+  </div>
+  <div class="area-note" id="dev-note"></div>
+  <div id="dev-list"></div>
 </section>
 
 <div class="bottom-bar">
@@ -2101,6 +2237,78 @@ const EXPEDITIONS = {
   ]
 };
 // <EXPEDITIONS_END>
+
+// <BUILDS_START> generated from data/builds.json by scripts/sync_builds.ps1; do not edit by hand
+const BUILDS = {
+  "version": 1,
+  "source": "https://wikiwiki.jp/kancollekai/%E5%BB%BA%E9%80%A0%E3%83%AC%E3%82%B7%E3%83%94",
+  "note": "艦これ改 建造レシピ — 建造日数表 + 各艦種推薦配方。資料來自 wiki 建造レシピ頁。",
+  "categories": ["駆逐艦","軽巡洋艦・練習巡洋艦","重巡洋艦","戦艦","空母・水上機母艦","潜水艦","輸送艦"],
+  "durations": [
+    {"days":2,"summary":"潜水艦 + 駆逐艦","ships":"潜水艦: 伊168 / 伊19 / 伊58 / 伊8。駆逐艦: 睦月型 / 吹雪型 / 綾波型 / 暁型 / 白露型 / 朝潮型 / 陽炎型(一部) / 島風"},
+    {"days":4,"summary":"軽巡洋艦 + 重巡洋艦","ships":"軽巡: 天龍型 / 球磨型 / 長良型 / 川内型。重巡: 古鷹型 / 青葉型"},
+    {"days":5,"summary":"軽巡洋艦 + 練習巡洋艦","ships":"軽巡: 阿武隈 / 鬼怒。練習巡洋艦: 香取"},
+    {"days":6,"summary":"軽巡洋艦 + 重巡洋艦","ships":"軽巡: 夕張。重巡: 妙高型 / 高雄型 / 利根型 / 最上型(三隈除く)"},
+    {"days":8,"summary":"軽空母","ships":"鳳翔"},
+    {"days":10,"summary":"水上機母艦","ships":"千歳 / 千代田"},
+    {"days":11,"summary":"軽空母","ships":"瑞鳳 / 祥鳳"},
+    {"days":12,"summary":"軽空母","ships":"龍驤 / 飛鷹 / 隼鷹"},
+    {"days":16,"summary":"戦艦","ships":"金剛 / 比叡 / 榛名 / 霧島"},
+    {"days":17,"summary":"正規空母","ships":"蒼龍 / 飛龍"},
+    {"days":18,"summary":"正規空母 + 戦艦","ships":"正規空母: 加賀 / 赤城。戦艦: 扶桑 / 山城 / 伊勢 / 日向"},
+    {"days":20,"summary":"戦艦","ships":"長門型 (長門 / 陸奥)"},
+    {"days":24,"summary":"正規空母","ships":"翔鶴 / 瑞鶴"}
+  ],
+  "recipes": [
+    {"category":"駆逐艦","fuel":30,"ammo":30,"steel":30,"bauxite":30,"target":"駆逐艦・軽巡メイン","notes":"最低値レシピ。弥生・秋雲・夕張も低確率出現"},
+    {"category":"駆逐艦","fuel":250,"ammo":30,"steel":200,"bauxite":30,"target":"レア駆逐・潜水艦狙い","notes":"重巡・レア軽巡も混在"},
+    {"category":"駆逐艦","fuel":250,"ammo":130,"steel":250,"bauxite":30,"target":"ノーマル駆逐艦を除外","notes":"レア駆逐艦に絞る"},
+    {"category":"軽巡洋艦・練習巡洋艦","fuel":30,"ammo":30,"steel":30,"bauxite":30,"target":"駆逐・軽巡メイン","notes":"レア軽巡(夕張等)も低確率"},
+    {"category":"軽巡洋艦・練習巡洋艦","fuel":250,"ammo":30,"steel":200,"bauxite":30,"target":"軽巡・重巡メイン","notes":"レア駆逐・潜水艦・香取も可能"},
+    {"category":"軽巡洋艦・練習巡洋艦","fuel":300,"ammo":30,"steel":400,"bauxite":300,"target":"空母レシピ","notes":"阿武隈・鬼怒・夕張を低確率で建造可"},
+    {"category":"重巡洋艦","fuel":250,"ammo":30,"steel":200,"bauxite":30,"target":"軽巡・重巡メイン","notes":"レア駆逐・潜水艦も低確率"},
+    {"category":"重巡洋艦","fuel":270,"ammo":130,"steel":330,"bauxite":30,"target":"レア駆逐・潜水艦狙いの重巡レシピ","notes":""},
+    {"category":"重巡洋艦","fuel":400,"ammo":30,"steel":600,"bauxite":30,"target":"戦艦レシピ","notes":"鈴谷・熊野狙い用"},
+    {"category":"重巡洋艦","fuel":300,"ammo":30,"steel":400,"bauxite":300,"target":"空母レシピ","notes":"低確率で重巡出現"},
+    {"category":"戦艦","fuel":400,"ammo":30,"steel":600,"bauxite":30,"target":"長門型・伊勢型・扶桑型・金剛型","notes":"軽巡も低確率"},
+    {"category":"戦艦","fuel":400,"ammo":100,"steel":600,"bauxite":30,"target":"戦艦建造確率向上","notes":"重巡確率僅減"},
+    {"category":"空母・水上機母艦","fuel":300,"ammo":30,"steel":400,"bauxite":300,"target":"低コスト空母レシピ","notes":""},
+    {"category":"空母・水上機母艦","fuel":300,"ammo":300,"steel":600,"bauxite":600,"target":"正規空母建造率向上","notes":"高コスト"},
+    {"category":"空母・水上機母艦","fuel":500,"ammo":200,"steel":700,"bauxite":800,"target":"飛龍出現率高い","notes":"高コスト"},
+    {"category":"潜水艦","fuel":30,"ammo":30,"steel":30,"bauxite":30,"target":"駆逐・軽巡メイン","notes":"最低値、潜水艦は極稀"},
+    {"category":"潜水艦","fuel":250,"ammo":30,"steel":200,"bauxite":30,"target":"潜水艦狙いに最適","notes":""},
+    {"category":"輸送艦","fuel":40,"ammo":10,"steel":40,"bauxite":10,"strategy_p":50,"target":"輸送艦 1～2隻","notes":""},
+    {"category":"輸送艦","fuel":120,"ammo":10,"steel":120,"bauxite":10,"strategy_p":50,"target":"輸送艦 2～3隻","notes":""},
+    {"category":"輸送艦","fuel":240,"ammo":10,"steel":240,"bauxite":10,"strategy_p":50,"target":"輸送艦 3～4隻","notes":""},
+    {"category":"輸送艦","fuel":300,"ammo":10,"steel":301,"bauxite":10,"strategy_p":50,"target":"輸送艦 3～5隻","notes":""},
+    {"category":"輸送艦","fuel":300,"ammo":100,"steel":451,"bauxite":100,"strategy_p":50,"target":"輸送艦 4～5隻","notes":""}
+  ]
+};
+// <BUILDS_END>
+
+// <DEVELOPMENTS_START> generated from data/developments.json by scripts/sync_developments.ps1; do not edit by hand
+const DEVELOPMENTS = {
+  "version": 1,
+  "source": "https://wikiwiki.jp/kancollekai/%E9%96%8B%E7%99%BA%E3%83%AC%E3%82%B7%E3%83%94",
+  "note": "艦これ改 開発レシピ — 各裝備分類的推薦配方。資料來自 wiki 開発レシピ頁。",
+  "categories": ["艦載機","主砲","副砲・機銃","魚雷","爆雷・ソナー","電探","その他"],
+  "items": [
+    {"category":"艦載機","fuel":20,"ammo":60,"steel":10,"bauxite":110,"secretary":"空母・軽空母","output":"紫電改二、烈風、零戦62型爆戦、流星改、彗星一二型甲、彩雲","notes":"レア艦載機狙い"},
+    {"category":"艦載機","fuel":20,"ammo":60,"steel":10,"bauxite":100,"secretary":"空母・軽空母","output":"紫電改二、烈風、流星改、彗星一二型甲","notes":"彩雲弾き版"},
+    {"category":"艦載機","fuel":20,"ammo":60,"steel":10,"bauxite":150,"secretary":"空母・軽空母・航戦","output":"紫雲、烈風、紫電改二、彩雲他","notes":"上記に紫雲追加"},
+    {"category":"艦載機","fuel":20,"ammo":20,"steel":11,"bauxite":150,"secretary":"空母・軽空母・航戦","output":"紫雲、烈風、紫電改二、彩雲","notes":"紫雲・烈風・紫電改二・彩雲狙い"},
+    {"category":"艦載機","fuel":11,"ammo":10,"steel":11,"bauxite":150,"secretary":"空母・軽空母・航戦","output":"紫雲","notes":"紫雲一点狙い ※本家では開発不可、失敗多め"},
+    {"category":"主砲","fuel":10,"ammo":251,"steel":250,"bauxite":10,"secretary":"戦艦・工作艦","output":"46cm三連装砲、九一式徹甲弾","notes":"徹甲弾狙い"},
+    {"category":"主砲","fuel":10,"ammo":251,"steel":250,"bauxite":150,"secretary":"戦艦","output":"46cm三連装砲、試製46cm連装砲、九一式徹甲弾、三式弾、33号水上電探","notes":"確率向上版"},
+    {"category":"副砲・機銃","fuel":10,"ammo":30,"steel":200,"bauxite":150,"secretary":"軽巡・駆逐","output":"15.2cm連装砲、小型電探","notes":"砲・電探狙い"},
+    {"category":"魚雷","fuel":10,"ammo":90,"steel":90,"bauxite":30,"secretary":"戦艦・工作艦","output":"三式弾、九一式徹甲弾","notes":"徹甲弾狙い"},
+    {"category":"爆雷・ソナー","fuel":10,"ammo":30,"steel":10,"bauxite":31,"secretary":"軽巡・駆逐","output":"ソナー、爆雷","notes":"ソナー・爆雷狙い"},
+    {"category":"電探","fuel":10,"ammo":11,"steel":251,"bauxite":250,"secretary":"戦艦・空母","output":"各種電探","notes":"電探全種狙い"},
+    {"category":"電探","fuel":10,"ammo":10,"steel":200,"bauxite":150,"secretary":"軽巡・駆逐","output":"小型電探","notes":"小型電探狙い"},
+    {"category":"その他","fuel":10,"ammo":10,"steel":11,"bauxite":10,"secretary":"軽巡・駆逐","output":"ドラム缶","notes":"ドラム缶狙い"}
+  ]
+};
+// <DEVELOPMENTS_END>
 const STORAGE_KEY = 'kc_quest_state_v2';
 
 // 規劃器熱門目標（最常被當成路線終點的 reward / task 節點）
@@ -2204,6 +2412,28 @@ const ui = {
   expCollapseAll: document.getElementById('exp-collapse-all'),
   expNote: document.getElementById('exp-note'),
   expList: document.getElementById('exp-list'),
+  // Parent (top-level) tabs
+  vwTasks: document.getElementById('vw-tasks'),
+  vwFactory: document.getElementById('vw-factory'),
+  tasksSubtabs: document.getElementById('tasks-subtabs'),
+  factorySubtabs: document.getElementById('factory-subtabs'),
+  // 建造 (builds) view
+  vwBuilds: document.getElementById('vw-builds'),
+  buildsPanel: document.getElementById('builds-panel'),
+  buildSearch: document.getElementById('build-search'),
+  buildExpandAll: document.getElementById('build-expand-all'),
+  buildCollapseAll: document.getElementById('build-collapse-all'),
+  buildNote: document.getElementById('build-note'),
+  buildDurationSection: document.getElementById('build-duration-section'),
+  buildList: document.getElementById('build-list'),
+  // 開発 (developments) view
+  vwDevelopments: document.getElementById('vw-developments'),
+  developmentsPanel: document.getElementById('developments-panel'),
+  devSearch: document.getElementById('dev-search'),
+  devExpandAll: document.getElementById('dev-expand-all'),
+  devCollapseAll: document.getElementById('dev-collapse-all'),
+  devNote: document.getElementById('dev-note'),
+  devList: document.getElementById('dev-list'),
 };
 
 let viewMode = 'focus';
@@ -3903,34 +4133,85 @@ function wireShipsEvents() {
   };
 }
 
+// Map each viewMode to its parent top-level group + remember last sub-view per group.
+const VIEW_GROUP = {
+  focus: 'tasks',  all: 'tasks',  planner: 'tasks',
+  ships: 'ships',
+  builds: 'factory',  developments: 'factory',  improvements: 'factory',
+  areas: 'areas',
+  expeditions: 'expeditions',
+};
+const lastInGroup = { tasks: 'focus', factory: 'improvements' };
+
+function groupOf(vm) { return VIEW_GROUP[vm] || 'tasks'; }
+
 function setView() {
+  const group = groupOf(viewMode);
+  // Top-level tab active state
+  ui.vwTasks.classList.toggle('active', group === 'tasks');
+  ui.vwShips.classList.toggle('active', group === 'ships');
+  ui.vwFactory.classList.toggle('active', group === 'factory');
+  ui.vwAreas.classList.toggle('active', group === 'areas');
+  ui.vwExpeditions.classList.toggle('active', group === 'expeditions');
+  // Sub-tab strips: only show when relevant parent is active
+  ui.tasksSubtabs.style.display = group === 'tasks' ? 'flex' : 'none';
+  ui.factorySubtabs.style.display = group === 'factory' ? 'flex' : 'none';
+  // Sub-tab active state
   ui.vwFocus.classList.toggle('active', viewMode === 'focus');
   ui.vwAll.classList.toggle('active', viewMode === 'all');
   ui.vwPlanner.classList.toggle('active', viewMode === 'planner');
-  ui.vwShips.classList.toggle('active', viewMode === 'ships');
+  ui.vwBuilds.classList.toggle('active', viewMode === 'builds');
+  ui.vwDevelopments.classList.toggle('active', viewMode === 'developments');
   ui.vwImprovements.classList.toggle('active', viewMode === 'improvements');
-  ui.vwAreas.classList.toggle('active', viewMode === 'areas');
-  ui.vwExpeditions.classList.toggle('active', viewMode === 'expeditions');
+  // Old in-view header chips (controls / tabs / typeTabs / tagTabs) only show in 'all' view
   const isList = (viewMode === 'focus' || viewMode === 'all');
   ui.allControls.style.display = viewMode === 'all' ? 'flex' : 'none';
   ui.tabs.style.display = viewMode === 'all' ? 'flex' : 'none';
   ui.typeTabs.style.display = viewMode === 'all' ? 'flex' : 'none';
   if (ui.tagTabs) ui.tagTabs.style.display = viewMode === 'all' ? 'flex' : 'none';
+  // Panel visibility
   ui.list.style.display = isList ? '' : 'none';
   ui.planner.style.display = viewMode === 'planner' ? '' : 'none';
   ui.shipsPanel.style.display = viewMode === 'ships' ? '' : 'none';
   ui.improvementsPanel.style.display = viewMode === 'improvements' ? '' : 'none';
   ui.areasPanel.style.display = viewMode === 'areas' ? '' : 'none';
   ui.expeditionsPanel.style.display = viewMode === 'expeditions' ? '' : 'none';
+  ui.buildsPanel.style.display = viewMode === 'builds' ? '' : 'none';
+  ui.developmentsPanel.style.display = viewMode === 'developments' ? '' : 'none';
+  // Remember sub-view per group for next time user clicks the parent.
+  if (group === 'tasks' || group === 'factory') lastInGroup[group] = viewMode;
 }
 
-ui.vwFocus.onclick = () => { viewMode = 'focus'; setView(); render(); };
-ui.vwAll.onclick = () => { viewMode = 'all'; setView(); render(); };
-ui.vwPlanner.onclick = () => { viewMode = 'planner'; setView(); render(); };
-ui.vwShips.onclick = () => { viewMode = 'ships'; setView(); renderShipsPanel(); };
-ui.vwImprovements.onclick = () => { viewMode = 'improvements'; setView(); renderImprovements(); };
-ui.vwAreas.onclick = () => { viewMode = 'areas'; setView(); renderAreas(); };
-ui.vwExpeditions.onclick = () => { viewMode = 'expeditions'; setView(); renderExpeditions(); };
+function switchTo(vm) {
+  viewMode = vm;
+  setView();
+  // Dispatch to the appropriate renderer.
+  switch (vm) {
+    case 'focus': case 'all':   render(); break;
+    case 'planner':              render(); break;
+    case 'ships':                renderShipsPanel(); break;
+    case 'improvements':         renderImprovements(); break;
+    case 'areas':                renderAreas(); break;
+    case 'expeditions':          renderExpeditions(); break;
+    case 'builds':               renderBuilds(); break;
+    case 'developments':         renderDevelopments(); break;
+  }
+}
+
+// Parent top-level tab clicks: switch to remembered sub-view (or default).
+ui.vwTasks.onclick    = () => switchTo(lastInGroup.tasks    || 'focus');
+ui.vwShips.onclick    = () => switchTo('ships');
+ui.vwFactory.onclick  = () => switchTo(lastInGroup.factory  || 'improvements');
+ui.vwAreas.onclick    = () => switchTo('areas');
+ui.vwExpeditions.onclick = () => switchTo('expeditions');
+
+// Sub-tab clicks: switch to exact viewMode.
+ui.vwFocus.onclick        = () => switchTo('focus');
+ui.vwAll.onclick          = () => switchTo('all');
+ui.vwPlanner.onclick      = () => switchTo('planner');
+ui.vwImprovements.onclick = () => switchTo('improvements');
+ui.vwBuilds.onclick       = () => switchTo('builds');
+ui.vwDevelopments.onclick = () => switchTo('developments');
 ui.search.addEventListener('input', () => render());
 ui.filter.addEventListener('change', () => render());
 ui.plannerSelect.addEventListener('change', () => render());
@@ -4427,6 +4708,190 @@ ui.expCollapseAll.onclick = () => {
   EXP_EXPANDED.clear();
   ui.expSearch.value = '';
   renderExpeditions();
+};
+
+// === 建造 (Builds view) ===
+const BUILD_EXPANDED = new Set();
+
+function renderBuilds() {
+  if (!BUILDS || !Array.isArray(BUILDS.recipes)) {
+    ui.buildList.innerHTML = '<div class="imp-empty">建造資料未載入</div>';
+    return;
+  }
+  if (BUILDS.note) { ui.buildNote.textContent = BUILDS.note; ui.buildNote.style.display = ''; }
+  else { ui.buildNote.style.display = 'none'; }
+
+  const escape = s => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+  // ----- 建造日数 table (top) -----
+  const durHtml = [];
+  durHtml.push('<div class="build-duration-table">');
+  durHtml.push('<div class="build-duration-head">⏱ 建造日数表</div>');
+  for (const d of (BUILDS.durations || [])) {
+    durHtml.push('<div class="build-duration-row">');
+    durHtml.push(`<span class="build-duration-days">${d.days} 日</span>`);
+    durHtml.push(`<span class="build-duration-ships">${escape(d.ships)}<span class="build-duration-summary">${escape(d.summary)}</span></span>`);
+    durHtml.push('</div>');
+  }
+  durHtml.push('</div>');
+  ui.buildDurationSection.innerHTML = durHtml.join('');
+
+  // ----- 配方 grouped by 艦種 -----
+  const q = (ui.buildSearch.value || '').trim().toLowerCase();
+  const matches = r => {
+    if (!q) return true;
+    const bag = [r.category, r.target, r.notes].join(' ').toLowerCase();
+    return bag.includes(q);
+  };
+  const filtered = BUILDS.recipes.filter(matches);
+  const groups = new Map();
+  for (const c of (BUILDS.categories || [])) groups.set(c, []);
+  for (const r of filtered) {
+    if (!groups.has(r.category)) groups.set(r.category, []);
+    groups.get(r.category).push(r);
+  }
+
+  const autoExpand = !!q;
+  const resCell = (label, value, cls) => {
+    const v = Number(value) || 0;
+    const zero = v === 0 ? ' zero' : '';
+    return `<span class="exp-res ${cls}${zero}">${label} ${v}</span>`;
+  };
+
+  const html = [];
+  let renderedAny = false;
+  for (const [cat, recipes] of groups.entries()) {
+    if (recipes.length === 0) continue;
+    renderedAny = true;
+    const isExpanded = autoExpand || BUILD_EXPANDED.has(cat);
+    const cls = 'area-group' + (isExpanded ? ' expanded' : '');
+    html.push(`<div class="${cls}" data-cat="${escape(cat)}">`);
+    html.push(`<div class="area-group-head" data-toggle="${escape(cat)}"><span>${escape(cat)} <span style="color:var(--text-dim);font-weight:normal;font-size:11px">(${recipes.length} 個配方)</span></span><span class="area-toggle">▼</span></div>`);
+    html.push('<div class="area-group-body">');
+    for (const r of recipes) {
+      html.push('<div class="recipe-card">');
+      html.push(`<div class="recipe-target">🎯 ${escape(r.target)}</div>`);
+      html.push('<div class="recipe-cost">');
+      html.push(resCell('燃', r.fuel,    'exp-res-fuel'));
+      html.push(resCell('弾', r.ammo,    'exp-res-ammo'));
+      html.push(resCell('鋼', r.steel,   'exp-res-steel'));
+      html.push(resCell('ボ', r.bauxite, 'exp-res-bauxite'));
+      if (r.strategy_p) html.push(resCell('戦P', r.strategy_p, 'exp-res-sp'));
+      html.push('</div>');
+      if (r.notes) html.push(`<div class="recipe-notes">${escape(r.notes)}</div>`);
+      html.push('</div>');
+    }
+    html.push('</div></div>');
+  }
+  ui.buildList.innerHTML = renderedAny ? html.join('') : '<div class="imp-empty">沒有符合條件的配方</div>';
+}
+
+ui.buildSearch.addEventListener('input', () => renderBuilds());
+ui.buildList.addEventListener('click', e => {
+  const head = e.target.closest('.area-group-head');
+  if (!head) return;
+  const cat = head.dataset.toggle;
+  if (!cat) return;
+  if (BUILD_EXPANDED.has(cat)) BUILD_EXPANDED.delete(cat);
+  else BUILD_EXPANDED.add(cat);
+  const group = head.closest('.area-group');
+  if (group) group.classList.toggle('expanded');
+});
+ui.buildExpandAll.onclick = () => {
+  for (const c of (BUILDS.categories || [])) BUILD_EXPANDED.add(c);
+  renderBuilds();
+};
+ui.buildCollapseAll.onclick = () => {
+  BUILD_EXPANDED.clear();
+  ui.buildSearch.value = '';
+  renderBuilds();
+};
+
+// === 開発 (Developments view) ===
+const DEV_EXPANDED = new Set();
+
+function renderDevelopments() {
+  if (!DEVELOPMENTS || !Array.isArray(DEVELOPMENTS.items)) {
+    ui.devList.innerHTML = '<div class="imp-empty">開発資料未載入</div>';
+    return;
+  }
+  if (DEVELOPMENTS.note) { ui.devNote.textContent = DEVELOPMENTS.note; ui.devNote.style.display = ''; }
+  else { ui.devNote.style.display = 'none'; }
+
+  const escape = s => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+  const q = (ui.devSearch.value || '').trim().toLowerCase();
+  const matches = r => {
+    if (!q) return true;
+    const bag = [r.category, r.output, r.secretary, r.notes].join(' ').toLowerCase();
+    return bag.includes(q);
+  };
+  const filtered = DEVELOPMENTS.items.filter(matches);
+  const groups = new Map();
+  for (const c of (DEVELOPMENTS.categories || [])) groups.set(c, []);
+  for (const r of filtered) {
+    if (!groups.has(r.category)) groups.set(r.category, []);
+    groups.get(r.category).push(r);
+  }
+
+  const autoExpand = !!q;
+  const resCell = (label, value, cls) => {
+    const v = Number(value) || 0;
+    const zero = v === 0 ? ' zero' : '';
+    return `<span class="exp-res ${cls}${zero}">${label} ${v}</span>`;
+  };
+
+  const html = [];
+  let renderedAny = false;
+  for (const [cat, items] of groups.entries()) {
+    if (items.length === 0) continue;
+    renderedAny = true;
+    const isExpanded = autoExpand || DEV_EXPANDED.has(cat);
+    const cls = 'area-group' + (isExpanded ? ' expanded' : '');
+    html.push(`<div class="${cls}" data-cat="${escape(cat)}">`);
+    html.push(`<div class="area-group-head" data-toggle="${escape(cat)}"><span>${escape(cat)} <span style="color:var(--text-dim);font-weight:normal;font-size:11px">(${items.length} 個配方)</span></span><span class="area-toggle">▼</span></div>`);
+    html.push('<div class="area-group-body">');
+    for (const it of items) {
+      html.push('<div class="recipe-card">');
+      if (it.secretary) html.push(`<span class="recipe-secretary">秘書: ${escape(it.secretary)}</span>`);
+      html.push('<div class="recipe-cost">');
+      html.push(resCell('燃', it.fuel,    'exp-res-fuel'));
+      html.push(resCell('弾', it.ammo,    'exp-res-ammo'));
+      html.push(resCell('鋼', it.steel,   'exp-res-steel'));
+      html.push(resCell('ボ', it.bauxite, 'exp-res-bauxite'));
+      html.push('</div>');
+      if (it.output) html.push(`<div class="recipe-output"><span class="recipe-output-label">出:</span>${escape(it.output)}</div>`);
+      if (it.notes)  html.push(`<div class="recipe-notes">${escape(it.notes)}</div>`);
+      html.push('</div>');
+    }
+    html.push('</div></div>');
+  }
+  ui.devList.innerHTML = renderedAny ? html.join('') : '<div class="imp-empty">沒有符合條件的配方</div>';
+}
+
+ui.devSearch.addEventListener('input', () => renderDevelopments());
+ui.devList.addEventListener('click', e => {
+  const head = e.target.closest('.area-group-head');
+  if (!head) return;
+  const cat = head.dataset.toggle;
+  if (!cat) return;
+  if (DEV_EXPANDED.has(cat)) DEV_EXPANDED.delete(cat);
+  else DEV_EXPANDED.add(cat);
+  const group = head.closest('.area-group');
+  if (group) group.classList.toggle('expanded');
+});
+ui.devExpandAll.onclick = () => {
+  for (const c of (DEVELOPMENTS.categories || [])) DEV_EXPANDED.add(c);
+  renderDevelopments();
+};
+ui.devCollapseAll.onclick = () => {
+  DEV_EXPANDED.clear();
+  ui.devSearch.value = '';
+  renderDevelopments();
 };
 
 renderTabs();

@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "source": "https://wikiwiki.jp/kancollekai/%E5%BB%BA%E9%80%A0%E3%83%AC%E3%82%B7%E3%83%94",
+  "note": "艦これ改 建造レシピ — 建造日数表 + 各艦種推薦配方。資料來自 wiki 建造レシピ頁。",
+  "durations": [
+    {"days": 2, "summary": "潜水艦 + 駆逐艦", "ships": "潜水艦: 伊168 / 伊19 / 伊58 / 伊8。駆逐艦: 睦月型 / 吹雪型 / 綾波型 / 暁型 / 白露型 / 朝潮型 / 陽炎型(一部) / 島風"},
+    {"days": 4, "summary": "軽巡洋艦 + 重巡洋艦", "ships": "軽巡: 天龍型 / 球磨型 / 長良型 / 川内型。重巡: 古鷹型 / 青葉型"},
+    {"days": 5, "summary": "軽巡洋艦 + 練習巡洋艦", "ships": "軽巡: 阿武隈 / 鬼怒。練習巡洋艦: 香取"},
+    {"days": 6, "summary": "軽巡洋艦 + 重巡洋艦", "ships": "軽巡: 夕張。重巡: 妙高型 / 高雄型 / 利根型 / 最上型(三隈除く)"},
+    {"days": 8, "summary": "軽空母", "ships": "鳳翔"},
+    {"days": 10, "summary": "水上機母艦", "ships": "千歳 / 千代田"},
+    {"days": 11, "summary": "軽空母", "ships": "瑞鳳 / 祥鳳"},
+    {"days": 12, "summary": "軽空母", "ships": "龍驤 / 飛鷹 / 隼鷹"},
+    {"days": 16, "summary": "戦艦", "ships": "金剛 / 比叡 / 榛名 / 霧島"},
+    {"days": 17, "summary": "正規空母", "ships": "蒼龍 / 飛龍"},
+    {"days": 18, "summary": "正規空母 + 戦艦", "ships": "正規空母: 加賀 / 赤城。戦艦: 扶桑 / 山城 / 伊勢 / 日向"},
+    {"days": 20, "summary": "戦艦", "ships": "長門型 (長門 / 陸奥)"},
+    {"days": 24, "summary": "正規空母", "ships": "翔鶴 / 瑞鶴"}
+  ],
+  "categories": ["駆逐艦", "軽巡洋艦・練習巡洋艦", "重巡洋艦", "戦艦", "空母・水上機母艦", "潜水艦", "輸送艦"],
+  "recipes": [
+    {"category":"駆逐艦","fuel":30,"ammo":30,"steel":30,"bauxite":30,"target":"駆逐艦・軽巡メイン","notes":"最低値レシピ。弥生・秋雲・夕張も低確率出現"},
+    {"category":"駆逐艦","fuel":250,"ammo":30,"steel":200,"bauxite":30,"target":"レア駆逐・潜水艦狙い","notes":"重巡・レア軽巡も混在"},
+    {"category":"駆逐艦","fuel":250,"ammo":130,"steel":250,"bauxite":30,"target":"ノーマル駆逐艦を除外","notes":"レア駆逐艦に絞る"},
+
+    {"category":"軽巡洋艦・練習巡洋艦","fuel":30,"ammo":30,"steel":30,"bauxite":30,"target":"駆逐・軽巡メイン","notes":"レア軽巡(夕張等)も低確率"},
+    {"category":"軽巡洋艦・練習巡洋艦","fuel":250,"ammo":30,"steel":200,"bauxite":30,"target":"軽巡・重巡メイン","notes":"レア駆逐・潜水艦・香取も可能"},
+    {"category":"軽巡洋艦・練習巡洋艦","fuel":300,"ammo":30,"steel":400,"bauxite":300,"target":"空母レシピ","notes":"阿武隈・鬼怒・夕張を低確率で建造可"},
+
+    {"category":"重巡洋艦","fuel":250,"ammo":30,"steel":200,"bauxite":30,"target":"軽巡・重巡メイン","notes":"レア駆逐・潜水艦も低確率"},
+    {"category":"重巡洋艦","fuel":270,"ammo":130,"steel":330,"bauxite":30,"target":"レア駆逐・潜水艦狙いの重巡レシピ","notes":""},
+    {"category":"重巡洋艦","fuel":400,"ammo":30,"steel":600,"bauxite":30,"target":"戦艦レシピ","notes":"鈴谷・熊野狙い用"},
+    {"category":"重巡洋艦","fuel":300,"ammo":30,"steel":400,"bauxite":300,"target":"空母レシピ","notes":"低確率で重巡出現"},
+
+    {"category":"戦艦","fuel":400,"ammo":30,"steel":600,"bauxite":30,"target":"長門型・伊勢型・扶桑型・金剛型","notes":"軽巡も低確率"},
+    {"category":"戦艦","fuel":400,"ammo":100,"steel":600,"bauxite":30,"target":"戦艦建造確率向上","notes":"重巡確率僅減"},
+
+    {"category":"空母・水上機母艦","fuel":300,"ammo":30,"steel":400,"bauxite":300,"target":"低コスト空母レシピ","notes":""},
+    {"category":"空母・水上機母艦","fuel":300,"ammo":300,"steel":600,"bauxite":600,"target":"正規空母建造率向上","notes":"高コスト"},
+    {"category":"空母・水上機母艦","fuel":500,"ammo":200,"steel":700,"bauxite":800,"target":"飛龍出現率高い","notes":"高コスト"},
+
+    {"category":"潜水艦","fuel":30,"ammo":30,"steel":30,"bauxite":30,"target":"駆逐・軽巡メイン","notes":"最低値、潜水艦は極稀"},
+    {"category":"潜水艦","fuel":250,"ammo":30,"steel":200,"bauxite":30,"target":"潜水艦狙いに最適","notes":""},
+
+    {"category":"輸送艦","fuel":40,"ammo":10,"steel":40,"bauxite":10,"strategy_p":50,"target":"輸送艦 1～2隻","notes":""},
+    {"category":"輸送艦","fuel":120,"ammo":10,"steel":120,"bauxite":10,"strategy_p":50,"target":"輸送艦 2～3隻","notes":""},
+    {"category":"輸送艦","fuel":240,"ammo":10,"steel":240,"bauxite":10,"strategy_p":50,"target":"輸送艦 3～4隻","notes":""},
+    {"category":"輸送艦","fuel":300,"ammo":10,"steel":301,"bauxite":10,"strategy_p":50,"target":"輸送艦 3～5隻","notes":""},
+    {"category":"輸送艦","fuel":300,"ammo":100,"steel":451,"bauxite":100,"strategy_p":50,"target":"輸送艦 4～5隻","notes":""}
+  ]
+}

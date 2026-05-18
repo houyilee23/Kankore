@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "source": "https://wikiwiki.jp/kancollekai/%E9%96%8B%E7%99%BA%E3%83%AC%E3%82%B7%E3%83%94",
+  "note": "艦これ改 開発レシピ — 各裝備分類的推薦配方。資料來自 wiki 開発レシピ頁。",
+  "categories": ["艦載機", "主砲", "副砲・機銃", "魚雷", "爆雷・ソナー", "電探", "その他"],
+  "items": [
+    {"category":"艦載機","fuel":20,"ammo":60,"steel":10,"bauxite":110,"secretary":"空母・軽空母","output":"紫電改二、烈風、零戦62型爆戦、流星改、彗星一二型甲、彩雲","notes":"レア艦載機狙い"},
+    {"category":"艦載機","fuel":20,"ammo":60,"steel":10,"bauxite":100,"secretary":"空母・軽空母","output":"紫電改二、烈風、流星改、彗星一二型甲","notes":"彩雲弾き版"},
+    {"category":"艦載機","fuel":20,"ammo":60,"steel":10,"bauxite":150,"secretary":"空母・軽空母・航戦","output":"紫雲、烈風、紫電改二、彩雲他","notes":"上記に紫雲追加"},
+    {"category":"艦載機","fuel":20,"ammo":20,"steel":11,"bauxite":150,"secretary":"空母・軽空母・航戦","output":"紫雲、烈風、紫電改二、彩雲","notes":"紫雲・烈風・紫電改二・彩雲狙い"},
+    {"category":"艦載機","fuel":11,"ammo":10,"steel":11,"bauxite":150,"secretary":"空母・軽空母・航戦","output":"紫雲","notes":"紫雲一点狙い ※本家では開発不可、失敗多め"},
+
+    {"category":"主砲","fuel":10,"ammo":251,"steel":250,"bauxite":10,"secretary":"戦艦・工作艦","output":"46cm三連装砲、九一式徹甲弾","notes":"徹甲弾狙い"},
+    {"category":"主砲","fuel":10,"ammo":251,"steel":250,"bauxite":150,"secretary":"戦艦","output":"46cm三連装砲、試製46cm連装砲、九一式徹甲弾、三式弾、33号水上電探","notes":"確率向上版"},
+
+    {"category":"副砲・機銃","fuel":10,"ammo":30,"steel":200,"bauxite":150,"secretary":"軽巡・駆逐","output":"15.2cm連装砲、小型電探","notes":"砲・電探狙い"},
+
+    {"category":"魚雷","fuel":10,"ammo":90,"steel":90,"bauxite":30,"secretary":"戦艦・工作艦","output":"三式弾、九一式徹甲弾","notes":"徹甲弾狙い"},
+
+    {"category":"爆雷・ソナー","fuel":10,"ammo":30,"steel":10,"bauxite":31,"secretary":"軽巡・駆逐","output":"ソナー、爆雷","notes":"ソナー・爆雷狙い"},
+
+    {"category":"電探","fuel":10,"ammo":11,"steel":251,"bauxite":250,"secretary":"戦艦・空母","output":"各種電探","notes":"電探全種狙い"},
+    {"category":"電探","fuel":10,"ammo":10,"steel":200,"bauxite":150,"secretary":"軽巡・駆逐","output":"小型電探","notes":"小型電探狙い"},
+
+    {"category":"その他","fuel":10,"ammo":10,"steel":11,"bauxite":10,"secretary":"軽巡・駆逐","output":"ドラム缶","notes":"ドラム缶狙い"}
+  ]
+}

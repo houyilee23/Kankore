@@ -1452,6 +1452,39 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
   border-radius: 4px;
 }
 .exp-cond { color: var(--text-dim); font-style: italic; }
+.exp-pinned-section {
+  background: var(--panel);
+  border: 1px solid var(--upcoming);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+.exp-pinned-head {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--upcoming);
+  margin-bottom: 4px;
+}
+.exp-pinned-hint {
+  font-size: 10px;
+  font-weight: normal;
+  color: var(--text-dim);
+  margin-left: 4px;
+}
+.exp-pinned-section .exp-card {
+  border-left-color: var(--upcoming);
+  background: var(--panel-2);
+}
+.exp-area-tag {
+  display: inline-block;
+  background: var(--panel);
+  color: var(--accent);
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 4px;
+  border: 1px solid var(--accent);
+  margin-right: 4px;
+}
 </style>
 </head>
 <body>
@@ -4301,7 +4334,60 @@ function renderExpeditions() {
     return `<span class="exp-res ${cls}${zero}">${label} ${v}</span>`;
   };
 
+  // Build one card (used by both the pinned top-5 and the area groups).
+  // showArea=true adds an area badge in the head (used for the cross-area pinned list).
+  const buildCard = (it, showArea) => {
+    const out = [];
+    out.push(`<div class="exp-card">`);
+    const areaTag = showArea ? `<span class="exp-area-tag">${escape(it.area)}</span>` : '';
+    out.push(`<div class="exp-card-head"><span><span class="exp-id-chip">#${it.id}</span>${areaTag}<span class="exp-name">${escape(it.name)}</span></span><span><span class="exp-meta-chip">${it.days} 日</span> <span class="exp-meta-chip">XP ${it.xp}</span> ${it.weighted_score ? `<span class="exp-score-chip">加權 ${it.weighted_score}</span>` : ''}</span></div>`);
+    const r = it.rewards || {};
+    out.push(`<div class="exp-row"><span class="exp-row-label">日給</span><span class="exp-rewards-grid">${resCell('燃', r.fuel, 'exp-res-fuel')}${resCell('弾', r.ammo, 'exp-res-ammo')}${resCell('鋼', r.steel, 'exp-res-steel')}${resCell('ボ', r.bauxite, 'exp-res-bauxite')}${resCell('戦P', r.strategy_p, 'exp-res-sp')}</span></div>`);
+    const items = it.items || {};
+    const itemChips = [];
+    if (items.dev)       itemChips.push(`<span class="exp-item-chip">開發 ${escape(items.dev)}</span>`);
+    if (items.construct) itemChips.push(`<span class="exp-item-chip">建造 ${escape(items.construct)}</span>`);
+    if (items.repair)    itemChips.push(`<span class="exp-item-chip">修復 ${escape(items.repair)}</span>`);
+    if (items.furniture) itemChips.push(`<span class="exp-item-chip">家具 ${escape(items.furniture)}</span>`);
+    if (itemChips.length) {
+      out.push(`<div class="exp-row"><span class="exp-row-label">出現物品</span><span class="exp-items-grid">${itemChips.join('')}</span></div>`);
+    }
+    if (it.fleet) {
+      out.push(`<div class="exp-row"><span class="exp-row-label">編成</span><span class="exp-row-value">${escape(it.fleet)}</span></div>`);
+    }
+    const lvParts = [];
+    if (it.flagship_lv) lvParts.push(`旗艦 Lv.${escape(it.flagship_lv)}`);
+    if (it.total_lv)    lvParts.push(`隊伍合計 Lv.${escape(it.total_lv)}`);
+    if (lvParts.length) {
+      out.push(`<div class="exp-row"><span class="exp-row-label">Lv 要求</span><span class="exp-row-value">${lvParts.join(' / ')}</span></div>`);
+    }
+    if (it.appear_cond) {
+      out.push(`<div class="exp-row"><span class="exp-row-label">出現條件</span><span class="exp-row-value exp-cond">${escape(it.appear_cond)}</span></div>`);
+    }
+    if (it.notes) {
+      out.push(`<div class="exp-row"><span class="exp-row-label">備註</span><span class="exp-row-value exp-cond">${escape(it.notes)}</span></div>`);
+    }
+    out.push(`</div>`);
+    return out.join('');
+  };
+
+  // === Pinned: Top-5 by weighted_score (across all areas, independent of search/sort) ===
+  const topPinned = EXPEDITIONS.items
+    .filter(it => (it.weighted_score || 0) > 0)
+    .slice()
+    .sort((a, b) => (b.weighted_score || 0) - (a.weighted_score || 0))
+    .slice(0, 5);
+
   const html = [];
+  if (topPinned.length) {
+    html.push(`<div class="exp-pinned-section">`);
+    html.push(`<div class="exp-pinned-head">🏆 加權分 Top ${topPinned.length} <span class="exp-pinned-hint">(跨海域，固定置頂；不受搜尋/排序/摺疊影響)</span></div>`);
+    for (const it of topPinned) {
+      html.push(buildCard(it, /* showArea = */ true));
+    }
+    html.push(`</div>`);
+  }
+
   let renderedAny = false;
   for (const [area, exps] of groups.entries()) {
     if (exps.length === 0) continue;
@@ -4311,43 +4397,10 @@ function renderExpeditions() {
     html.push(`<div class="${cls}" data-area="${escape(area)}">`);
     html.push(`<div class="area-group-head" data-toggle="${escape(area)}"><span>${escape(area)} <span style="color:var(--text-dim);font-weight:normal;font-size:11px">(${exps.length} 個遠征)</span></span><span class="area-toggle">▼</span></div>`);
     html.push(`<div class="area-group-body">`);
-    for (const it of exps) {
-      html.push(`<div class="exp-card">`);
-      html.push(`<div class="exp-card-head"><span><span class="exp-id-chip">#${it.id}</span><span class="exp-name">${escape(it.name)}</span></span><span><span class="exp-meta-chip">${it.days} 日</span> <span class="exp-meta-chip">XP ${it.xp}</span> ${it.weighted_score ? `<span class="exp-score-chip">加權 ${it.weighted_score}</span>` : ''}</span></div>`);
-      // Rewards row
-      const r = it.rewards || {};
-      html.push(`<div class="exp-row"><span class="exp-row-label">日給</span><span class="exp-rewards-grid">${resCell('燃', r.fuel, 'exp-res-fuel')}${resCell('弾', r.ammo, 'exp-res-ammo')}${resCell('鋼', r.steel, 'exp-res-steel')}${resCell('ボ', r.bauxite, 'exp-res-bauxite')}${resCell('戦P', r.strategy_p, 'exp-res-sp')}</span></div>`);
-      // Items row
-      const items = it.items || {};
-      const itemChips = [];
-      if (items.dev)       itemChips.push(`<span class="exp-item-chip">開發 ${escape(items.dev)}</span>`);
-      if (items.construct) itemChips.push(`<span class="exp-item-chip">建造 ${escape(items.construct)}</span>`);
-      if (items.repair)    itemChips.push(`<span class="exp-item-chip">修復 ${escape(items.repair)}</span>`);
-      if (items.furniture) itemChips.push(`<span class="exp-item-chip">家具 ${escape(items.furniture)}</span>`);
-      if (itemChips.length) {
-        html.push(`<div class="exp-row"><span class="exp-row-label">出現物品</span><span class="exp-items-grid">${itemChips.join('')}</span></div>`);
-      }
-      if (it.fleet) {
-        html.push(`<div class="exp-row"><span class="exp-row-label">編成</span><span class="exp-row-value">${escape(it.fleet)}</span></div>`);
-      }
-      // LV info
-      const lvParts = [];
-      if (it.flagship_lv) lvParts.push(`旗艦 Lv.${escape(it.flagship_lv)}`);
-      if (it.total_lv)    lvParts.push(`隊伍合計 Lv.${escape(it.total_lv)}`);
-      if (lvParts.length) {
-        html.push(`<div class="exp-row"><span class="exp-row-label">Lv 要求</span><span class="exp-row-value">${lvParts.join(' / ')}</span></div>`);
-      }
-      if (it.appear_cond) {
-        html.push(`<div class="exp-row"><span class="exp-row-label">出現條件</span><span class="exp-row-value exp-cond">${escape(it.appear_cond)}</span></div>`);
-      }
-      if (it.notes) {
-        html.push(`<div class="exp-row"><span class="exp-row-label">備註</span><span class="exp-row-value exp-cond">${escape(it.notes)}</span></div>`);
-      }
-      html.push(`</div>`);
-    }
+    for (const it of exps) html.push(buildCard(it, /* showArea = */ false));
     html.push(`</div></div>`);
   }
-  if (!renderedAny) {
+  if (!renderedAny && !topPinned.length) {
     ui.expList.innerHTML = '<div class="imp-empty">沒有符合條件的遠征</div>';
     return;
   }

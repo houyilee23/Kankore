@@ -54,7 +54,7 @@ if (-not $data.items) {
     throw "areas.json missing 'items' array"
 }
 
-$itemFieldOrder = @('area', 'node', 'fleet_flag', 'fleet_escort', 'nav_flag', 'nav_escort', 'notes', 'recon', 'restricted', 'tasks')
+$itemFieldOrder = @('area', 'node', 'fleet_flag', 'fleet_escort', 'nav_flag', 'nav_escort', 'unlock', 'notes', 'recon', 'restricted', 'tasks')
 
 function Reorder-Item($obj, $order) {
     $remaining = [ordered]@{}

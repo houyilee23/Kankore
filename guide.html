@@ -1555,8 +1555,55 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
 }
 
 /* === 建造 / 開發 views === */
-#builds-panel, #developments-panel {
+#builds-panel, #developments-panel,
+#equipment-aa-panel, #equipment-day-panel, #equipment-night-panel {
   padding: 8px 12px calc(80px + env(safe-area-inset-bottom));
+}
+/* === 裝備 / 對空 CI === */
+.eq-effect-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  margin-top: 6px;
+  padding: 6px 10px;
+}
+.eq-effect-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.eq-effect-no {
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  min-width: 28px;
+  text-align: center;
+  font-family: ui-monospace, monospace;
+}
+.eq-effect-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1;
+}
+.eq-effect-chip {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.eq-effect-plus {
+  color: var(--text-dim);
+  align-self: center;
+  font-size: 10px;
+  padding: 0 2px;
 }
 .build-duration-table {
   background: var(--panel);
@@ -1650,6 +1697,7 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
     <button id="vw-tasks" class="active">📋 任務</button>
     <button id="vw-ships">⚓ 艦娘</button>
     <button id="vw-factory">🔧 工廠</button>
+    <button id="vw-equipment">🛡 裝備</button>
     <button id="vw-areas">🧭 海域</button>
     <button id="vw-expeditions">🚢 遠征</button>
   </div>
@@ -1662,6 +1710,11 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
     <button id="vw-builds">⚙ 建造</button>
     <button id="vw-developments">🧪 開發</button>
     <button id="vw-improvements" class="active">🛠 改修</button>
+  </div>
+  <div class="sub-tabs" id="equipment-subtabs" style="display:none">
+    <button id="vw-equipment-aa" class="active">☁ 對空</button>
+    <button id="vw-equipment-day">☀ 日戰</button>
+    <button id="vw-equipment-night">🌙 夜戰</button>
   </div>
   <div class="controls" id="all-controls" style="display:none">
     <input type="search" id="search" placeholder="搜尋編號/名稱/備註（如 t007 或 大和）...">
@@ -1764,6 +1817,25 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
   </div>
   <div class="area-note" id="dev-note"></div>
   <div id="dev-list"></div>
+</section>
+
+<section id="equipment-aa-panel" style="display:none">
+  <div class="area-controls">
+    <button id="eq-aa-expand-all" type="button">全部展開</button>
+    <button id="eq-aa-collapse-all" type="button">全部摺疊</button>
+  </div>
+  <div class="area-note">對空カットイン (CI) 觸發條件 — 各艦種/特定艦娘專屬效果。同艦同時符合多條件時優先觸發編號小的。</div>
+  <div id="eq-aa-list"></div>
+</section>
+
+<section id="equipment-day-panel" style="display:none">
+  <div class="area-note">日戰相關裝備搭配 (待補)。</div>
+  <div id="eq-day-list" class="imp-empty">日戰資料尚未填入。</div>
+</section>
+
+<section id="equipment-night-panel" style="display:none">
+  <div class="area-note">夜戰相關裝備搭配 (待補)。</div>
+  <div id="eq-night-list" class="imp-empty">夜戰資料尚未填入。</div>
 </section>
 
 <div class="bottom-bar">
@@ -2357,6 +2429,17 @@ const DEVELOPMENTS = {
   ]
 };
 // <DEVELOPMENTS_END>
+
+// <EQUIPMENT_START> generated from data/equipment.json by scripts/sync_equipment.ps1; do not edit by hand
+const EQUIPMENT = {
+  "version": 1,
+  "source": "user-supplied (艦これ改 對空 CI / 對空カットイン エフェクト一覧)",
+  "note": "裝備頁面資料 — 對空 / 日戰 / 夜戰 三個子分類。日戰、夜戰待補。",
+  "aa": {"groups":[{"name":"共通エフェクト（潜水艦を除く）","effects":[{"no":1,"items":["高角砲","高射装置","対空電探"]},{"no":2,"items":["高角砲","高射装置"]}]},{"name":"駆逐、軽巡、水母専用エフェクト","effects":[{"no":3,"items":["10cm高角砲+高射装置","高角砲+高射装置","対空電探"]},{"no":4,"items":["10cm高角砲+高射装置","対空電探"]}]},{"name":"秋月専用エフェクト","effects":[{"no":5,"items":["高角砲","高角砲","電探"]},{"no":6,"items":["高角砲","電探"]},{"no":7,"items":["高角砲","高角砲"]}]},{"name":"戦艦専用エフェクト","effects":[{"no":8,"items":["大口径主砲","三式弾","高射装置","対空電探"]},{"no":9,"items":["大口径主砲","三式弾","高射装置"]}]},{"name":"副砲装備可能艦専用エフェクト","effects":[{"no":10,"items":["12.7cm高角砲+高射装置","高角砲+高射装置","対空電探"]},{"no":11,"items":["12.7cm高角砲+高射装置","対空電探"]}]},{"name":"摩耶改二専用エフェクト","effects":[{"no":12,"items":["高角砲（副砲）","25mm三連装機銃 集中配備","対空電探"]},{"no":13,"items":["高角砲（副砲）","25mm三連装機銃 集中配備"]}]}]},
+  "day": {"groups":[]},
+  "night": {"groups":[]}
+};
+// <EQUIPMENT_END>
 const STORAGE_KEY = 'kc_quest_state_v2';
 
 // 規劃器熱門目標（最常被當成路線終點的 reward / task 節點）
@@ -2512,6 +2595,18 @@ const ui = {
   devCollapseAll: document.getElementById('dev-collapse-all'),
   devNote: document.getElementById('dev-note'),
   devList: document.getElementById('dev-list'),
+  // 裝備 (equipment) parent + sub-tabs
+  vwEquipment: document.getElementById('vw-equipment'),
+  equipmentSubtabs: document.getElementById('equipment-subtabs'),
+  vwEquipmentAA: document.getElementById('vw-equipment-aa'),
+  vwEquipmentDay: document.getElementById('vw-equipment-day'),
+  vwEquipmentNight: document.getElementById('vw-equipment-night'),
+  equipmentAAPanel: document.getElementById('equipment-aa-panel'),
+  equipmentDayPanel: document.getElementById('equipment-day-panel'),
+  equipmentNightPanel: document.getElementById('equipment-night-panel'),
+  eqAAExpandAll: document.getElementById('eq-aa-expand-all'),
+  eqAACollapseAll: document.getElementById('eq-aa-collapse-all'),
+  eqAAList: document.getElementById('eq-aa-list'),
 };
 
 let viewMode = 'focus';
@@ -4216,10 +4311,11 @@ const VIEW_GROUP = {
   focus: 'tasks',  all: 'tasks',  planner: 'tasks',
   ships: 'ships',
   builds: 'factory',  developments: 'factory',  improvements: 'factory',
+  'equipment-aa': 'equipment', 'equipment-day': 'equipment', 'equipment-night': 'equipment',
   areas: 'areas',
   expeditions: 'expeditions',
 };
-const lastInGroup = { tasks: 'focus', factory: 'improvements' };
+const lastInGroup = { tasks: 'focus', factory: 'improvements', equipment: 'equipment-aa' };
 
 function groupOf(vm) { return VIEW_GROUP[vm] || 'tasks'; }
 
@@ -4229,11 +4325,13 @@ function setView() {
   ui.vwTasks.classList.toggle('active', group === 'tasks');
   ui.vwShips.classList.toggle('active', group === 'ships');
   ui.vwFactory.classList.toggle('active', group === 'factory');
+  ui.vwEquipment.classList.toggle('active', group === 'equipment');
   ui.vwAreas.classList.toggle('active', group === 'areas');
   ui.vwExpeditions.classList.toggle('active', group === 'expeditions');
   // Sub-tab strips: only show when relevant parent is active
   ui.tasksSubtabs.style.display = group === 'tasks' ? 'flex' : 'none';
   ui.factorySubtabs.style.display = group === 'factory' ? 'flex' : 'none';
+  ui.equipmentSubtabs.style.display = group === 'equipment' ? 'flex' : 'none';
   // Sub-tab active state
   ui.vwFocus.classList.toggle('active', viewMode === 'focus');
   ui.vwAll.classList.toggle('active', viewMode === 'all');
@@ -4241,6 +4339,9 @@ function setView() {
   ui.vwBuilds.classList.toggle('active', viewMode === 'builds');
   ui.vwDevelopments.classList.toggle('active', viewMode === 'developments');
   ui.vwImprovements.classList.toggle('active', viewMode === 'improvements');
+  ui.vwEquipmentAA.classList.toggle('active', viewMode === 'equipment-aa');
+  ui.vwEquipmentDay.classList.toggle('active', viewMode === 'equipment-day');
+  ui.vwEquipmentNight.classList.toggle('active', viewMode === 'equipment-night');
   // Old in-view header chips (controls / tabs / typeTabs / tagTabs) only show in 'all' view
   const isList = (viewMode === 'focus' || viewMode === 'all');
   ui.allControls.style.display = viewMode === 'all' ? 'flex' : 'none';
@@ -4256,8 +4357,11 @@ function setView() {
   ui.expeditionsPanel.style.display = viewMode === 'expeditions' ? '' : 'none';
   ui.buildsPanel.style.display = viewMode === 'builds' ? '' : 'none';
   ui.developmentsPanel.style.display = viewMode === 'developments' ? '' : 'none';
+  ui.equipmentAAPanel.style.display = viewMode === 'equipment-aa' ? '' : 'none';
+  ui.equipmentDayPanel.style.display = viewMode === 'equipment-day' ? '' : 'none';
+  ui.equipmentNightPanel.style.display = viewMode === 'equipment-night' ? '' : 'none';
   // Remember sub-view per group for next time user clicks the parent.
-  if (group === 'tasks' || group === 'factory') lastInGroup[group] = viewMode;
+  if (group === 'tasks' || group === 'factory' || group === 'equipment') lastInGroup[group] = viewMode;
 }
 
 function switchTo(vm) {
@@ -4273,23 +4377,30 @@ function switchTo(vm) {
     case 'expeditions':          renderExpeditions(); break;
     case 'builds':               renderBuilds(); break;
     case 'developments':         renderDevelopments(); break;
+    case 'equipment-aa':         renderEquipmentAA(); break;
+    case 'equipment-day':        /* empty placeholder for now */ break;
+    case 'equipment-night':      /* empty placeholder for now */ break;
   }
 }
 
 // Parent top-level tab clicks: switch to remembered sub-view (or default).
-ui.vwTasks.onclick    = () => switchTo(lastInGroup.tasks    || 'focus');
-ui.vwShips.onclick    = () => switchTo('ships');
-ui.vwFactory.onclick  = () => switchTo(lastInGroup.factory  || 'improvements');
-ui.vwAreas.onclick    = () => switchTo('areas');
+ui.vwTasks.onclick     = () => switchTo(lastInGroup.tasks     || 'focus');
+ui.vwShips.onclick     = () => switchTo('ships');
+ui.vwFactory.onclick   = () => switchTo(lastInGroup.factory   || 'improvements');
+ui.vwEquipment.onclick = () => switchTo(lastInGroup.equipment || 'equipment-aa');
+ui.vwAreas.onclick     = () => switchTo('areas');
 ui.vwExpeditions.onclick = () => switchTo('expeditions');
 
 // Sub-tab clicks: switch to exact viewMode.
-ui.vwFocus.onclick        = () => switchTo('focus');
-ui.vwAll.onclick          = () => switchTo('all');
-ui.vwPlanner.onclick      = () => switchTo('planner');
-ui.vwImprovements.onclick = () => switchTo('improvements');
-ui.vwBuilds.onclick       = () => switchTo('builds');
-ui.vwDevelopments.onclick = () => switchTo('developments');
+ui.vwFocus.onclick          = () => switchTo('focus');
+ui.vwAll.onclick            = () => switchTo('all');
+ui.vwPlanner.onclick        = () => switchTo('planner');
+ui.vwImprovements.onclick   = () => switchTo('improvements');
+ui.vwBuilds.onclick         = () => switchTo('builds');
+ui.vwDevelopments.onclick   = () => switchTo('developments');
+ui.vwEquipmentAA.onclick    = () => switchTo('equipment-aa');
+ui.vwEquipmentDay.onclick   = () => switchTo('equipment-day');
+ui.vwEquipmentNight.onclick = () => switchTo('equipment-night');
 ui.search.addEventListener('input', () => render());
 ui.filter.addEventListener('change', () => render());
 ui.plannerSelect.addEventListener('change', () => render());
@@ -5039,6 +5150,66 @@ ui.devCollapseAll.onclick = () => {
   DEV_EXPANDED.clear();
   ui.devSearch.value = '';
   renderDevelopments();
+};
+
+// === 裝備 / 對空 CI (Equipment AA cut-in effects) ===
+// Per-group expanded state. Lazy-init on first render with all groups open.
+const EQ_AA_EXPANDED = new Set();
+let eqAAInitialized = false;
+function ensureAAInit() {
+  if (eqAAInitialized) return;
+  if (!EQUIPMENT || !EQUIPMENT.aa) return;
+  for (const g of (EQUIPMENT.aa.groups || [])) EQ_AA_EXPANDED.add(g.name);
+  eqAAInitialized = true;
+}
+
+function renderEquipmentAA() {
+  if (!EQUIPMENT || !EQUIPMENT.aa || !Array.isArray(EQUIPMENT.aa.groups)) {
+    ui.eqAAList.innerHTML = '<div class="imp-empty">對空裝備資料未載入</div>';
+    return;
+  }
+  ensureAAInit();
+  const html = [];
+  for (const g of EQUIPMENT.aa.groups) {
+    const isExpanded = EQ_AA_EXPANDED.has(g.name);
+    const cls = 'area-group' + (isExpanded ? ' expanded' : '');
+    const effectCount = Array.isArray(g.effects) ? g.effects.length : 0;
+    html.push(`<div class="${cls}" data-eq-grp="${htmlEscape(g.name)}">`);
+    html.push(`<div class="area-group-head" data-toggle="${htmlEscape(g.name)}"><span>${htmlEscape(g.name)} <span style="color:var(--text-dim);font-weight:normal;font-size:11px">(${effectCount} 種效果)</span></span><span class="area-toggle">▼</span></div>`);
+    html.push('<div class="area-group-body">');
+    for (const e of (g.effects || [])) {
+      const chips = (e.items || []).map((it, i) => {
+        const sep = i > 0 ? '<span class="eq-effect-plus">＋</span>' : '';
+        return sep + `<span class="eq-effect-chip">${htmlEscape(it)}</span>`;
+      }).join('');
+      html.push('<div class="eq-effect-card">');
+      html.push(`<div class="eq-effect-head"><span class="eq-effect-no">#${e.no}</span><div class="eq-effect-items">${chips}</div></div>`);
+      html.push('</div>');
+    }
+    html.push('</div></div>');
+  }
+  ui.eqAAList.innerHTML = html.join('');
+}
+
+ui.eqAAList.addEventListener('click', e => {
+  const head = e.target.closest('.area-group-head');
+  if (!head) return;
+  const key = head.dataset.toggle;
+  if (!key) return;
+  if (EQ_AA_EXPANDED.has(key)) EQ_AA_EXPANDED.delete(key);
+  else EQ_AA_EXPANDED.add(key);
+  const group = head.closest('.area-group');
+  if (group) group.classList.toggle('expanded');
+});
+ui.eqAAExpandAll.onclick = () => {
+  for (const g of (EQUIPMENT.aa.groups || [])) EQ_AA_EXPANDED.add(g.name);
+  eqAAInitialized = true;
+  renderEquipmentAA();
+};
+ui.eqAACollapseAll.onclick = () => {
+  EQ_AA_EXPANDED.clear();
+  eqAAInitialized = true;  // suppress lazy re-init from re-expanding
+  renderEquipmentAA();
 };
 
 renderTabs();

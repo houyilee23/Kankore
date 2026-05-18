@@ -1239,11 +1239,61 @@ mark { background: #f5d76e; color: #000; padding: 0 2px; border-radius: 2px; }
   margin-top: 6px;
   padding: 6px 10px;
 }
+.area-node.cleared {
+  border-left-color: var(--done);
+  opacity: 0.85;
+}
+.area-node-headrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.area-check {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.area-check input {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--done);
+}
 .area-node-head {
   font-size: 13px;
   font-weight: 600;
   color: var(--accent);
-  margin-bottom: 4px;
+  flex: 1;
+}
+.area-cleared-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: normal;
+  color: var(--done);
+  background: rgba(58, 125, 68, 0.15);
+  border: 1px solid var(--done);
+  padding: 1px 6px;
+  border-radius: 999px;
+  margin-left: 4px;
+}
+.area-prog {
+  font-size: 11px;
+  font-weight: normal;
+  color: var(--text-dim);
+  background: var(--panel);
+  padding: 1px 8px;
+  border-radius: 999px;
+  margin-left: 4px;
+}
+.area-prog-done {
+  color: var(--done);
+  background: rgba(58, 125, 68, 0.18);
+  border: 1px solid var(--done);
 }
 .area-row {
   display: flex;
@@ -3363,6 +3413,29 @@ const shipsState = (() => {
 })();
 function saveShips() { localStorage.setItem(SHIPS_STORAGE_KEY, JSON.stringify(shipsState)); }
 
+// LocalStorage for area progress (sea-area node completion).
+// Keys are "<areaName>::<node>"; value is the timestamp it was checked.
+const AREAS_STORAGE_KEY = 'kc_areas_v1';
+const areasState = (() => {
+  try {
+    const s = JSON.parse(localStorage.getItem(AREAS_STORAGE_KEY)) || {};
+    return { cleared: s.cleared || {} };
+  } catch { return { cleared: {} }; }
+})();
+function saveAreas() { localStorage.setItem(AREAS_STORAGE_KEY, JSON.stringify(areasState)); }
+function areaKey(area, node) { return area + '::' + node; }
+function isNodeCleared(area, node) { return !!areasState.cleared[areaKey(area, node)]; }
+function areaProgress(area) {
+  if (!AREAS || !Array.isArray(AREAS.items)) return { done: 0, total: 0 };
+  let done = 0, total = 0;
+  for (const it of AREAS.items) {
+    if (it.area !== area) continue;
+    total++;
+    if (isNodeCleared(it.area, it.node)) done++;
+  }
+  return { done, total };
+}
+
 // ship base lookup by any form name
 function shipBaseFromName(name) {
   const s = SHIPS_BY_ANY_NAME[name];
@@ -3882,10 +3955,14 @@ function openIO(mode) {
 document.getElementById('btn-export').onclick = () => openIO('export');
 document.getElementById('btn-import').onclick = () => openIO('import');
 document.getElementById('btn-reset').onclick = () => {
-  if (confirm('確定要清掉所有勾選、備註、前置修改、釘選目標嗎?(可先匯出備份)')) {
+  if (confirm('確定要清掉所有勾選、備註、前置修改、釘選目標、海域進度嗎?(可先匯出備份)')) {
     state.done = {}; state.notes = {}; state.prevAdd = {}; state.prevRemove = {};
     state.pinnedGoals = [];
-    save(); render();
+    areasState.cleared = {};
+    save();
+    saveAreas();
+    if (viewMode === 'areas') renderAreas();
+    render();
   }
 };
 dlgCancel.onclick = () => dlg.close();
@@ -4069,12 +4146,22 @@ function renderAreas() {
     renderedAny = true;
     const isExpanded = autoExpand || AREA_EXPANDED.has(area);
     const cls = 'area-group' + (isExpanded ? ' expanded' : '');
+    const prog = areaProgress(area);
+    const progLabel = prog.total > 0 ? `${prog.done}/${prog.total}` : '';
+    const progDone = prog.total > 0 && prog.done === prog.total;
+    const progClass = progDone ? 'area-prog area-prog-done' : 'area-prog';
     html.push(`<div class="${cls}" data-area="${escape(area)}">`);
-    html.push(`<div class="area-group-head" data-toggle="${escape(area)}"><span>${escape(area)} <span style="color:var(--text-dim);font-weight:normal;font-size:11px">(${nodes.length} 個區點)</span></span><span class="area-toggle">▼</span></div>`);
+    html.push(`<div class="area-group-head" data-toggle="${escape(area)}"><span>${escape(area)} <span class="${progClass}">${progLabel}</span></span><span class="area-toggle">▼</span></div>`);
     html.push(`<div class="area-group-body">`);
     for (const it of nodes) {
-      html.push(`<div class="area-node">`);
-      html.push(`<div class="area-node-head">第 ${it.node} 區</div>`);
+      const cleared = isNodeCleared(it.area, it.node);
+      const nodeCls = 'area-node' + (cleared ? ' cleared' : '');
+      html.push(`<div class="${nodeCls}">`);
+      // Head row: checkbox + 第 N 區
+      html.push(`<div class="area-node-headrow">`);
+      html.push(`<label class="area-check" data-cleared-area="${escape(it.area)}" data-cleared-node="${it.node}"><input type="checkbox" ${cleared ? 'checked' : ''}></label>`);
+      html.push(`<div class="area-node-head">第 ${it.node} 區${cleared ? ' <span class="area-cleared-tag">✓ 已通過</span>' : ''}</div>`);
+      html.push(`</div>`);
       // 建議編成
       if (it.fleet_flag || it.fleet_escort) {
         const flag = it.fleet_flag ? `<span class="area-fleet-flag">旗艦:${escape(it.fleet_flag)}</span> ` : '';
@@ -4113,6 +4200,8 @@ function renderAreas() {
 
 ui.areaSearch.addEventListener('input', () => renderAreas());
 ui.areaList.addEventListener('click', e => {
+  // If user clicked inside the checkbox label, ignore here; change handler picks it up.
+  if (e.target.closest('.area-check')) return;
   const head = e.target.closest('.area-group-head');
   if (!head) return;
   const area = head.dataset.toggle;
@@ -4121,6 +4210,21 @@ ui.areaList.addEventListener('click', e => {
   else AREA_EXPANDED.add(area);
   const group = head.closest('.area-group');
   if (group) group.classList.toggle('expanded');
+});
+ui.areaList.addEventListener('change', e => {
+  if (e.target.type !== 'checkbox') return;
+  const label = e.target.closest('.area-check');
+  if (!label) return;
+  const area = label.dataset.clearedArea;
+  const node = label.dataset.clearedNode;
+  if (!area || !node) return;
+  const key = areaKey(area, node);
+  if (e.target.checked) areasState.cleared[key] = Date.now();
+  else delete areasState.cleared[key];
+  saveAreas();
+  // Re-render so the group progress count + node 'cleared' class refresh.
+  // Preserve current expanded set so the user doesn't lose context.
+  renderAreas();
 });
 ui.areaExpandAll.onclick = () => {
   for (const a of (AREAS.areas || [])) AREA_EXPANDED.add(a);

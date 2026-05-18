@@ -460,6 +460,8 @@ main {
   gap: 6px;
   width: 100%;
 }
+/* HTML hidden attribute must override display:flex (CSS specificity). */
+.bottom-tray[hidden] { display: none; }
 .bottom-tray button { flex: 1; }
 .bottom-tray .btn-danger {
   color: #e07b30;
